@@ -1,8 +1,7 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import type { ExpanseSearchFilter } from "@/components/dashboard/expanse/molecules/ExpanseSearch";
 
 const tableHeadings = [
   "순번",
@@ -116,13 +115,8 @@ const entries: ExpanseApplicationEntry[] = [
   },
 ];
 
-interface Props {
-  statusFilter?: ExpanseSearchFilter;
-}
-
-export default function ExpanseTable({ statusFilter }: Props) {
+export default function SupplyTable() {
   const { push } = useRouter();
-  const pathname = usePathname();
 
   const EntryListItem = ({ entry }: { entry: ExpanseApplicationEntry }) => {
     return (
@@ -138,7 +132,7 @@ export default function ExpanseTable({ statusFilter }: Props) {
           entry.status === "canceled",
         ].map((data, i) => (
           <div
-            key={i}
+            key={data?.toString()}
             className={cn(
               "py-3 px-6 body-1 font-medium underline-offset-2 truncate text-center",
               i === 0 ? "w-[76px]" : "flex-1",
@@ -156,9 +150,9 @@ export default function ExpanseTable({ statusFilter }: Props) {
             )}
             onClick={() => {
               if (i === 3) {
-                push(`${pathname}/detail/report/${entry.expanseReport}`);
+                push(`/dashboard/expanse/detail/report/${entry.expanseReport}`);
               } else if (i === 6 && entry.receipt) {
-                push(`${pathname}/detail/receipt/${entry.receipt}`);
+                push(`/dashboard/expanse/detail/receipt/${entry.receipt}`);
               }
             }}
           >
@@ -195,13 +189,9 @@ export default function ExpanseTable({ statusFilter }: Props) {
           </span>
         ))}
       </li>
-      {statusFilter === "all"
-        ? entries.map((entry) => (
-            <EntryListItem key={entry.order} entry={entry} />
-          ))
-        : entries
-            .filter((entry) => entry.status === statusFilter)
-            .map((entry) => <EntryListItem key={entry.order} entry={entry} />)}
+      {entries.map((entry) => (
+        <EntryListItem key={entry.order} entry={entry} />
+      ))}
     </ul>
   );
 }
