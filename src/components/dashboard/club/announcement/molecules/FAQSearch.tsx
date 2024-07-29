@@ -9,11 +9,24 @@ import {
 
 const filterList = [
   { name: "전체 보기", value: "all" },
-  { name: "입금", value: "deposit" },
-  { name: "출금", value: "withdrawal" },
+  { name: "이용안내", value: "usage" },
+  {
+    name: (
+      <>
+        <span className="font-poppins font-bold">{"omo "}</span>
+        <span className="font-cochin font-bold text-lg leading-6">
+          {"shop"}
+        </span>
+        {" 공지"}
+      </>
+    ),
+    value: "omo-shop",
+  },
+  { name: "워크숍", value: "workshop" },
+  { name: "동호회비", value: "expanse" },
 ];
 
-export default function TransactionSearch() {
+export default function FAQSearch() {
   const [currentSearchValue, setCurrentSearchValue] =
     useState<SearchValueWithFilter>(initialSearchValueWithFilter);
 
@@ -21,6 +34,7 @@ export default function TransactionSearch() {
 
   return (
     <SearchBarWithFilterChips
+      title="자주 묻는 질문"
       filterList={filterList}
       currentValue={currentSearchValue}
       handleChange={({ term, filter }) =>
