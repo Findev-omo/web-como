@@ -6,13 +6,13 @@ import Backdrop from "@/components/common/Backdrop";
 import Button from "@/components/common/Button";
 import InfoBrandImage from "@/assets/images/status/info.svg";
 
-export default function ReservationCancelModal() {
+export default function ReportCancelModal() {
   return (
-    <div id="reservation-cancel" className="modal hidden">
+    <div id="report-cancel" className="modal hidden">
       <Backdrop />
       <div className="fixed bottom-1/2 right-1/2 translate-y-1/2 translate-x-1/2 z-50 space-y-9 w-full max-w-lg py-7 px-8 rounded-xl bg-gray-0">
         <h1 className="text-center font-bold text-gray-900">
-          {"예약을 취소하시겠습니까?"}
+          {"처음부터 다시 작성해야 해요!"}
         </h1>
         <Image
           src={InfoBrandImage}
@@ -23,20 +23,11 @@ export default function ReservationCancelModal() {
           className="mx-auto"
         />
         <p className="text-center h4 font-normal text-gray-800">
-          {`예약 일자까지 남은 기간에 따라\n`}
-          <span className="font-bold text-point-red">{"취소 위약금"}</span>
-          {`이 발생할 수 있습니다.\n위약금 관련 내용은 상품 상세페이지에서 확인할 수 있습니다.`}
+          {`다른 페이지로 이동하면\n지금까지 작성한 보고서가 삭제됩니다.`}
         </p>
         <div className="flex gap-3">
-          <Button content="닫기" onClick={() => closeModal()} />
-          <Button
-            primary
-            content="예약 취소"
-            onClick={() => {
-              closeModal();
-              alert("예약이 취소되었습니다.");
-            }}
-          />
+          <Button content="취소" onClick={() => closeModal()} />
+          <Button primary content="이동하기" onClick={() => closeModal()} />
         </div>
       </div>
     </div>
