@@ -5,11 +5,12 @@ import { cn, formatDate, openModal } from "@/lib/utils";
 
 const tableHeadings = [
   "순번",
+  "동호회명",
   "작성일",
   "신청자",
+  "담당자",
   "품의서",
   "지급 여부",
-  "담당자",
   "수령증",
   "반려사유",
 ];
@@ -18,6 +19,7 @@ type ExpenseApplicationStatus = "pending" | "completed" | "rejected";
 
 interface ExpenseApplicationEntry {
   id: number;
+  clubName: string;
   applicant: string;
   personInCharge: string;
   expenseReport: string;
@@ -29,6 +31,7 @@ interface ExpenseApplicationEntry {
 const entries: ExpenseApplicationEntry[] = [
   {
     id: 1,
+    clubName: "동호회명",
     applicant: "김오모",
     personInCharge: "박오모",
     createdDate: "2024-07-04 12:33:57",
@@ -37,6 +40,7 @@ const entries: ExpenseApplicationEntry[] = [
   },
   {
     id: 2,
+    clubName: "동호회명",
     applicant: "김오모",
     personInCharge: "김오모",
     createdDate: "2024-07-04 12:33:57",
@@ -45,6 +49,7 @@ const entries: ExpenseApplicationEntry[] = [
   },
   {
     id: 3,
+    clubName: "동호회명",
     applicant: "김오모",
     personInCharge: "서오모",
     createdDate: "2024-07-04 12:33:57",
@@ -54,6 +59,7 @@ const entries: ExpenseApplicationEntry[] = [
   },
   {
     id: 4,
+    clubName: "동호회명",
     applicant: "김오모",
     personInCharge: "김오모",
     createdDate: "2024-07-04 12:33:57",
@@ -63,6 +69,7 @@ const entries: ExpenseApplicationEntry[] = [
   },
   {
     id: 5,
+    clubName: "동호회명",
     applicant: "김오모",
     personInCharge: "김오모",
     createdDate: "2024-07-04 12:33:57",
@@ -72,6 +79,7 @@ const entries: ExpenseApplicationEntry[] = [
   },
   {
     id: 6,
+    clubName: "동호회명",
     applicant: "김오모",
     personInCharge: "김오모",
     createdDate: "2024-07-04 12:33:57",
@@ -81,6 +89,7 @@ const entries: ExpenseApplicationEntry[] = [
   },
   {
     id: 7,
+    clubName: "동호회명",
     applicant: "김오모",
     personInCharge: "김오모",
     createdDate: "2024-07-04 12:33:57",
@@ -90,6 +99,7 @@ const entries: ExpenseApplicationEntry[] = [
   },
   {
     id: 8,
+    clubName: "동호회명",
     applicant: "김오모",
     personInCharge: "김오모",
     createdDate: "2024-07-04 12:33:57",
@@ -99,6 +109,7 @@ const entries: ExpenseApplicationEntry[] = [
   },
   {
     id: 9,
+    clubName: "동호회명",
     applicant: "김오모",
     personInCharge: "김오모",
     createdDate: "2024-07-04 12:33:57",
@@ -107,6 +118,7 @@ const entries: ExpenseApplicationEntry[] = [
   },
   {
     id: 10,
+    clubName: "동호회명",
     applicant: "김오모",
     personInCharge: "김오모",
     createdDate: "2024-07-04 12:33:57",
@@ -126,11 +138,12 @@ export default function ExpenseTable() {
           <div
             key={heading}
             className={cn(
-              "my-3 mx-6 body-1 font-bold text-gray-900 text-center",
+              "my-3 mx-6 body-1 font-bold text-gray-900",
               i === 0 ? "w-8" : "flex-1",
-              [1, 3, 6].includes(i) ? "min-w-32" : "",
-              [2, 4, 5, 7].includes(i) ? "min-w-16 max-w-36" : "",
-              i === 6 ? "flex items-center justify-center m-0" : ""
+              i === 1 ? "" : " text-center",
+              [2, 5, 7].includes(i) ? "min-w-32" : "",
+              [3, 4, 6, 8].includes(i) ? "min-w-16 max-w-28" : "",
+              i === 7 ? "flex items-center justify-center m-0" : ""
             )}
           >
             {heading}
@@ -141,23 +154,25 @@ export default function ExpenseTable() {
         <li key={entry.id} className="flex border-b border-gray-400 bg-gray-0">
           {[
             entry.id,
+            entry.clubName,
             entry.createdDate,
             entry.applicant,
+            entry.personInCharge,
             entry.expenseReport,
             entry.status,
-            entry.personInCharge,
             entry.receipt,
             entry.status === "rejected",
           ].map((data, i) => (
             <div
               key={i}
               className={cn(
-                "my-3 mx-6 body-1 font-medium underline-offset-2 line-clamp-1 text-center",
+                "my-3 mx-6 body-1 font-medium underline-offset-2 line-clamp-1",
                 i === 0 ? "w-8" : "flex-1",
-                [1, 3, 6].includes(i) ? "min-w-32" : "",
-                [2, 4, 5, 7].includes(i) ? "min-w-16 max-w-36" : "",
-                data && [3, 6, 7].includes(i) ? "underline cursor-pointer" : "",
-                i === 6 ? "flex items-center justify-center m-0" : "",
+                i === 1 ? "" : " text-center",
+                [2, 5, 7].includes(i) ? "min-w-32" : "",
+                [3, 4, 6, 8].includes(i) ? "min-w-16 max-w-28" : "",
+                data && [5, 7, 8].includes(i) ? "underline cursor-pointer" : "",
+                i === 7 ? "flex items-center justify-center m-0" : "",
                 data === "rejected"
                   ? "text-point-red"
                   : data === "completed"
@@ -167,52 +182,36 @@ export default function ExpenseTable() {
                       : "text-gray-800"
               )}
               onClick={() => {
-                if (i === 3) {
+                if (i === 5) {
                   push(`${pathname}/detail/report/${entry.expenseReport}`);
-                } else if (i === 6 && entry.receipt) {
+                } else if (i === 7 && entry.receipt) {
                   push(`${pathname}/detail/receipt/${entry.receipt}`);
-                } else if (i === 7 && data) {
+                } else if (i === 8 && data) {
                   openModal("expense-reject-detail");
                 }
               }}
             >
-              {i === 0 ? (
-                idx + 1
-              ) : i === 1 ? (
-                formatDate(new Date(data as string))
-              ) : i === 4 ? (
-                data === "rejected" ? (
-                  "반려"
-                ) : data === "completed" ? (
-                  "지급 완료"
-                ) : data === "pending" ? (
-                  "지급 대기"
-                ) : (
-                  ""
-                )
-              ) : i === 6 ? (
-                data ? (
-                  data
-                ) : entry.status === "pending" &&
-                  pathname.startsWith("/club") ? (
-                  <button
-                    className="py-1 px-4 rounded body-1 font-medium text-gray-50 bg-gray-900"
-                    onClick={() => openModal("new-receipt-form")}
-                  >
-                    {"수령증 작성"}
-                  </button>
-                ) : (
-                  "-"
-                )
-              ) : i === 7 ? (
-                data ? (
-                  "상세보기"
-                ) : (
-                  "-"
-                )
-              ) : (
-                data
-              )}
+              {i === 0
+                ? idx + 1
+                : i === 2
+                  ? formatDate(new Date(data as string))
+                  : i === 6
+                    ? data === "rejected"
+                      ? "반려"
+                      : data === "completed"
+                        ? "지급 완료"
+                        : data === "pending"
+                          ? "지급 대기"
+                          : ""
+                    : i === 7
+                      ? data
+                        ? data
+                        : "-"
+                      : i === 8
+                        ? data
+                          ? "상세보기"
+                          : "-"
+                        : data}
             </div>
           ))}
         </li>
