@@ -1,7 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import type { ClubWebActivityInfoDTO } from "@/api/types/club/activity";
+import type {
+  ClubWebActivityInfoDTO,
+  ClubWebActivityPictureInfoDTO,
+} from "@/api/types/club/activity";
 import { formatDate, openModal } from "@/lib/utils";
 import Avatar from "@/components/common/Avatar";
 
@@ -10,7 +13,7 @@ interface Props {
   readonly?: boolean;
 }
 
-export default function ClubPictureItem({ item, readonly }: Props) {
+export default function ClubPictureDetailItem({ item, readonly }: Props) {
   console.log("ClubPictureItem 실행됨");
   console.log("ClubPictureItem 에서 item", item);
 
@@ -25,9 +28,7 @@ export default function ClubPictureItem({ item, readonly }: Props) {
         <div className="flex items-center gap-4">
           <Avatar size="w-[60px] h-[60px]" src={item.writerProfileImage} />
           <div className="flex flex-col">
-            <span className="h4 font-bold text-gray-900">
-              {item.writerNickname}
-            </span>
+            <span className="h4 font-bold text-gray-900">{item.writerNickname}</span>
             <div className="space-x-2 body-1 font-medium text-gray-500">
               <span>{item.writerDepartment}</span>
               <span>{formatDate(new Date(item.date))}</span>
