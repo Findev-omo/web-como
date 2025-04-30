@@ -27,6 +27,7 @@ export default function ExpenseTable({ data }: Props) {
 
   const listData = data?.flatMap((page) => page.data.List) || [];
 
+  console.log(listData);
   return (
     <ul>
       <li className="flex py-0.5 border-y border-gray-400 bg-gray-200">
@@ -99,12 +100,12 @@ export default function ExpenseTable({ data }: Props) {
                     : i === 1
                       ? new Date(
                           item.createdDate[0],
-                          item.createdDate[1],
+                          item.createdDate[1] - 1,
                           item.createdDate[2],
-                          item.createdDate[3],
-                          item.createdDate[4],
-                          item.createdDate[5]
-                        ).toLocaleString()
+                          // item.createdDate[3],
+                          // item.createdDate[4],
+                          // item.createdDate[5]
+                        ).toLocaleDateString()
                       : i === 4
                         ? data === "APPROVED"
                           ? "승인"
