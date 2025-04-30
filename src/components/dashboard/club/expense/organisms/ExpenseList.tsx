@@ -65,7 +65,7 @@ export default function ExpenseList({ clubId }: Props) {
     <div className="space-y-6 p-8 rounded-xl bg-gray-0">
       <div className="flex justify-between">
         <h3 className="h2 font-semibold text-gray-900">
-          {"활동비 지급 내역 조회"}
+          {"활동지원비 지급 내역 조회"}
         </h3>
         {pathname.startsWith("/club") && (
           <button

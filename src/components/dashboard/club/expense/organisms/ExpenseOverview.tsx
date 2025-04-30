@@ -73,7 +73,7 @@ export default async function ExpenseOverview() {
       </div> */}
       <div className="flex-1 p-8 rounded-xl bg-gray-800">
         <div className="flex items-center justify-between">
-          <h3 className="h1 font-bold text-gray-0">{"활동비 신청현황"}</h3>
+          <h3 className="h1 font-bold text-gray-0">{"활동지원비 신청현황"}</h3>
         </div>
         <div className="flex items-center  mt-8">
           <div className="flex-1">
