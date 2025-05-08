@@ -4,22 +4,23 @@ import DatePicker from "@/components/common/DatePicker";
 import { CustomLabel } from "@/components/common/CustomLabel";
 import TimeSelect from "@/components/common/TimeSelect";
 import { useFormContext } from "react-hook-form";
-import { ScheduleRegisterSchemaType } from "@/lib/types/schema";
+import {
+  ResultReportSchemaType,
+  ScheduleRegisterSchemaType,
+} from "@/lib/types/schema";
 import { cn } from "@/lib/utils";
 
-const ScheduleDetailDate = ({
-  type,
+const ResultReportDate = ({
   maxWidth,
   timeSelectWidth = "w-48",
 }: {
-  type: string;
   maxWidth?: string;
   timeSelectWidth?: string;
 }) => {
-  const { setValue, watch } = useFormContext<ScheduleRegisterSchemaType>();
+  const { setValue, watch } = useFormContext<ResultReportSchemaType>();
 
-  const date = watch("date");
-  const time = watch("time");
+  const date = watch("data.activityDate");
+  const time = watch("data.activityTime");
 
   return (
     <div className="flex flex-col gap-2">
@@ -35,9 +36,8 @@ const ScheduleDetailDate = ({
           textStyle="h4 font-medium text-gray-900"
           currentDate={date}
           handleDateChange={(newDate) => {
-            setValue("date", newDate!);
+            setValue("data.activityDate", newDate!);
           }}
-          disabled={type === "DETAIL"}
           disablePastDates={true}
         />
         <TimeSelect
@@ -46,13 +46,12 @@ const ScheduleDetailDate = ({
           placeholder="시간선택"
           currentValue={time ? time : undefined}
           handleChange={(newTime) => {
-            setValue("time", newTime);
+            setValue("data.activityTime", newTime);
           }}
-          disabled={type === "DETAIL"}
         />
       </div>
     </div>
   );
 };
 
-export default ScheduleDetailDate;
+export default ResultReportDate;

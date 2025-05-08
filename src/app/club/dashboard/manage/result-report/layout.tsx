@@ -1,6 +1,6 @@
 import BackButton from "@/components/dashboard/common/BackButton";
 
-const ScheduleDetailLayout = async ({
+const ResultReportLayout = async ({
   children,
 }: {
   children: React.ReactNode;
@@ -8,9 +8,9 @@ const ScheduleDetailLayout = async ({
   return (
     <>
       <BackButton />
-      <>{children}</>
+      {children}
     </>
   );
 };
 
-export default ScheduleDetailLayout;
+export default ResultReportLayout;
