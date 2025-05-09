@@ -1,14 +1,10 @@
 import { getAccessToken } from "@/lib/cookies";
 
-export const getExpense = async (
-  page: number,
-  startDate: string,
-  endDate: string
-) => {
+export const getReportDetail = async (reportId: number) => {
+  console.log(reportId);
   const token = await getAccessToken();
   if (!token) throw new Error("토큰 정보가 없습니다.");
-  const url = `/api/server/v1/manager/activity-expenses?page=${page}&startDate=${startDate}&endDate=${endDate}`;
-
+  const url = `/api/server/v1/manager/club/report/${reportId}`;
   const response = await fetch(url, {
     method: "GET",
     headers: {
@@ -17,5 +13,9 @@ export const getExpense = async (
     },
   });
   const result = await response.json();
-  return result.data;
+  if (result.resultCode === "OK") {
+    return result.data;
+  } else {
+    throw new Error(result.resultMessage);
+  }
 };
