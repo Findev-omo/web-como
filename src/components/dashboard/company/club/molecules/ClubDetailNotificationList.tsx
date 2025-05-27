@@ -73,7 +73,7 @@ const Data = [
   },
 ];
 
-export default function ClubDetailScheduleList() {
+export default function ClubDetailNotificationList() {
   const [currentDateRange, setCurrentDateRange] = useState<DateRange>({
     startDate: undefined,
     endDate: undefined,
@@ -91,8 +91,8 @@ export default function ClubDetailScheduleList() {
       />
       <div className="flex items-center mt-[16px] border-t border-b border-gray-400 bg-gray-200 py-[13.45px] font-bold ">
         <span className="max-w-[76px] w-full text-center">순번</span>
-        <span className="max-w-[120px] w-full text-center ">주최자</span>
-        <span className="flex-1 px-[24px]">행사명</span>
+        <span className="max-w-[120px] w-full text-center ">작성자</span>
+        <span className="flex-1 px-[24px]">제목</span>
         <span className="max-w-[220px] w-full text-center ">작성일</span>
       </div>
       {Data.map((item) => {
@@ -104,12 +104,7 @@ export default function ClubDetailScheduleList() {
             <span className="max-w-[120px] w-full  text-center  ">
               {item.organizer}{" "}
             </span>
-            <span
-              className="flex-1  px-[24px] min-w-0  truncate "
-              onClick={() => {
-                router.push(`/company/dashboard/club/event/${item.id}`);
-              }}
-            >
+            <span className="flex-1  px-[24px] min-w-0  truncate ">
               {item.name}
             </span>
             <span className="max-w-[220px] w-full text-center">

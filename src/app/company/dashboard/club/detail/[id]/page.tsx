@@ -17,13 +17,15 @@ import ForceDisbandClubFormModal from "@/components/dashboard/company/club/modal
 import CancelForceDisbandModal from "@/components/dashboard/company/club/modals/CancelForceDisbandModal";
 import ViewReportModal from "@/components/dashboard/company/club/modals/ViewReportModal";
 import ClubDetailSchedule from "@/components/dashboard/company/club/templates/ClubDetailSchedule";
+import ClubDetailNotification from "@/components/dashboard/company/club/templates/ClubDetailNotification";
 
 export type ClubDetailMenu =
   | "about"
   | "activity"
   | "picture"
   | "attendance"
-  | "schedule";
+  | "schedule"
+  | "notification";
 
 export interface ClubDetailMenuTab {
   name: string;
@@ -35,6 +37,7 @@ const tabList: ClubDetailMenuTab[] = [
   // { name: "활동 내역", value: "activity" },
   { name: "활동 사진", value: "picture" },
   { name: "일정", value: "schedule" },
+  { name: "공지", value: "notification" },
   // { name: "출석부", value: "attendance" },
 ];
 
@@ -55,6 +58,8 @@ const renderCurrentTabPage = (
       return <ClubDetailPictureTabView />;
     case "schedule":
       return <ClubDetailSchedule />;
+    case "notification":
+      return <ClubDetailNotification />;
     // case "attendance":
     //   if (attendanceId) {
     //     return <ClubDetailAttendanceDetailTabView />;
