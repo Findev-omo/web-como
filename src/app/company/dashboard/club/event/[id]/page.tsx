@@ -157,7 +157,10 @@ export default function Page() {
         </div>
         {Data.map((item) => {
           return (
-            <div className="flex items-center border-b border-gray-400 py-[13.45px]   w-full ">
+            <div
+              className="flex items-center border-b border-gray-400 py-[13.45px]   w-full "
+              key={item.id}
+            >
               <span className="max-w-[76px] w-full text-center  ">
                 {item.id}{" "}
               </span>
@@ -168,8 +171,8 @@ export default function Page() {
                 {item.name}
               </span>
               <span className="max-w-[220px] w-full text-center">
-                {item.date.map((date) => {
-                  return <span>{date}</span>;
+                {item.date.map((date, idx) => {
+                  return <span key={idx}>{date}</span>;
                 })}
               </span>
             </div>
