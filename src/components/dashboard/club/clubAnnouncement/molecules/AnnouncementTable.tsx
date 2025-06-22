@@ -12,6 +12,7 @@ import {
   pinNotice,
   unpinNotice,
 } from "@/api/actions/club/notice";
+import { useToast } from "@/components/common/ToastContainer";
 
 const tableHeadings = [
   "순번",
@@ -27,9 +28,11 @@ function AnnouncementTable({ currentPage }: { currentPage: number }) {
   const { push } = useRouter();
   const [notices, setNotices] = useState<Notice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { showToast } = useToast();
 
   const itemsPerPage = 10; // 페이지당 항목 수
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const fetchNotices = async () => {
       const result = await getNotices(currentPage, "");
@@ -50,7 +53,7 @@ function AnnouncementTable({ currentPage }: { currentPage: number }) {
   const handlePin = (noticeId: number) => {
     const pinnedCount = notices.filter((n) => n.isPinned === "Y").length;
     if (pinnedCount >= 2) {
-      alert("공지사항 상단 고정은 2개까지 가능합니다.");
+      showToast("공지사항 상단 고정은 2개까지 가능합니다.", "error");
       return;
     }
     setNotices((prev) =>
@@ -76,7 +79,8 @@ function AnnouncementTable({ currentPage }: { currentPage: number }) {
       localStorage.setItem("noticeDetail", JSON.stringify(detail));
       push(`${pathname}/${noticeId}`);
     } catch (error) {
-      alert("공지사항 상세 정보를 불러오지 못했습니다.");
+      // alert("공지사항 상세 정보를 불러오지 못했습니다.");
+      showToast("공지사항 상세 정보를 불러오지 못했습니다.", "error");
     }
   };
 
@@ -84,7 +88,8 @@ function AnnouncementTable({ currentPage }: { currentPage: number }) {
     const response = await deleteNotice(noticeId);
     console.log(response);
     if (response.resultCode === "OK") {
-      alert("공지사항이 삭제되었습니다.");
+      // alert("공지사항이 삭제되었습니다.");
+      showToast("공지사항이 삭제되었습니다.", "warning");
       setNotices((prev) => prev.filter((n) => n.noticeId !== noticeId));
     }
   };
@@ -95,7 +100,7 @@ function AnnouncementTable({ currentPage }: { currentPage: number }) {
   const pinnedNotices = notices.filter((n) => n.isPinned === "Y");
   const normalNotices = notices.filter((n) => n.isPinned !== "Y");
 
-    // pinnedNotices와 normalNotices를 합쳐서 현재 페이지에 맞는 항목만 가져오기
+  // pinnedNotices와 normalNotices를 합쳐서 현재 페이지에 맞는 항목만 가져오기
   const allNotices = [...pinnedNotices, ...normalNotices];
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
@@ -105,13 +110,28 @@ function AnnouncementTable({ currentPage }: { currentPage: number }) {
     <ul className="flex flex-col gap-1">
       <li className="flex border-y border-gray-400 bg-gray-200">
         {tableHeadings.map((heading, i) => (
-          <div key={heading} className={cn("my-3 mx-6 body-1 font-bold text-gray-900", i === 0 ? "w-8" : "flex-1", i === 1 ? "" : "text-center", i === 4 ? "max-w-20" : "", [2, 3].includes(i) ? "max-w-36" : "", i === 5 ? "flex items-center justify-center min-w-32 max-w-48 m-0" : "")}>
+          <div
+            key={heading}
+            className={cn(
+              "my-3 mx-6 body-1 font-bold text-gray-900",
+              i === 0 ? "w-8" : "flex-1",
+              i === 1 ? "" : "text-center",
+              i === 4 ? "max-w-20" : "",
+              [2, 3].includes(i) ? "max-w-36" : "",
+              i === 5
+                ? "flex items-center justify-center min-w-32 max-w-48 m-0"
+                : ""
+            )}
+          >
             {heading}
           </div>
         ))}
       </li>
       {currentNotices.map((notice, idx) => (
-        <li key={notice.noticeId} className="flex border-b border-gray-400 bg-gray-0">
+        <li
+          key={notice.noticeId}
+          className="flex border-b border-gray-400 bg-gray-0"
+        >
           {[
             notice.noticeId,
             notice.title,
@@ -125,10 +145,14 @@ function AnnouncementTable({ currentPage }: { currentPage: number }) {
               className={cn(
                 "my-3 mx-6 body-1 font-medium underline-offset-2 underline decoration-transparent line-clamp-1 transition duration-300",
                 i === 0 ? "w-8" : "flex-1",
-                i === 1 ? "flex items-center hover:decoration-gray-800 cursor-pointer hover:underline" : "text-center",
+                i === 1
+                  ? "flex items-center hover:decoration-gray-800 cursor-pointer hover:underline"
+                  : "text-center",
                 i === 4 ? "max-w-20" : "",
                 [2, 3].includes(i) ? "max-w-36" : "",
-                i === 5 ? "flex items-center justify-center gap-2 min-w-32 max-w-48 m-0" : "",
+                i === 5
+                  ? "flex items-center justify-center gap-2 min-w-32 max-w-48 m-0"
+                  : "",
                 "text-gray-800"
               )}
               onClick={() => {
@@ -183,6 +207,6 @@ function AnnouncementTable({ currentPage }: { currentPage: number }) {
       ))}
     </ul>
   );
-};
+}
 
 export default AnnouncementTable;

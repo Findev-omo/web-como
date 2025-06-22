@@ -1,5 +1,4 @@
 import { ActivityReportDetail } from "@/api/types/company/report";
-import { File } from "@/assets/icons/info";
 import Input from "@/components/common/Input";
 import { formatDateArray } from "@/lib/utils";
 import Image from "next/image";
@@ -7,6 +6,14 @@ import Image from "next/image";
 interface Props {
   data: ActivityReportDetail;
 }
+
+const expenseCategory = {
+  activity: "정책사업: 인적자원운용",
+  welfare: "단위사업: 교직원 복지와 사기진작",
+  support: "세부사업: 교직원복지지원",
+  club: "사업 항목: 직장동호회지원",
+  benefit: "목(240) : 복리후생비",
+};
 
 export default function ReportDetail({ data }: Props) {
   return (
@@ -121,7 +128,11 @@ export default function ReportDetail({ data }: Props) {
               <div className="flex flex-col basis-1/4">
                 <span className=" text-xl font-[600] mb-[8px]">과목</span>
                 <div className=" text-lg bg-gray-100 rounded-[6px] py-[18px] px-[20px]   ">
-                  {item.category}
+                  {
+                    expenseCategory[
+                      item.category as keyof typeof expenseCategory
+                    ]
+                  }
                 </div>
               </div>
               <div className="flex flex-col basis-1/4">
@@ -193,24 +204,16 @@ export default function ReportDetail({ data }: Props) {
               <div className="flex flex-col basis-1">
                 <span className=" text-xl font-[600] mb-[8px] ">영수증</span>
                 <div className="grid grid-cols-2 gap-[12px] w-full">
-                  {data.expenses &&
-                    data.expenses.map((photo, idx) => {
-                      if (photo.file) {
-                        return (
-                          <div
-                            key={idx}
-                            className="aspect-[760/1013] relative min-w-full"
-                          >
-                            <Image
-                              src={photo.file}
-                              alt="photo"
-                              fill
-                              className="rounded-[8px] object-cover"
-                            />
-                          </div>
-                        );
-                      }
-                    })}
+                  {item.file && (
+                    <div className="aspect-[760/1013] relative min-w-full">
+                      <Image
+                        src={item.file}
+                        alt="photo"
+                        fill
+                        className="rounded-[8px] object-cover"
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

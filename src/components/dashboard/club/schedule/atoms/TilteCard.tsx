@@ -2,6 +2,7 @@
 
 import { PageType } from "@/app/club/dashboard/manage/schedule/[id]/page";
 import { Remove, Plus } from "@/assets/icons/action";
+import { useToast } from "@/components/common/ToastContainer";
 import { getAccessToken, getClubId } from "@/lib/cookies";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -21,7 +22,7 @@ const TitleCard = ({
 }) => {
   const title = ScheduleDetailCardType[type];
   const router = useRouter();
-
+  const { showToast } = useToast();
   const handleDelete = async () => {
     if (window.confirm("정말로 이 일정을 삭제하시겠습니까?")) {
       const token = await getAccessToken();
@@ -37,11 +38,11 @@ const TitleCard = ({
         }
       );
       if (response.ok) {
-        alert("일정이 삭제되었습니다.");
-        router.push("/club/dashboard/manage/schedule");
+        showToast("일정이 삭제 되었습니다.", "warning");
+        router.replace("/club/dashboard/manage/schedule");
         router.refresh();
       } else {
-        alert("일정 삭제에 실패했습니다.");
+        showToast("일정 삭제에 실패했습니다.", "error");
       }
     }
   };
@@ -53,22 +54,22 @@ const TitleCard = ({
   return (
     <header className="flex items-center justify-between">
       <h2 className="h1 font-bold text-black">{title}</h2>
-      {title === ScheduleDetailCardType.EDIT && (
-        <button
-          className="flex items-center gap-[3px] py-1 px-3 rounded body-1 font-medium text-gray-50 bg-gray-900"
-          onClick={handleDelete}
-        >
-          {"삭제"}
-          <Remove className="w-5 h-5" />
-        </button>
-      )}
+
       {title === ScheduleDetailCardType.DETAIL && (
-        <button
-          className="flex items-center gap-[3px] py-1 px-3 rounded body-1 font-medium text-gray-50 bg-gray-900"
-          onClick={handleEdit}
-        >
-          {"수정"}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            className="flex items-center gap-[3px] py-1 px-3 rounded body-1 font-medium text-gray-50 bg-gray-900"
+            onClick={handleEdit}
+          >
+            {"수정"}
+          </button>
+          <button
+            className="flex items-center gap-[3px] py-1 px-3 rounded body-1 font-medium text-gray-50 bg-gray-900"
+            onClick={handleDelete}
+          >
+            {"삭제"}
+          </button>
+        </div>
       )}
     </header>
   );

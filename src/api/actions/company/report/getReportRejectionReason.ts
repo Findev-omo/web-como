@@ -1,18 +1,15 @@
 import { getAccessToken } from "@/lib/cookies";
 
-export const patchReject = async (reportId: number, reason: string) => {
+export const getReportRejectionReason = async (reportId: number) => {
   const token = await getAccessToken();
   if (!token) throw new Error("토큰 정보가 없습니다.");
-  const url = `/api/server/v1/manager/club/report/${reportId}/reject`;
+  const url = `/api/server/v1/manager/club/report/${reportId}/rejection-reason`;
   const response = await fetch(url, {
-    method: "PATCH",
+    method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,
       accept: "application/json",
     },
-    body: JSON.stringify({
-      reason: reason,
-    }),
   });
   const result = await response.json();
   if (result.resultCode === "OK") {
