@@ -1,43 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { getData } from "@/api/action";
+import { ComponentProps } from "react";
 
 interface ApplicationStats {
   dissolutionPending: number; // 해체 신청
-  active: number;             // 활동 중
-  dissolved: number;          // 해체 완료
+  active: number; // 활동 중
+  dissolved: number; // 해체 완료
+}
+interface ClubOverviewProps extends ComponentProps<"div"> {
+  stats: ApplicationStats;
 }
 
-export default function ClubOverview() {
-  const [stats, setStats] = useState<ApplicationStats>({
-    dissolutionPending: 0,
-    active: 0,
-    dissolved: 0
-  });
-
-  useEffect(() => {
-    const loadStats = async () => {
-      try {
-        const [ active ] = await Promise.all([
-          getData('v1/manager/club/approved-count', true),
-        ]);
-
-        setStats({
-          dissolutionPending: 0,
-          active: active.data || 0,
-          dissolved: 0
-        });
-      } catch (error) {
-        console.error('사내 동호회 알림 카드 로딩 오류:', error);
-      }
-    };
-
-    loadStats();
-  }, []);
-
+export default function ClubOverview({ stats, ...props }: ClubOverviewProps) {
   return (
-    <div className="flex flex-col gap-6 h-fit p-8 rounded-xl bg-gray-800 select-none">
+    <div
+      className="flex flex-col gap-6 h-fit p-8 rounded-xl bg-gray-800 select-none"
+      {...props}
+    >
       <h2 className="h1 font-bold text-gray-0">{"사내동호회 관리"}</h2>
       <div className="flex gap-8 truncate">
         <div className="flex-1 flex flex-col gap-4 py-3 px-2">
