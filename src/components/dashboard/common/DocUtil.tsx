@@ -1,8 +1,9 @@
+import { ComponentProps } from "react";
 import { Document, Print } from "@/assets/icons/util";
 
-export const PrintButton = () => {
+export const PrintButton = ({ ...props }: ComponentProps<"button">) => {
   return (
-    <button className="p-1 rounded bg-gray-900">
+    <button className="p-1 rounded bg-gray-900" {...props}>
       <Print className="w-6 h-6 text-gray-0" />
     </button>
   );

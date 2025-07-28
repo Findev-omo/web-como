@@ -142,13 +142,11 @@ export default function ReportTable({ activities }: Props) {
               {activity.status === "PENDING" ? (
                 "-"
               ) : (
-                <button
-                  //onClick={() => handlePrintClick(activity)}
+                <PrintButton
+                  onClick={() => handlePrintClick(activity)}
                   disabled={isLoading}
                   className="disabled:opacity-50"
-                >
-                  <PrintButton />
-                </button>
+                />
               )}
             </div>
           </li>
