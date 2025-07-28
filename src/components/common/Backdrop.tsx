@@ -1,21 +1,21 @@
 "use client";
 
-import { closeModal, cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { type MouseEventHandler } from "react";
 
 interface Props {
   invisible?: boolean;
-  modalId?: string;
-  handleClose?: () => void;
+  onClick?: MouseEventHandler<HTMLDivElement>;
 }
 
-export default function Backdrop({ invisible, modalId, handleClose }: Props) {
+export default function Backdrop({ invisible = false, onClick }: Props) {
   return (
     <div
-      className={cn("fixed inset-0 z-30", invisible ? "" : "bg-gray-1000/30")}
-      onClick={() => {
-        handleClose?.();
-        closeModal(modalId);
-      }}
+      className={cn(
+        "fixed inset-0 z-10",
+        invisible ? "bg-none" : "bg-gray-900/60"
+      )}
+      onClick={onClick}
     />
   );
 }

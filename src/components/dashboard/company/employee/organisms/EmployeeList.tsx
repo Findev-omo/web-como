@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { startOfToday, subYears } from "date-fns";
 import { getData } from "@/api/action";
 import DateFilter, {
@@ -12,31 +12,42 @@ import EmployeeTable from "@/components/dashboard/company/employee/molecules/Emp
 import EmployeeSearch from "@/components/dashboard/company/employee/molecules/EmployeeSearch";
 import type { SearchValue } from "@/lib/types/search";
 
-export default function EmployeeList() {
+export default function EmployeeList({
+  initialEmployees,
+}: {
+  initialEmployees: any;
+}) {
   const [currentDateRange, setCurrentDateRange] = useState<DateRange>({
     startDate: subYears(startOfToday(), 1), // 1년 전 날짜
     endDate: startOfToday(),
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const [maxPage, setMaxPage] = useState(1);
-  const [employees, setEmployees] = useState([]);
+  const [maxPage, setMaxPage] = useState(initialEmployees.maxPage || 1);
+  const [employees, setEmployees] = useState(initialEmployees.memberList || []);
+  const [currentSearchValue, setCurrentSearchValue] = useState<SearchValue>({
+    term: "",
+    field: "all",
+  });
+  const isInitialMount = useRef(true);
 
   const formatDateToString = (date: Date | undefined) => {
-    if (!date) return '';
-    const koreaDate = new Date(date.getTime() + (9 * 60 * 60 * 1000));
-    return koreaDate.toISOString().split('T')[0];
+    if (!date) return "";
+    const koreaDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+    return koreaDate.toISOString().split("T")[0];
   };
 
-  const loadEmployees = async (searchValue: SearchValue = { term: "", field: "all" }) => {
+  const loadEmployees = async () => {
     try {
-      console.log(searchValue.term)
       const res = await getData(
-        `v1/manager/member/list?page=${currentPage}&search=${searchValue.term}&filter=${searchValue.field}&startDate=${formatDateToString(currentDateRange.startDate)}&endDate=${formatDateToString(currentDateRange.endDate)}`,
+        `v1/manager/member/list?page=${currentPage}&search=${
+          currentSearchValue.term
+        }&filter=${currentSearchValue.field}&startDate=${formatDateToString(
+          currentDateRange.startDate
+        )}&endDate=${formatDateToString(currentDateRange.endDate)}`,
         true
       );
 
-      console.log(res.data)
-      if (res.resultCode === 'OK' && res.data) {
+      if (res.resultCode === "OK" && res.data) {
         setEmployees(res.data.memberList);
         setMaxPage(res.data.maxPage);
       }
@@ -46,8 +57,12 @@ export default function EmployeeList() {
   };
 
   useEffect(() => {
-    loadEmployees();
-  }, [currentPage, currentDateRange]);
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+    } else {
+      loadEmployees();
+    }
+  }, [currentPage, currentDateRange, currentSearchValue]);
 
   const handleDateRangeChange = (dateRange: DateRange) => {
     setCurrentDateRange(dateRange);
@@ -59,27 +74,22 @@ export default function EmployeeList() {
   };
 
   const handleSearch = (searchValue: SearchValue) => {
-    loadEmployees(searchValue);
+    setCurrentSearchValue(searchValue);
+    setCurrentPage(1);
   };
 
   return (
     <div className="space-y-4 p-8 rounded-2xl bg-gray-0">
-        <EmployeeSearch
-          onSearch={handleSearch}
-          currentDateRange={currentDateRange}
-          currentPage={currentPage}
-        />
+      <EmployeeSearch onSearch={handleSearch} />
       <div className="flex items-center justify-between gap-6">
         <DateFilter
           currentDateRange={currentDateRange}
           handleDateRangeChange={handleDateRangeChange}
         />
-         <DocUtilButtons />
+        <DocUtilButtons />
       </div>
       <div className="space-y-10">
-        <EmployeeTable 
-          employees={employees}
-        />
+        <EmployeeTable employees={employees} />
         {employees && employees.length > 0 && (
           <div className="flex justify-center mt-8">
             <Pagination
