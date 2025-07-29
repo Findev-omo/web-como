@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Pagination from "@/components/dashboard/common/Pagination";
 import ExpenseTable from "@/components/dashboard/company/club/molecules/ExpenseTable";
 import DateFilter, {
@@ -8,24 +10,46 @@ import DateFilter, {
 import { ExpenseApplicationEntry } from "@/api/types/company/expense";
 import { formatDate } from "@/lib/format";
 
-interface ExpenseListProps {
+interface ClubExpenseClientViewProps {
   expenseList: ExpenseApplicationEntry[];
   currentPage: number;
   maxPage: number;
-  currentDateRange: DateRange;
-  handleDateRangeChange: (dateRange: DateRange) => void;
-  handlePageChange: (page: number) => void;
+  initialDateRange: DateRange;
 }
 
-export default function ExpenseList({
+export default function ClubExpenseClientView({
   expenseList,
   currentPage,
   maxPage,
-  currentDateRange,
-  handleDateRangeChange,
-  handlePageChange,
-}: ExpenseListProps) {
+  initialDateRange,
+}: ClubExpenseClientViewProps) {
+  const router = useRouter();
+  const [currentDateRange, setCurrentDateRange] =
+    useState<DateRange>(initialDateRange);
   const today = new Date();
+
+  const handleDateRangeChange = (dateRange: DateRange) => {
+    setCurrentDateRange(dateRange);
+    if (dateRange.startDate && dateRange.endDate) {
+      const params = new URLSearchParams();
+      params.set("startDate", formatDate(dateRange.startDate));
+      params.set("endDate", formatDate(dateRange.endDate));
+      router.push(`?${params.toString()}`);
+    }
+  };
+
+  const handlePageChange = (page: number) => {
+    const params = new URLSearchParams();
+    if (currentDateRange.startDate) {
+      params.set("startDate", formatDate(currentDateRange.startDate));
+    }
+    if (currentDateRange.endDate) {
+      params.set("endDate", formatDate(currentDateRange.endDate));
+    }
+    params.set("page", page.toString());
+    router.push(`?${params.toString()}`);
+  };
+
   return (
     <div className="space-y-6 p-8 rounded-xl bg-gray-0">
       <div className="flex justify-between">

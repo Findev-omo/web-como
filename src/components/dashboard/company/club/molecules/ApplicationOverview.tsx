@@ -1,45 +1,25 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { getData } from "@/api/action";
+import { ComponentProps } from "react";
 
 interface ApplicationStats {
   pending: number;
   approved: number;
   rejected: number;
 }
+interface ApplicationOverviewProps extends ComponentProps<"div"> {
+  stats: ApplicationStats;
+}
 
-export default function ApplicationOverview() {
-  const [stats, setStats] = useState<ApplicationStats>({
-    pending: 0,
-    approved: 0,
-    rejected: 0
-  });
-
-  useEffect(() => {
-    const loadStats = async () => {
-      try {
-        const [pending, approved, rejected] = await Promise.all([
-          getData('v1/manager/club/pending-count', true),
-          getData('v1/manager/club/approved-count', true),
-          getData('v1/manager/club/rejected-count', true)
-        ]);
-
-        setStats({
-          pending: pending.data || 0,
-          approved: approved.data || 0,
-          rejected: rejected.data || 0
-        });
-      } catch (error) {
-        console.error('신청 현황 로딩 오류:', error);
-      }
-    };
-
-    loadStats();
-  }, []);
-
+export default function ApplicationOverview({
+  stats,
+  ...props
+}: ApplicationOverviewProps) {
   return (
-    <div className="flex flex-col gap-6 h-fit p-8 rounded-xl bg-gray-800 select-none">
+    <div
+      className="flex flex-col gap-6 h-fit p-8 rounded-xl bg-gray-800 select-none"
+      {...props}
+    >
       <h2 className="h1 font-bold text-gray-0">{"개설신청"}</h2>
       <div className="flex gap-8 truncate">
         <div className="flex-1 flex flex-col gap-4 py-3 px-2">

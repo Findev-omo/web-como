@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { getSummary } from "@/api/actions/company/expense/getSummary";
+import { ComponentProps } from "react";
 
 interface Status {
   pending: number;
@@ -9,32 +8,19 @@ interface Status {
   rejected: number;
 }
 
-export default function ExpenseOverview() {
-  const [stats, setStats] = useState<Status>({
-    pending: 0,
-    approved: 0,
-    rejected: 0,
-  });
+interface ExpenseOverviewProps extends ComponentProps<"div"> {
+  stats: Status;
+}
 
-  useEffect(() => {
-    const loadStats = async () => {
-      try {
-        const summary = await getSummary();
-        setStats({
-          pending: summary.pendingCount || 0,
-          approved: summary.approvedCount || 0,
-          rejected: summary.rejectedCount || 0,
-        });
-      } catch (error) {
-        console.error("신청 현황 로딩 오류:", error);
-      }
-    };
-
-    loadStats();
-  }, []);
-
+export default function ExpenseOverview({
+  stats,
+  ...props
+}: ExpenseOverviewProps) {
   return (
-    <div className="flex flex-col gap-6 h-fit p-8 rounded-xl bg-gray-800 select-none">
+    <div
+      className="flex flex-col gap-6 h-fit p-8 rounded-xl bg-gray-800 select-none"
+      {...props}
+    >
       <h2 className="h1 font-bold text-gray-0">{"활동지원비 신청 현황"}</h2>
       <div className="flex gap-8 truncate">
         <div className="flex-1 flex flex-col gap-4 py-3 px-2">

@@ -1,53 +1,29 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import DateFilter, {
   type DateRange,
 } from "@/components/dashboard/common/DateFilter";
 import Pagination from "@/components/dashboard/common/Pagination";
 import ReportTable from "@/components/dashboard/company/club/molecules/ReportTable";
-import { startOfToday, startOfYear } from "date-fns";
-import { getReports } from "@/api/actions/company/report/getReports";
-import { formatDate } from "@/lib/format";
 import { Activity } from "@/api/types/company/report";
 
-export default function ReportList() {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [maxPage, setMaxPage] = useState(1);
-  const [activities, setActivities] = useState<Activity[]>([]);
-  const [currentDateRange, setCurrentDateRange] = useState<DateRange>({
-    startDate: startOfYear(new Date()),
-    endDate: startOfToday(),
-  });
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!currentDateRange.startDate || !currentDateRange.endDate) return;
+interface ReportListProps {
+  activities: Activity[];
+  currentPage: number;
+  maxPage: number;
+  currentDateRange: DateRange;
+  handleDateRangeChange: (dateRange: DateRange) => void;
+  handlePageChange: (page: number) => void;
+}
 
-      const data = await getReports(
-        currentPage,
-        formatDate(currentDateRange.startDate),
-        formatDate(currentDateRange.endDate)
-      );
-      setActivities(data.list);
-      setMaxPage(data.maxPage);
-    };
-    fetchData();
-  }, [currentPage, currentDateRange]);
-  const handleDateRangeChange = (dateRange: DateRange) => {
-    setCurrentDateRange(dateRange);
-  };
-
-  const handlePageChange = (page: number) => {
-    if (page !== currentPage) {
-      setCurrentPage(page);
-      if (page > currentPage) {
-        //fetchNextPage();
-      } else {
-        //fetchPreviousPage();
-      }
-    }
-  };
-
+export default function ReportList({
+  activities,
+  currentPage,
+  maxPage,
+  currentDateRange,
+  handleDateRangeChange,
+  handlePageChange,
+}: ReportListProps) {
   return (
     <div className="space-y-4 p-8 rounded-2xl bg-gray-0">
       <DateFilter
