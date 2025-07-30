@@ -10,7 +10,7 @@ import {
   saveRefreshToken,
   saveRole,
 } from "@/lib/cookies";
-import { LOGIN_ENDPOINT } from "@/lib/constants";
+import { LOGIN_ENDPOINT, COMPANY_DASHBOARD_ENDPOINT } from "@/lib/constants";
 import Button from "@/components/common/Button";
 import Input from "@/components/common/Input";
 import RadioSelect from "@/components/login/molecules/RadioSelect";
@@ -137,7 +137,7 @@ export default function LoginForm() {
       if (formData.role === "club") {
         replace(`${LOGIN_ENDPOINT}/club`);
       } else if (formData.role === "company") {
-        replace(`${LOGIN_ENDPOINT}/company`);
+        replace(COMPANY_DASHBOARD_ENDPOINT);
       }
     } catch (error) {
       console.error("에러 발생:", error);
