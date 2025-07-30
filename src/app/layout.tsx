@@ -1,8 +1,16 @@
-import "@/styles/globals.css";
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import Favicon from "../../public/favicon/favicon.ico";
 import Providers from "@/lib/providers";
-import { ToastContainer } from "@/components/common/ToastContainer";
+import "@/styles/globals.css";
+
+const ToastContainer = dynamic(
+  () =>
+    import("@/components/common/ToastContainer").then(
+      (mod) => mod.ToastContainer
+    ),
+  { ssr: false }
+);
 
 export const metadata: Metadata = {
   title: "오늘뭐해, omo",
@@ -16,7 +24,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <link rel="icon" href={Favicon.src} type="image/x-icon" />
+      <head>
+        <link rel="icon" href={Favicon.src} type="image/x-icon" />
+      </head>
       <Providers>
         <body className="min-h-screen font-suit antialiased bg-gray-50">
           <ToastContainer>{children}</ToastContainer>

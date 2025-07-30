@@ -6,6 +6,7 @@ import { getData } from "@/api/action";
 import DateFilter, {
   type DateRange,
 } from "@/components/dashboard/common/DateFilter";
+import Skeleton from "@/components/common/Skeleton";
 import DocUtilButtons from "@/components/dashboard/common/DocUtil";
 import Pagination from "@/components/dashboard/common/Pagination";
 import EmployeeTable from "@/components/dashboard/company/employee/molecules/EmployeeTable";

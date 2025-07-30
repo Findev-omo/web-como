@@ -14,7 +14,6 @@ import { SearchValue } from "@/lib/types/search";
 import { subYears } from "date-fns";
 import { startOfToday } from "date-fns";
 import { DateRange } from "@/components/dashboard/common/DateFilter";
-import * as XLSX from "xlsx";
 
 interface Props {
   clubId?: string;
@@ -61,6 +60,7 @@ export default function MemberList({ clubId }: Props) {
   });
 
   const handleExcelDownload = async () => {
+    const XLSX = await import("xlsx");
     try {
       const { data } = await getExcelData();
       if (data) {

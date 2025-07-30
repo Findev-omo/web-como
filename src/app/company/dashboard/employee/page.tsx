@@ -1,9 +1,9 @@
 import EmployeeTitle from "@/components/dashboard/company/employee/molecules/EmployeeTitle";
 import ClubFigures from "@/components/dashboard/company/main/molecules/ClubFigures";
-import EmployeeView from "@/components/dashboard/company/employee/templates/EmployeeView";
 import { getData } from "@/api/action";
 import { startOfToday, subYears } from "date-fns";
 import dynamic from "next/dynamic";
+import Skeleton from "@/components/common/Skeleton";
 
 const AddNewEmployeeModal = dynamic(
   () =>
@@ -22,6 +22,12 @@ const EditSuccessModal = dynamic(
 const DeleteSuccessModal = dynamic(
   () =>
     import("@/components/dashboard/company/employee/modals/DeleteSuccessModal")
+);
+
+const EmployeeView = dynamic(
+  () =>
+    import("@/components/dashboard/company/employee/templates/EmployeeView"),
+  { ssr: false, loading: () => <Skeleton className="w-full h-[700px]" /> }
 );
 
 export default async function Page() {
