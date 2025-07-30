@@ -2,7 +2,11 @@
 
 import { useEffect } from "react";
 
-export default function useNavigationGuard() {
+export default function NavigationGuard({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       event.preventDefault();
@@ -15,4 +19,6 @@ export default function useNavigationGuard() {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, []);
+
+  return <>{children}</>;
 }

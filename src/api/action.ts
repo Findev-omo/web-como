@@ -23,6 +23,9 @@ export const getData = async (
       "Authorization": `Bearer ${token}`,
       "Content-Type": "application/json",
     },
+    next: {
+      revalidate: 60,
+    },
   });
   // console.log(endpoint);
   // console.log(response);
