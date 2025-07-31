@@ -6,32 +6,16 @@ import ApplicationDetailModal from "@/components/dashboard/company/employee/moda
 import EditEmployeeInfoModal from "@/components/dashboard/company/employee/modals/EditEmployeeInfoModal";
 import DeleteEmployeeModal from "@/components/dashboard/company/employee/modals/DeleteEmployeeModal";
 import DeleteReasonModal from "../modals/DeleteReasonModal";
-import { useEffect, useState } from "react";
-import { getData } from "@/api/action";
-import { startOfToday } from "date-fns";
-import { DateRange } from "@/components/dashboard/common/DateFilter";
+import type { Employee } from "@/api/types/company/employee";
 
 const tableHeadings = [
   "순번",
   "이름",
   "부서",
   "직급",
-  // "동호회명",
   "가입일",
   "회원 상태 수정",
 ];
-
-type EmployeeStatus = "pending" | "active" | "deleted";
-
-interface Employee {
-  memberId: string;
-  memberName: string;
-  department: string;
-  position: string;
-  clubName: string;
-  joinDate: string;
-  memberStatus: string;
-}
 
 interface EmployeeTableProps {
   employees: Employee[];
@@ -40,9 +24,8 @@ interface EmployeeTableProps {
 export default function EmployeeTable({ employees }: EmployeeTableProps) {
   const router = useRouter();
 
-  const handleRowClick = (memberId: string) => {
+  const handleRowClick = (memberId: number) => {
     router.push(`./employee/detail/${memberId}`);
-    // console.log("memberId", memberId);
   };
 
   return (
@@ -65,7 +48,7 @@ export default function EmployeeTable({ employees }: EmployeeTableProps) {
                 i === 2 ? "w-[19%]" : "",
                 i === 3 ? "w-[19%]" : "",
                 i === 4 ? "w-[19%]" : "",
-                i === 5 ? "w-[19%] pr-4" : "",
+                i === 5 ? "w-[19%] pr-4" : ""
               )}
             >
               {heading}
@@ -109,12 +92,8 @@ export default function EmployeeTable({ employees }: EmployeeTableProps) {
                   i === 5 ? "flex items-center justify-center" : ""
                 )}
               >
-                {i === 0 ? (
-                  idx + 1
-                ) : i === 4 ? (
-                  Array.isArray(data) ? 
-                    formatDate(new Date(data[0], data[1]-1, data[2])) : 
-                    formatDate(new Date(data))
+                {i === 4 ? (
+                  formatDate(new Date(data as string))
                 ) : i === 5 ? (
                   data === "Y" ? (
                     <div
@@ -123,14 +102,21 @@ export default function EmployeeTable({ employees }: EmployeeTableProps) {
                     >
                       <button
                         className="py-1 px-4 rounded body-1 font-medium text-gray-50 bg-gray-800"
-                        // onClick={() => openModal("employee-edit")}
-                        onClick={() => openModal("employee-edit", { memberId: employee.memberId })}
+                        onClick={() =>
+                          openModal("employee-edit", {
+                            memberId: employee.memberId,
+                          })
+                        }
                       >
                         {"수정"}
                       </button>
                       <button
                         className="py-1 px-4 rounded border border-gray-800 body-1 font-medium text-gray-800"
-                        onClick={() => openModal("delete-reason", { memberId: employee.memberId })}
+                        onClick={() =>
+                          openModal("delete-reason", {
+                            memberId: employee.memberId,
+                          })
+                        }
                       >
                         {"삭제"}
                       </button>

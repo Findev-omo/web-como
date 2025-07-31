@@ -1,11 +1,18 @@
-import "@/styles/globals.css";
 import type { Metadata } from "next";
-import Favicon from "../../public/favicon/favicon.ico";
-import Providers from "@/lib/providers";
-import { ToastContainer } from "@/components/common/ToastContainer";
+import dynamic from "next/dynamic";
+import RQProvider from "@/lib/providers";
+import "@/styles/globals.css";
+import Script from "next/script";
+
+const ToastContainer = dynamic(
+  () => import("react-hot-toast").then((c) => c.Toaster),
+  {
+    ssr: false,
+  }
+);
 
 export const metadata: Metadata = {
-  title: "오늘뭐해, omo",
+  title: "코모",
   description: "직장인들의 놀이터 omo",
 };
 
@@ -16,12 +23,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <link rel="icon" href={Favicon.src} type="image/x-icon" />
-      <Providers>
+      <RQProvider>
         <body className="min-h-screen font-suit antialiased bg-gray-50">
-          <ToastContainer>{children}</ToastContainer>
+          <ToastContainer />
+          {children}
+          <div id="modal-root" />
+          <Script
+            src={`https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID}&submodules=geocoder`}
+          />
         </body>
-      </Providers>
+      </RQProvider>
     </html>
   );
 }

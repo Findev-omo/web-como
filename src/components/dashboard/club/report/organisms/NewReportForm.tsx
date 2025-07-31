@@ -4,10 +4,16 @@ import { useState } from "react";
 import { openModal } from "@/lib/utils";
 import useNavigationGuard from "@/hooks/navigationGuard";
 import Button from "@/components/common/Button";
-import DatePicker from "@/components/common/DatePicker";
+import dynamic from "next/dynamic";
+import Skeleton from "@/components/common/Skeleton";
 import Input from "@/components/common/Input";
 import RadioButton from "@/components/common/RadioButton";
 import ImageInput from "@/components/common/ImageInput";
+
+const DatePicker = dynamic(() => import("@/components/common/DatePicker"), {
+  ssr: false,
+  loading: () => <Skeleton className="w-full h-[340px]" />,
+});
 
 export default function NewReportForm() {
   useNavigationGuard();
@@ -72,8 +78,8 @@ export default function NewReportForm() {
           name="image"
           label="활동 사진"
           caption="활동사진 첨부 필수사항입니다."
-		  currentImages={currentImages}
-		  setCurrentImages={setCurrentImages}
+          currentImages={currentImages}
+          setCurrentImages={setCurrentImages}
         />
         <Input
           name="note"
@@ -129,8 +135,8 @@ export default function NewReportForm() {
           name="expense-image"
           label="지출 증빙용 활동 사진 첨부"
           caption="활동사진 첨부 필수사항입니다."
-		  currentImages={currentImagesExpense}
-		  setCurrentImages={setCurrentImagesExpense}
+          currentImages={currentImagesExpense}
+          setCurrentImages={setCurrentImagesExpense}
         />
       </div>
       <div className="flex flex-col gap-6 p-8 rounded-xl bg-gray-0">

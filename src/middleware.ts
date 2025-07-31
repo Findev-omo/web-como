@@ -57,7 +57,12 @@ export function middleware(req: NextRequest) {
     }
   }
 
-  if (req.nextUrl.pathname.startsWith(LOGIN_ENDPOINT) && refreshToken) {
+  if (
+    req.nextUrl.pathname.startsWith(LOGIN_ENDPOINT) &&
+    !req.nextUrl.pathname.startsWith(LOGIN_ENDPOINT + "/club") &&
+    !req.nextUrl.pathname.startsWith(LOGIN_ENDPOINT + "/company") &&
+    refreshToken
+  ) {
     if (type?.value === "club" && clubId?.value) {
       return NextResponse.redirect(new URL(CLUB_DASHBOARD_ENDPOINT, req.url));
     } else if (type?.value === "company") {

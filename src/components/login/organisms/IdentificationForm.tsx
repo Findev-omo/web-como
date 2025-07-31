@@ -46,12 +46,12 @@ export default function IdentificationForm() {
 
   useEffect(() => {
     if (showModal) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     }
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     };
   }, [showModal]);
 
@@ -67,7 +67,7 @@ export default function IdentificationForm() {
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
   // 입력값 유효성 검사 함수
@@ -83,7 +83,7 @@ export default function IdentificationForm() {
       newErrors.email = "이메일 주소를 입력해주세요.";
       isValid = false;
       setErrors(newErrors);
-      return isValid;  // 이메일이 비어있으면 바로 리턴
+      return isValid; // 이메일이 비어있으면 바로 리턴
     }
 
     // 핸드폰 번호 체크
@@ -119,7 +119,7 @@ export default function IdentificationForm() {
     if (!validateForm()) {
       return;
     }
-    
+
     const response = await fetch(`/api/server/member/code`, {
       method: "POST",
       body: JSON.stringify({
@@ -160,7 +160,9 @@ export default function IdentificationForm() {
 
     // 타이머 만료 체크를 먼저 수행
     if (timeLeft <= 0) {
-      setVerificationError("인증 시간이 만료되었습니다. 인증번호를 다시 요청해주세요.");
+      setVerificationError(
+        "인증 시간이 만료되었습니다. 인증번호를 다시 요청해주세요."
+      );
       return;
     }
 
@@ -180,7 +182,7 @@ export default function IdentificationForm() {
     const verificationData: verificationDto = {
       email: formData.email,
       phoneNumber: formData.phone,
-      code: verificationCode
+      code: verificationCode,
     };
 
     const response = await fetch(`/api/server/member/validation`, {
@@ -204,20 +206,23 @@ export default function IdentificationForm() {
 
     if (response.ok) {
       // 인증 상태와 함께 이메일, 전화번호도 저장
-      sessionStorage.setItem('isVerified', 'true');
-      sessionStorage.setItem('verifiedEmail', formData.email);
-      sessionStorage.setItem('verifiedPhone', formData.phone);
+      sessionStorage.setItem("isVerified", "true");
+      sessionStorage.setItem("verifiedEmail", formData.email);
+      sessionStorage.setItem("verifiedPhone", formData.phone);
       // console.log("인증번호 인증 성공");
       replace("/login/reset");
     } else {
       refresh();
     }
-};
+  };
 
   return (
     <>
       <div className="p-8 rounded-4xl shadow bg-gray-0">
-        <form onSubmit={handleIdentify} className="space-y-[38px] w-[530px] py-6">
+        <form
+          onSubmit={handleIdentify}
+          className="space-y-[38px] w-[530px] py-6"
+        >
           <h2 className="h1 text-center font-bold text-gray-1000">
             {"본인확인"}
           </h2>
@@ -226,9 +231,9 @@ export default function IdentificationForm() {
             <Input name="company" type="text" placeholder="기업명" />
             <Input name="carrier" type="text" placeholder="통신사" /> */}
             <div>
-              <Input 
-                name="email" 
-                type="text" 
+              <Input
+                name="email"
+                type="text"
                 placeholder="아이디(이메일)"
                 currentValue={formData.email}
                 handleInputChange={(e) =>
@@ -239,15 +244,18 @@ export default function IdentificationForm() {
                 }
               />
               {errors.email && (
-                <p className="mt-2 text-[16px] font-[500]" style={{ color: "#FF3D00" }}>
+                <p
+                  className="mt-2 text-[16px] font-[500]"
+                  style={{ color: "#FF3D00" }}
+                >
                   {errors.email}
                 </p>
               )}
             </div>
             <div>
-              <Input 
-                name="phone" 
-                type="text" 
+              <Input
+                name="phone"
+                type="text"
                 placeholder="핸드폰 번호"
                 currentValue={formData.phone}
                 handleInputChange={(e) =>
@@ -258,14 +266,18 @@ export default function IdentificationForm() {
                 }
               />
               {errors.phone && (
-                <p className="mt-2 text-[16px] font-[500]" style={{ color: "#FF3D00" }}>
+                <p
+                  className="mt-2 text-[16px] font-[500]"
+                  style={{ color: "#FF3D00" }}
+                >
                   {errors.phone}
                 </p>
               )}
-                {/* 본인인증 에러 메시지를 전화번호 필드 아래에 표시 */}
-                {identificationError && (
+              {/* 본인인증 에러 메시지를 전화번호 필드 아래에 표시 */}
+              {identificationError && (
                 <p
-                  className="mt-2 text-[16px] font-[500]" style={{ color: "#FF3D00" }}
+                  className="mt-2 text-[16px] font-[500]"
+                  style={{ color: "#FF3D00" }}
                 >
                   {identificationError}
                 </p>
@@ -276,63 +288,84 @@ export default function IdentificationForm() {
         </form>
       </div>
 
-      {mounted && showModal && createPortal(
-        <div className="fixed inset-0 w-screen h-screen bg-black/50 z-[9999]">
-          <Backdrop modalId="identification-modal" handleClose={resetModalState} />
-          <div className="fixed inset-0 flex items-center justify-center z-[10000]">
-            <div className="relative w-[594px] p-[32px] rounded-4xl shadow bg-gray-0">
-              <div className="relative h-[88px] flex flex-col justify-center items-center border-b border-gray-100">
-                <div>
-                  <div className="relative flex items-center justify-between w-full">
-                    <h2 className="h1 text-center font-bold text-gray-1000 w-[450px]">
-                      {"인증번호 입력"}
-                    </h2>
-                    <button 
-                      onClick={resetModalState}
-                      className="flex items-center justify-center"
-                    >
-                      <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
-                        <path d="M24 12L12 24M12 12L24 24" stroke="#666666" strokeWidth="2" strokeLinecap="round"/>
-                      </svg>
-                    </button>
+      {mounted &&
+        showModal &&
+        createPortal(
+          <div className="fixed inset-0 w-screen h-screen bg-black/50 z-[9999]">
+            <Backdrop
+              modalId="identification-modal"
+              onClick={resetModalState}
+            />
+            <div className="fixed inset-0 flex items-center justify-center z-[10000]">
+              <div className="relative w-[594px] p-[32px] rounded-4xl shadow bg-gray-0">
+                <div className="relative h-[88px] flex flex-col justify-center items-center border-b border-gray-100">
+                  <div>
+                    <div className="relative flex items-center justify-between w-full">
+                      <h2 className="h1 text-center font-bold text-gray-1000 w-[450px]">
+                        {"인증번호 입력"}
+                      </h2>
+                      <button
+                        onClick={resetModalState}
+                        className="flex items-center justify-center"
+                      >
+                        <svg
+                          width="36"
+                          height="36"
+                          viewBox="0 0 36 36"
+                          fill="none"
+                        >
+                          <path
+                            d="M24 12L12 24M12 12L24 24"
+                            stroke="#666666"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-[16px] text-gray-600 mt-2">
+                    입력하신 전화번호로 인증번호가 전송되었습니다.
+                  </p>
+                </div>
+                <div className="space-y-[40px] mt-[32px]">
+                  <div>
+                    <div className="relative">
+                      <Input
+                        name="code"
+                        type="text"
+                        placeholder="인증번호를 입력해주세요."
+                        currentValue={verificationCode}
+                        handleInputChange={(e) =>
+                          setVerificationCode(e.target.value)
+                        }
+                      />
+                      <span className="absolute right-[16px] top-1/2 -translate-y-1/2 text-primary-500 text-[16px] font-medium">
+                        {formatTime(timeLeft)}
+                      </span>
+                    </div>
+                    {verificationError && (
+                      <p
+                        className="mt-2 text-[16px] font-[500]"
+                        style={{ color: "#FF3D00" }}
+                      >
+                        {verificationError}
+                      </p>
+                    )}
                   </div>
                 </div>
-                <p className="text-[16px] text-gray-600 mt-2">
-                  입력하신 전화번호로 인증번호가 전송되었습니다.
-                </p>
-              </div>
-              <div className="space-y-[40px] mt-[32px]">
-                <div>
-                  <div className="relative">
-                    <Input 
-                      name="code" 
-                      type="text" 
-                      placeholder="인증번호를 입력해주세요."
-                      currentValue={verificationCode}
-                      handleInputChange={(e) => setVerificationCode(e.target.value)}
-                    />
-                    <span className="absolute right-[16px] top-1/2 -translate-y-1/2 text-primary-500 text-[16px] font-medium">
-                      {formatTime(timeLeft)}
-                    </span>
-                  </div>
-                  {verificationError && (
-                    <p
-                      className="mt-2 text-[16px] font-[500]"
-                      style={{ color: "#FF3D00" }}
-                    >
-                      {verificationError}
-                    </p>
-                  )}
+                <div className="mt-[40px]">
+                  <Button
+                    onClick={handleVerification}
+                    content="인증하기"
+                    primary
+                  />
                 </div>
-              </div>
-              <div className="mt-[40px]">
-                <Button onClick={handleVerification} content="인증하기" primary />
               </div>
             </div>
-          </div>
-        </div>,
-        document.body
-      )}
+          </div>,
+          document.body
+        )}
     </>
   );
 }

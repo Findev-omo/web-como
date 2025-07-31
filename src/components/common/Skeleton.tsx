@@ -3,15 +3,17 @@ import { cn } from "@/lib/utils";
 interface Props {
   size?: string;
   big?: boolean;
+  className?: string;
 }
 
-export default function Skeleton({ size, big }: Props) {
+export default function Skeleton({ size, big, className }: Props) {
   return (
     <div
       className={cn(
         "bg-gray-1000/10 animate-pulse",
         size ? size : "w-[160px] h-[44px]",
-        big ? "rounded-lg" : "rounded"
+        big ? "rounded-lg" : "rounded",
+        className
       )}
     />
   );

@@ -1,11 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { DateRange } from "@/components/dashboard/common/DateFilter";
 import ReportList from "@/components/dashboard/company/club/organisms/ReportList";
 import { Activity } from "@/api/types/company/report";
-import { formatDate } from "@/lib/format";
+import { useCompanyReports } from "@/hooks/queries/useCompanyReports";
+import Skeleton from "@/components/common/Skeleton";
+import DateFilter from "@/components/dashboard/common/DateFilter";
+import Pagination from "@/components/dashboard/common/Pagination";
+import ReportTable from "@/components/dashboard/company/club/molecules/ReportTable";
 
 interface ReportClientViewProps {
   activities: Activity[];
@@ -15,45 +18,59 @@ interface ReportClientViewProps {
 }
 
 export default function ReportClientView({
-  activities,
-  currentPage,
-  maxPage,
+  activities: initialActivities,
+  currentPage: initialCurrentPage,
+  maxPage: initialMaxPage,
   initialDateRange,
 }: ReportClientViewProps) {
-  const router = useRouter();
+  const [currentPage, setCurrentPage] = useState(initialCurrentPage);
   const [currentDateRange, setCurrentDateRange] =
     useState<DateRange>(initialDateRange);
 
+  const {
+    data: reportsData,
+    isLoading,
+    isError,
+    error,
+  } = useCompanyReports(currentPage, currentDateRange, {
+    list: initialActivities,
+    maxPage: initialMaxPage,
+  });
+
   const handleDateRangeChange = (dateRange: DateRange) => {
+    setCurrentPage(1);
     setCurrentDateRange(dateRange);
-    if (dateRange.startDate && dateRange.endDate) {
-      const params = new URLSearchParams();
-      params.set("startDate", formatDate(dateRange.startDate));
-      params.set("endDate", formatDate(dateRange.endDate));
-      router.push(`?${params.toString()}`);
-    }
   };
 
   const handlePageChange = (page: number) => {
-    const params = new URLSearchParams();
-    if (currentDateRange.startDate) {
-      params.set("startDate", formatDate(currentDateRange.startDate));
-    }
-    if (currentDateRange.endDate) {
-      params.set("endDate", formatDate(currentDateRange.endDate));
-    }
-    params.set("page", page.toString());
-    router.push(`?${params.toString()}`);
+    setCurrentPage(page);
   };
 
+  const activities = reportsData?.list || [];
+  const maxPage = reportsData?.maxPage || 1;
+
   return (
-    <ReportList
-      activities={activities}
-      currentPage={currentPage}
-      maxPage={maxPage}
-      currentDateRange={currentDateRange}
-      handleDateRangeChange={handleDateRangeChange}
-      handlePageChange={handlePageChange}
-    />
+    <div className="space-y-4 p-8 rounded-2xl bg-gray-0">
+      <DateFilter
+        currentDateRange={currentDateRange}
+        handleDateRangeChange={handleDateRangeChange}
+      />
+      <div className="space-y-10">
+        {isLoading ? (
+          <Skeleton className="w-full h-96" />
+        ) : isError ? (
+          <div>Error: {error.message}</div>
+        ) : (
+          <>
+            <ReportTable activities={activities} />
+            <Pagination
+              currentPage={currentPage}
+              maxPage={maxPage}
+              handlePageChange={handlePageChange}
+            />
+          </>
+        )}
+      </div>
+    </div>
   );
 }
