@@ -1,15 +1,27 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { ko } from "date-fns/locale";
+import { cn, formatDate } from "@/lib/utils";
+import Button from "@/components/common/Button";
 import {
+  subMonths,
+  subWeeks,
+  subYears,
+  startOfToday,
+  startOfYesterday,
   addDays,
   addMonths,
   addYears,
   isSameDay,
-  startOfToday,
-  startOfYesterday,
 } from "date-fns";
-import { cn } from "@/lib/utils";
-import DatePicker from "@/components/common/DatePicker";
+import dynamic from "next/dynamic";
+import Skeleton from "@/components/common/Skeleton";
+
+const DatePicker = dynamic(() => import("@/components/common/DatePicker"), {
+  ssr: false,
+  loading: () => <Skeleton className="h-[38px]" />,
+});
 
 export interface DateRange {
   startDate: Date | undefined;

@@ -1,9 +1,23 @@
 import DashboardOverview from "@/components/dashboard/company/main/molecules/Overview";
-import PurchaseStats from "@/components/dashboard/company/main/organisms/PurchaseStats";
-import ClubStats from "@/components/dashboard/company/main/organisms/ClubStats";
-import ShopStats from "@/components/dashboard/company/main/organisms/ShopStats";
 import SpendingFigures from "@/components/dashboard/company/main/organisms/SpendingFigures";
 import Announcement from "@/components/dashboard/company/main/organisms/Announcement";
+import dynamic from "next/dynamic";
+import Skeleton from "@/components/common/Skeleton";
+
+const PurchaseStats = dynamic(
+  () => import("@/components/dashboard/company/main/organisms/PurchaseStats"),
+  { ssr: false, loading: () => <Skeleton className="w-full h-[540px]" /> }
+);
+
+const ClubStats = dynamic(
+  () => import("@/components/dashboard/company/main/organisms/ClubStats"),
+  { ssr: false, loading: () => <Skeleton className="w-full h-[540px]" /> }
+);
+
+const ShopStats = dynamic(
+  () => import("@/components/dashboard/company/main/organisms/ShopStats"),
+  { ssr: false, loading: () => <Skeleton className="w-full h-[548px]" /> }
+);
 
 export default function DashboardPage() {
   return (

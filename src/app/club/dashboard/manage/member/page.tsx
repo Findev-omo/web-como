@@ -1,7 +1,15 @@
 import MemberTitle from "@/components/dashboard/club/member/molecules/MemberTitle";
-import MemberSearch from "@/components/dashboard/club/member/organisms/MemberSearch";
-import MemberList from "@/components/dashboard/club/member/organisms/MemberList";
 import { getClubId } from "@/lib/cookies";
+import dynamic from "next/dynamic";
+import Skeleton from "@/components/common/Skeleton";
+
+const MemberList = dynamic(
+  () => import("@/components/dashboard/club/member/organisms/MemberList"),
+  {
+    ssr: false,
+    loading: () => <Skeleton className="h-[700px]" />,
+  }
+);
 
 export default async function ClubMemberPage() {
   const clubId = await getClubId();

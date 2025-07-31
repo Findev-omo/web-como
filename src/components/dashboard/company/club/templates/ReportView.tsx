@@ -1,37 +1,43 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import type { SearchValue } from "@/lib/types/search";
-import ReportSearch from "@/components/dashboard/company/club/molecules/ReportSearch";
-import ReportList from "@/components/dashboard/company/club/organisms/ReportList";
+import { useState } from "react";
+import Search from "@/components/dashboard/common/Search";
+import { SearchValue } from "@/lib/types/search";
+import ReportList from "../organisms/ReportList";
+import { DateRange } from "@/components/dashboard/common/DateFilter";
 
 export default function ReportView() {
   const [currentSearchValue, setCurrentSearchValue] = useState<SearchValue>({
-    term: "",
     filter: "all",
+    term: "",
   });
-  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [dateRange, setDateRange] = useState<DateRange>({
+    startDate: new Date(),
+    endDate: new Date(),
+  });
 
-  useEffect(() => {
-    console.log(currentSearchValue.filter);
-  }, [currentSearchValue.filter]);
-
-  const handleSearch = () => {
-    console.log(currentSearchValue.field, currentSearchValue.term);
-    setSearchTerm(currentSearchValue.term);
+  const handleSearch = (searchValue: SearchValue) => {
+    setCurrentSearchValue(searchValue);
   };
 
   return (
-    <>
-      {/* <ReportSearch
-        currentSearchValue={currentSearchValue}
-        setCurrentSearchValue={setCurrentSearchValue}
+    <div className="p-8 rounded-xl bg-gray-0 space-y-6">
+      <div className="flex justify-between">
+        <h2 className="h2 font-semibold text-gray-900">{"활동보고서 조회"}</h2>
+      </div>
+      {/* <Search
+        selectOptions={[{ value: "all", label: "전체" }]}
+        currentSearchFilter={currentSearchValue.filter!}
         handleSearch={handleSearch}
       /> */}
       <ReportList
-      // currentSearchFilter={currentSearchValue.filter!}
-      // currentSearchTerm={searchTerm}
+        activities={[]}
+        currentPage={1}
+        maxPage={1}
+        currentDateRange={dateRange}
+        handleDateRangeChange={setDateRange}
+        handlePageChange={() => {}}
       />
-    </>
+    </div>
   );
 }

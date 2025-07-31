@@ -1,8 +1,14 @@
 import { CustomLabel } from "@/components/common/CustomLabel";
-import DatePicker from "@/components/common/DatePicker";
+import dynamic from "next/dynamic";
+import Skeleton from "@/components/common/Skeleton";
 import { ScheduleRegisterSchemaType } from "@/lib/types/schema";
 import { useEffect, useMemo } from "react";
 import { useFormContext } from "react-hook-form";
+
+const DatePicker = dynamic(() => import("@/components/common/DatePicker"), {
+  ssr: false,
+  loading: () => <Skeleton className="w-full h-[340px]" />,
+});
 
 const ScheduleDetailPeriod = ({ type }: { type: string }) => {
   const { setValue, watch } = useFormContext<ScheduleRegisterSchemaType>();

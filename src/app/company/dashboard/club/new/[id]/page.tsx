@@ -5,18 +5,24 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { openModal } from "@/lib/utils";
 import BackButton from "@/components/dashboard/common/BackButton";
-import PDFViewer from "@/components/dashboard/club/common/PDFViewer";
+import dynamic from "next/dynamic";
+import Skeleton from "@/components/common/Skeleton";
 import RejectApplicationModal from "@/components/dashboard/company/club/modals/RejectApplicationModal";
 import RevertRejectionModal from "@/components/dashboard/company/club/modals/RevertRejectionModal";
 import { getData } from "@/api/action";
 import Image from "next/image";
 
+const PDFViewer = dynamic(
+  () => import("@/components/dashboard/club/common/PDFViewer"),
+  { ssr: false, loading: () => <Skeleton className="w-full h-[1080px]" /> }
+);
+
 export default function ApplicationDetailPage() {
+  const params = useParams();
+  const clubId = params.id as string;
   const [registrationData, setRegistrationData] = useState(null);
   const [loading, setLoading] = useState(true); // 로딩 상태 변수 추가
   const status = useSearchParams().get("status");
-  const params = useParams();
-  const clubId = params.id as string;
 
   const categoryMapping = {
     ART_CULTURE: "문화/예술",
@@ -112,7 +118,7 @@ export default function ApplicationDetailPage() {
             )
           )} */}
         </div>
-        {/* <PDFViewer file="../../../../../sample.pdf" /> */}
+        <PDFViewer file="../../../../../sample.pdf" />
 
         <div style={{ padding: "20px" }}>
           <div>
@@ -160,6 +166,9 @@ export default function ApplicationDetailPage() {
                         <Image
                           src={value}
                           alt={key}
+                          width={500}
+                          height={500}
+                          unoptimized
                           style={{
                             maxWidth: "50%",
                             height: "auto",
