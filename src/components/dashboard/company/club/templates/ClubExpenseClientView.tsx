@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Pagination from "@/components/dashboard/common/Pagination";
 import ExpenseTable from "@/components/dashboard/company/club/molecules/ExpenseTable";
 import DateFilter, {
@@ -9,6 +8,8 @@ import DateFilter, {
 } from "@/components/dashboard/common/DateFilter";
 import { ExpenseApplicationEntry } from "@/api/types/company/expense";
 import { formatDate } from "@/lib/format";
+import { useCompanyExpenses } from "@/hooks/queries/useCompanyExpenses";
+import Skeleton from "@/components/common/Skeleton";
 
 interface ClubExpenseClientViewProps {
   expenseList: ExpenseApplicationEntry[];
@@ -19,35 +20,32 @@ interface ClubExpenseClientViewProps {
 
 export default function ClubExpenseClientView({
   expenseList,
-  currentPage,
-  maxPage,
+  currentPage: initialCurrentPage,
+  maxPage: initialMaxPage,
   initialDateRange,
 }: ClubExpenseClientViewProps) {
-  const router = useRouter();
+  const [currentPage, setCurrentPage] = useState(initialCurrentPage);
   const [currentDateRange, setCurrentDateRange] =
     useState<DateRange>(initialDateRange);
   const today = new Date();
 
+  const {
+    data: expenseData,
+    isLoading,
+    isError,
+    error,
+  } = useCompanyExpenses(currentPage, currentDateRange, {
+    list: expenseList,
+    maxPage: initialMaxPage,
+  });
+
   const handleDateRangeChange = (dateRange: DateRange) => {
+    setCurrentPage(1);
     setCurrentDateRange(dateRange);
-    if (dateRange.startDate && dateRange.endDate) {
-      const params = new URLSearchParams();
-      params.set("startDate", formatDate(dateRange.startDate));
-      params.set("endDate", formatDate(dateRange.endDate));
-      router.push(`?${params.toString()}`);
-    }
   };
 
   const handlePageChange = (page: number) => {
-    const params = new URLSearchParams();
-    if (currentDateRange.startDate) {
-      params.set("startDate", formatDate(currentDateRange.startDate));
-    }
-    if (currentDateRange.endDate) {
-      params.set("endDate", formatDate(currentDateRange.endDate));
-    }
-    params.set("page", page.toString());
-    router.push(`?${params.toString()}`);
+    setCurrentPage(page);
   };
 
   return (
@@ -64,19 +62,27 @@ export default function ClubExpenseClientView({
           handleDateRangeChange={handleDateRangeChange}
         />
         <div className="space-y-10">
-          <ExpenseTable
-            expenseList={expenseList}
-            currentPage={currentPage}
-            startDate={formatDate(
-              currentDateRange.startDate || new Date("2025-01-01")
-            )}
-            endDate={formatDate(currentDateRange.endDate || today)}
-          />
-          <Pagination
-            currentPage={currentPage}
-            maxPage={maxPage}
-            handlePageChange={handlePageChange}
-          />
+          {isLoading ? (
+            <Skeleton className="w-full h-96" />
+          ) : isError ? (
+            <div>Error: {error.message}</div>
+          ) : (
+            <>
+              <ExpenseTable
+                expenseList={expenseData?.list || []}
+                currentPage={currentPage}
+                startDate={formatDate(
+                  currentDateRange.startDate || new Date("2025-01-01")
+                )}
+                endDate={formatDate(currentDateRange.endDate || today)}
+              />
+              <Pagination
+                currentPage={currentPage}
+                maxPage={expenseData?.maxPage || 1}
+                handlePageChange={handlePageChange}
+              />
+            </>
+          )}
         </div>
       </div>
     </div>

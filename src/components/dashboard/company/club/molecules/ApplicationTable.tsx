@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { getData } from "@/api/action";
 import { getAccessToken } from "@/lib/cookies";
 import ApprovalButton from "@/components/dashboard/shared/molecules/ApprovalButton";
-import { useToast } from "@/components/common/ToastContainer";
+import toast from "react-hot-toast";
 
 type ApplicationStatus = "new" | "active" | "reject" | "revert" | "leave";
 
@@ -40,7 +40,7 @@ export default function ApplicationTable({
 }: ApplicationTableProps) {
   const pathname = usePathname();
   const { push } = useRouter();
-  const { showToast } = useToast();
+  // const { showToast } = useToast(); // Removed as per edit hint
 
   console.log("applications", applications);
 
@@ -110,12 +110,18 @@ export default function ApplicationTable({
       const data = await response.json();
       if (data.resultCode === "OK") {
         // alert("신청이 성공적으로 승인되었습니다."); // 알림 추가
-        showToast("신청이 성공적으로 승인되었습니다.", "success");
+        toast.success("신청이 성공적으로 승인되었습니다.");
         window.location.reload(); // 페이지 새로고침
       }
     } catch (error) {
       console.error("동호회 승인 처리 오류:", error);
     }
+  };
+
+  const handleRevert = () => {
+    // TODO: api 연동
+    toast.success("반려 철회되었습니다.");
+    // showToast("반려 철회되었습니다.", "success");
   };
 
   return (

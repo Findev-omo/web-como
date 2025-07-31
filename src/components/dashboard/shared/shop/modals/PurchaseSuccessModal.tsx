@@ -13,7 +13,7 @@ export default function PurchaseSuccessModal() {
   return (
     <div id="purchase-success" className="modal hidden">
       <Backdrop
-        handleClose={() => replace(`${CLUB_DASHBOARD_ENDPOINT}/reservation`)}
+        onClick={() => replace(`${CLUB_DASHBOARD_ENDPOINT}/reservation`)}
       />
       <div className="fixed bottom-1/2 right-1/2 translate-y-1/2 translate-x-1/2 z-50 space-y-9 w-full max-w-lg py-7 px-8 rounded-xl bg-gray-0">
         <h1 className="text-center font-bold text-gray-900">

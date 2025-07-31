@@ -1,11 +1,12 @@
 "use client";
 
 import { Edit } from "@/assets/icons/util";
-import { useToast } from "@/components/common/ToastContainer";
 import { getAccessToken, getClubId } from "@/lib/cookies";
 import Image from "next/image";
 import { ChangeEvent, useEffect, useState } from "react";
 import { FieldValues, Path, PathValue, useFormContext } from "react-hook-form";
+import { HiOutlinePhoto } from "react-icons/hi2";
+import toast from "react-hot-toast";
 
 type Props<T extends FieldValues> = {
   name: Path<T>;
@@ -22,7 +23,6 @@ export default function ClubIndexImageSection<T extends FieldValues>({
   const [previewImage, setPreviewImage] = useState<string>(clubImage);
   const [clubId, setClubId] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
-  const { showToast } = useToast();
 
   console.log("3. ClubIndexImageSection 실행됨");
 
@@ -58,7 +58,7 @@ export default function ClubIndexImageSection<T extends FieldValues>({
     console.log("file", file);
     if (!file) {
       // alert("이미지를 선택해주세요.");
-      showToast("이미지를 선택해주세요.", "error");
+      toast.error("이미지를 선택해주세요.");
       return;
     }
 
@@ -84,16 +84,24 @@ export default function ClubIndexImageSection<T extends FieldValues>({
       if (result.resultCode === "OK") {
         // console.log("이미지가 성공적으로 저장되었습니다.");
         // alert("이미지가 성공적으로 저장되었습니다.");
-        showToast("이미지가 성공적으로 저장되었습니다.", "success");
+        toast.success("이미지가 성공적으로 저장되었습니다.");
         window.location.reload(); // 페이지 새로 고침
       } else {
         // console.log("이미지 저장에 실패했습니다.");
         // alert("이미지 저장에 실패했습니다.");
-        showToast("이미지 저장에 실패했습니다.", "error");
+        toast.error("이미지 저장에 실패했습니다.");
       }
     } catch (error) {
       console.error("이미지 저장 실패:", error);
     }
+  };
+
+  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    const file = e.target.files[0];
+    console.log(file);
+    // TODO: api 연동
+    toast.success("이미지가 업로드되었습니다.");
   };
 
   return (
@@ -116,10 +124,13 @@ export default function ClubIndexImageSection<T extends FieldValues>({
           />
           {(previewImage || clubImage) &&
             (previewImage ? (
-              <img
+              <Image
                 src={previewImage}
                 alt="미리보기 이미지"
-                className="rounded-lg w-full h-full object-cover"
+                layout="fill"
+                objectFit="cover"
+                className="rounded-lg"
+                unoptimized
               />
             ) : (
               <Image
