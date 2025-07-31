@@ -124,10 +124,13 @@ export default function ClubIndexImageSection<T extends FieldValues>({
           />
           {(previewImage || clubImage) &&
             (previewImage ? (
-              <img
+              <Image
                 src={previewImage}
                 alt="미리보기 이미지"
-                className="rounded-lg w-full h-full object-cover"
+                layout="fill"
+                objectFit="cover"
+                className="rounded-lg"
+                unoptimized
               />
             ) : (
               <Image

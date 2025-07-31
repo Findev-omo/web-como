@@ -34,7 +34,6 @@ function AnnouncementTable({ currentPage }: { currentPage: number }) {
 
   const itemsPerPage = 10; // 페이지당 항목 수
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const fetchNotices = async () => {
       const result = await getNotices(currentPage, "");
@@ -44,7 +43,7 @@ function AnnouncementTable({ currentPage }: { currentPage: number }) {
       setIsLoading(false);
     };
     fetchNotices();
-  }, []);
+  }, [currentPage]);
 
   const formatDate = (dateArray: number[]) => {
     const [year, month, day, hour, minute, second] = dateArray;
