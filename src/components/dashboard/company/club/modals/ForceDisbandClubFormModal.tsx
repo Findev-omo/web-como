@@ -8,7 +8,7 @@ import Input from "@/components/common/Input";
 import InputTracer from "@/components/common/InputTracer";
 import Checkbox from "@/components/common/Checkbox";
 import { ChevronDown } from "@/assets/icons/chevron";
-import toast from "react-hot-toast";
+import { useToast } from "@/components/common/ToastContainer";
 
 const DEFAULT_TEXT = "해체 신청에 동의합니다";
 
@@ -26,6 +26,7 @@ export default function ForceDisbandClubFormModal() {
     correct: string;
   }>(initialInputValues);
 
+  const { showToast } = useToast();
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInputValues((prev) => {
@@ -59,8 +60,9 @@ export default function ForceDisbandClubFormModal() {
     // alert(
     //   "해체 신청을 완료 하였습니다. 담당 주무부서팀에게 정보가 전달됩니다."
     // );
-    toast.success(
-      "해체 신청을 완료 하였습니다. 담당 주무부서팀에게 정보가 전달됩니다."
+    showToast(
+      "해체 신청을 완료 하였습니다. 담당 주무부서팀에게 정보가 전달됩니다.",
+      "success"
     );
   };
 

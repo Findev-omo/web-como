@@ -1,43 +1,37 @@
 "use client";
 
-import { useState } from "react";
-import Search from "@/components/dashboard/common/Search";
-import { SearchValue } from "@/lib/types/search";
-import ReportList from "../organisms/ReportList";
-import { DateRange } from "@/components/dashboard/common/DateFilter";
+import { useEffect, useState } from "react";
+import type { SearchValue } from "@/lib/types/search";
+import ReportSearch from "@/components/dashboard/company/club/molecules/ReportSearch";
+import ReportList from "@/components/dashboard/company/club/organisms/ReportList";
 
 export default function ReportView() {
   const [currentSearchValue, setCurrentSearchValue] = useState<SearchValue>({
-    filter: "all",
     term: "",
+    filter: "all",
   });
-  const [dateRange, setDateRange] = useState<DateRange>({
-    startDate: new Date(),
-    endDate: new Date(),
-  });
+  const [searchTerm, setSearchTerm] = useState<string>("");
 
-  const handleSearch = (searchValue: SearchValue) => {
-    setCurrentSearchValue(searchValue);
+  useEffect(() => {
+    console.log(currentSearchValue.filter);
+  }, [currentSearchValue.filter]);
+
+  const handleSearch = () => {
+    console.log(currentSearchValue.field, currentSearchValue.term);
+    setSearchTerm(currentSearchValue.term);
   };
 
   return (
-    <div className="p-8 rounded-xl bg-gray-0 space-y-6">
-      <div className="flex justify-between">
-        <h2 className="h2 font-semibold text-gray-900">{"활동보고서 조회"}</h2>
-      </div>
-      {/* <Search
-        selectOptions={[{ value: "all", label: "전체" }]}
-        currentSearchFilter={currentSearchValue.filter!}
+    <>
+      {/* <ReportSearch
+        currentSearchValue={currentSearchValue}
+        setCurrentSearchValue={setCurrentSearchValue}
         handleSearch={handleSearch}
       /> */}
       <ReportList
-        activities={[]}
-        currentPage={1}
-        maxPage={1}
-        currentDateRange={dateRange}
-        handleDateRangeChange={setDateRange}
-        handlePageChange={() => {}}
+      // currentSearchFilter={currentSearchValue.filter!}
+      // currentSearchTerm={searchTerm}
       />
-    </div>
+    </>
   );
 }

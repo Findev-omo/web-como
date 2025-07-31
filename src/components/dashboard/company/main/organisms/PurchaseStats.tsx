@@ -15,7 +15,7 @@ export default function PurchaseStats() {
           {/* {"11% 증가"} */}
         </div>
       </div>
-      <PurchaseStatsLineChart />
+      {/* <PurchaseStatsLineChart /> */}
     </div>
   );
 }

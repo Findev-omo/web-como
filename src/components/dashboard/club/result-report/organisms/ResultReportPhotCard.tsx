@@ -5,7 +5,6 @@ import { CustomLabel } from "@/components/common/CustomLabel";
 import { useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { ResultReportSchemaType } from "@/lib/types/schema";
-import Image from "next/image";
 
 const ResultReportPhotCard = () => {
   const {
@@ -78,13 +77,10 @@ const ResultReportPhotCard = () => {
               key={idx}
               className="relative w-full aspect-square max-w-full max-h-[558px]"
             >
-              <Image
+              <img
                 src={URL.createObjectURL(file)}
                 alt={`업로드 미리보기 ${idx + 1}`}
-                layout="fill"
-                objectFit="cover"
                 className="w-full h-full object-cover rounded"
-                unoptimized
               />
               <button
                 type="button"

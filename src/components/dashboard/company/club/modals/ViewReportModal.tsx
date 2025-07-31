@@ -1,16 +1,5 @@
-"use client";
-
 import Backdrop from "@/components/common/Backdrop";
-import dynamic from "next/dynamic";
-import Skeleton from "@/components/common/Skeleton";
-
-const PDFViewer = dynamic(
-  () => import("@/components/dashboard/club/common/PDFViewer"),
-  {
-    ssr: false,
-    loading: () => <Skeleton className="w-full h-[700px]" />,
-  }
-);
+import PDFViewer from "@/components/dashboard/club/common/PDFViewer";
 
 export default function ViewReportModal() {
   return (

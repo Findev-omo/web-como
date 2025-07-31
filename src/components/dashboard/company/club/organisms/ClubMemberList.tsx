@@ -10,6 +10,7 @@ import DocUtilButtons, {
 import ClubMemberTable from "@/components/dashboard/company/club/molecules/ClubMemberTable";
 import Pagination from "@/components/dashboard/common/Pagination";
 import { getData } from "@/api/action";
+import * as XLSX from "xlsx";
 import { useQuery } from "@tanstack/react-query";
 import { Copy, Document, Edit, Print } from "@/assets/icons/util";
 
@@ -119,7 +120,6 @@ export default function ClubMemberList({ clubId }: Props) {
   });
 
   const handleExcelDownload = async () => {
-    const XLSX = await import("xlsx");
     try {
       const { data } = await getExcelData(); // react-query에서 엑셀 데이터 가져오기
       if (data) {

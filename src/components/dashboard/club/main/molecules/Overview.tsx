@@ -4,8 +4,7 @@ import Link from "next/link";
 import { getData } from "@/api/action";
 import type { NotificationData } from "@/api/types/club/notification";
 import { LOGIN_ENDPOINT, CLUB_DASHBOARD_ENDPOINT } from "@/lib/constants";
-import { useEffect, useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 // 개발 중간에 엔드 포인트가 변경되어 getData 사용 시 모든 참조를 찾아서 일일이 수정해야 합니다. 권장 x...
 // const getClubJoinRequest = async () => {
@@ -34,7 +33,7 @@ export default function DashboardOverview() {
 
   const [dashboardNotifications, setDashboardNotifications] =
     useState<NotificationData>();
-  const getDashboardNotifications = useCallback(async () => {
+  const getDashboardNotifications = async () => {
     try {
       const response = await getData(
         "v1/executive/club/{clubId}/dashboard/notifications",
@@ -43,78 +42,65 @@ export default function DashboardOverview() {
 
       if (response.resultCode === "OK") {
         setDashboardNotifications(response.data);
+        console.log("dashboardNotifications", dashboardNotifications);
       }
     } catch (error) {
       console.error("알림 카드 목록 조회 에러:", error);
     }
-  }, [setDashboardNotifications]);
+  };
 
   useEffect(() => {
     getDashboardNotifications();
-  }, [getDashboardNotifications]);
-
-  const router = useRouter();
-
-  const handleCardClick = useCallback(
-    (type: keyof NotificationData) => {
-      let path = "";
-      switch (type) {
-        case "newJoinRequests":
-          path = "/manage?tab=member";
-          break;
-        case "recentManagerNotices":
-          path = "/announcement/document";
-          break;
-        case "recentOmoNotices":
-          path = "/announcement/document"; // OMO 공지사항 경로 확인 필요
-          break;
-        default:
-          path = "/";
-      }
-      router.push(CLUB_DASHBOARD_ENDPOINT + path);
-    },
-    [router]
-  );
+  }, []);
 
   return (
     <div className="col-span-4 flex flex-col gap-6 h-fit p-8 rounded-xl bg-gray-800 select-none">
       <h3 className="h1 font-bold text-gray-0">{`${dashboardNotifications?.clubName || "동호회"} 주요 알림`}</h3>
-      <div className="grid grid-cols-3 gap-y-6">
-        <div
-          className="flex flex-col gap-3 cursor-pointer"
-          onClick={() => handleCardClick("newJoinRequests")}
-        >
-          <p className="h4 font-medium text-gray-500">{"가입 신청"}</p>
-          <p className="h1 font-extrabold text-brand-orange">
-            {`${dashboardNotifications?.newJoinRequests || 0}명`}
-          </p>
-        </div>
-        <div
-          className="flex flex-col gap-3 cursor-pointer"
-          onClick={() => handleCardClick("recentManagerNotices")}
-        >
-          <p className="h4 font-medium text-gray-500">{"주무부서 공지사항"}</p>
-          <p className="h1 font-extrabold text-gray-800">
-            {`${dashboardNotifications?.recentManagerNotices || 0}건`}
-          </p>
-        </div>
-        <div
-          className="flex flex-col gap-3 cursor-pointer"
-          onClick={() => handleCardClick("recentOmoNotices")}
-        >
-          <p className="h4 font-medium text-gray-500">{"최근 OMO 공지사항"}</p>
-          <p className="h1 font-extrabold text-gray-800">
-            {`${dashboardNotifications?.recentOmoNotices || 0}건`}
-          </p>
-        </div>
-        <Link
-          href={`${CLUB_DASHBOARD_ENDPOINT}/faq`}
-          className="col-span-3 pt-6 border-t border-gray-200"
-        >
-          <span className="h4 font-medium text-gray-500">
-            {"도움이 필요하신가요?"}
+      <div className="flex gap-8 truncate">
+        <div className="flex-1 flex flex-col gap-4 py-3 px-2">
+          <span className="h4 font-medium text-gray-400">
+            {"이번 주 가입 회원"}
           </span>
-        </Link>
+          <Link href={`${CLUB_DASHBOARD_ENDPOINT}/manage/member?filter=new`}>
+            <span className="h1 font-extrabold text-brand-orange underline underline-offset-4 decoration-gray-800 hover:decoration-brand-orange transition duration-300">
+              {`${dashboardNotifications?.newJoinRequests || 0}명`}
+            </span>
+          </Link>
+        </div>
+        {/* 아래 주석은 피그마에는 있으나 삭제된 부분 */}
+        {/* <span className="h-[104px] border-l border-gray-700" />
+        <div className="flex-1 flex flex-col gap-4 py-3 px-2">
+          <span className="h4 font-medium text-gray-400">
+            {"동호회 문의 접수"}
+          </span>
+          <Link href={`${CLUB_DASHBOARD_ENDPOINT}/manage?tab=qna`}>
+            <span className="h1 font-extrabold text-gray-0 underline underline-offset-4 decoration-gray-800 hover:decoration-gray-0 transition duration-300">
+              {`${data.newClubInquiry || 0}건`}
+            </span>
+          </Link>
+        </div> */}
+        <span className="h-[104px] border-l border-gray-700" />
+        <div className="flex-1 flex flex-col gap-4 py-3 px-2">
+          <span className="h4 font-medium text-gray-400">
+            {"읽지 않은 인사 공지사항"}
+          </span>
+          <Link href={`${CLUB_DASHBOARD_ENDPOINT}/announcement?filter=company`}>
+            <span className="h1 font-extrabold text-gray-0 underline underline-offset-4 decoration-gray-800 hover:decoration-gray-0 transition duration-300">
+              {`${dashboardNotifications?.recentManagerNotices || 0}건`}
+            </span>
+          </Link>
+        </div>
+        <span className="h-[104px] border-l border-gray-700" />
+        <div className="flex-1 flex flex-col gap-4 py-3 px-2">
+          <span className="h4 font-medium text-gray-400">
+            {"읽지 않은 omo 공지사항"}
+          </span>
+          <Link href={`${CLUB_DASHBOARD_ENDPOINT}/announcement?filter=omo`}>
+            <span className="h1 font-extrabold text-gray-0 underline underline-offset-4 decoration-gray-800 hover:decoration-gray-0 transition duration-300">
+              {`${dashboardNotifications?.recentOmoNotices || 0}건`}
+            </span>
+          </Link>
+        </div>
       </div>
     </div>
   );

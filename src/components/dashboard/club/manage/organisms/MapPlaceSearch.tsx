@@ -116,7 +116,7 @@ export default function MapPlaceSearch({
         setSearchTerm(selectedPlace.roadAddress);
       }
     }
-  }, [selectedPlace, handleChange]);
+  }, [selectedPlace]);
 
   const handleSearchResultClick = (item: {
     roadAddress: string;

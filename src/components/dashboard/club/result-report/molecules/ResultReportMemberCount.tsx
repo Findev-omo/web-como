@@ -9,8 +9,8 @@ const ResultReportMemberCount = () => {
   const [memberCount, setMemberCount] = useState<number>(0);
   const {
     setValue,
+    watch,
     formState: { errors },
-    getValues,
   } = useFormContext<ResultReportSchemaType>();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -41,10 +41,25 @@ const ResultReportMemberCount = () => {
 
   useEffect(() => {
     setValue("data.participantCount", memberCount, { shouldValidate: true });
-  }, [memberCount, setValue]);
+  }, [memberCount]);
 
   // 에러 메시지 가져오기
-  const errorMessage = errors.data?.participantCount?.message;
+  const getErrorMessage = () => {
+    const nameParts = "data.participantCount".split(".");
+    let currentErrors: any = errors;
+
+    for (const part of nameParts) {
+      if (currentErrors && currentErrors[part]) {
+        currentErrors = currentErrors[part];
+      } else {
+        return undefined;
+      }
+    }
+
+    return currentErrors?.message?.toString();
+  };
+
+  const errorMessage = getErrorMessage();
 
   return (
     <div className="flex flex-col gap-3">

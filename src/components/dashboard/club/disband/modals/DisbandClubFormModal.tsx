@@ -1,18 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { useForm, type SubmitHandler } from "react-hook-form";
-import { closeModal } from "@/lib/utils";
-import Checkbox from "@/components/common/Checkbox";
-import { ChevronDown } from "@/assets/icons/chevron";
-import toast from "react-hot-toast";
-import Backdrop from "@/components/common/Backdrop";
-import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { closeModal, cn } from "@/lib/utils";
 import { CLUB_DASHBOARD_ENDPOINT } from "@/lib/constants";
+import Backdrop from "@/components/common/Backdrop";
+import Button from "@/components/common/Button";
 import Input from "@/components/common/Input";
 import InputTracer from "@/components/common/InputTracer";
-import Button from "@/components/common/Button";
+import Checkbox from "@/components/common/Checkbox";
+import { ChevronDown } from "@/assets/icons/chevron";
+import { useToast } from "@/components/common/ToastContainer";
 
 const DEFAULT_TEXT = "해체 신청에 동의합니다";
 
@@ -29,6 +27,7 @@ export default function DisbandClubFormModal() {
     current: string;
     correct: string;
   }>(initialInputValues);
+  const { showToast } = useToast();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -55,7 +54,7 @@ export default function DisbandClubFormModal() {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    closeModal("disband-club-2");
+    closeModal();
 
     setInputValues(initialInputValues);
     setIsAgree({ sentence: false, check: false });
@@ -63,14 +62,15 @@ export default function DisbandClubFormModal() {
     // alert(
     //   "해체 신청을 완료 하였습니다. 담당 주무부서팀에게 정보가 전달됩니다."
     // );
-    toast.success(
-      "해체 신청을 완료 하였습니다. 담당 주무부서팀에게 정보가 전달됩니다."
+    showToast(
+      "해체 신청을 완료 하였습니다. 담당 주무부서팀에게 정보가 전달됩니다.",
+      "success"
     );
   };
 
   return (
     <div id="disband-club-2" className="hidden modal">
-      <Backdrop modalId="disband-club-2" />
+      <Backdrop />
       <form
         className="fixed bottom-1/2 right-1/2 translate-y-1/2 translate-x-1/2 z-40 space-y-8 w-full max-w-[594px] p-8 rounded-xl bg-gray-0 shadow"
         onSubmit={handleSubmit}
@@ -94,7 +94,7 @@ export default function DisbandClubFormModal() {
           {showInfo && (
             <p className="mt-2 h4 font-normal text-gray-800">
               {`해체신청 시 담당 주무부서팀에게 정보가 전달됩니다.\n동호회 해체를 원하시면 밑에 동의 체크를 눌러주세요.\n남아있는 동호회비가 있다면 `}
-              <Link href={`${CLUB_DASHBOARD_ENDPOINT}/expense`}>
+              <Link href={`${CLUB_DASHBOARD_ENDPOINT}/expanse`}>
                 <span className="font-bold text-brand-orange">
                   {"‘활동비 관리’"}
                 </span>
@@ -109,7 +109,7 @@ export default function DisbandClubFormModal() {
             label="해체 사유"
             placeholder="해체 사유를 작성해 주세요"
             currentValue={inputValues.reason}
-            handleInputChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            handleInputChange={(e) =>
               setInputValues((prev) => {
                 return { ...prev, reason: e.target.value };
               })
@@ -133,7 +133,7 @@ export default function DisbandClubFormModal() {
               name="check"
               content="동호회 해체 신청에 동의합니다"
               checked={isAgree.check}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              onChange={(e) =>
                 setIsAgree((prev) => {
                   return { ...prev, check: e.target.checked };
                 })

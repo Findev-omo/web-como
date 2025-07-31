@@ -7,8 +7,7 @@ import Backdrop from "@/components/common/Backdrop";
 import Button from "@/components/common/Button";
 import Chip from "@/components/common/Chip";
 import Counter from "@/components/common/Counter";
-import dynamic from "next/dynamic";
-import Skeleton from "@/components/common/Skeleton";
+import DatePicker from "@/components/common/DatePicker";
 import DropdownSelect from "@/components/common/DropdownSelect";
 import Input from "@/components/common/Input";
 import ClubProfileInfo from "@/components/dashboard/club/common/ClubProfileInfo";
@@ -17,11 +16,6 @@ import DateDropdownSelect from "@/components/dashboard/club/calendar/atoms/DateD
 import { Close } from "@/assets/icons/action";
 import { Calendar } from "@/assets/icons/info";
 import { People } from "@/assets/icons/info";
-
-const DatePicker = dynamic(() => import("@/components/common/DatePicker"), {
-  ssr: false,
-  loading: () => <Skeleton className="w-full h-[340px]" />,
-});
 
 const image = null;
 const MIN_PEOPLE = 1;

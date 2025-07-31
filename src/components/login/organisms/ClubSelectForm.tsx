@@ -15,9 +15,9 @@ export default function ClubSelectForm() {
 
   const [clubOptions, setClubOptions] = useState<LoginClubDTO[]>();
   const [selectedClub, setSelectedClub] = useState<LoginClubDTO>();
-
+  
   let alertShown = false;
-
+  
   const getClubOptions = async () => {
     const token = await getAccessToken();
 
@@ -29,13 +29,13 @@ export default function ClubSelectForm() {
           "Content-Type": "application/json",
         },
       });
-
+      
       // API 응답 확인을 위한 콘솔 로그
       // console.log("API 응답 상태:", response.status);
 
       if (response.status === 400 && !alertShown) {
         alertShown = true;
-        alert("인증이 필요한 서비스입니다. 다시 로그인해 주세요.");
+        alert('인증이 필요한 서비스입니다. 다시 로그인해 주세요.');
         window.location.replace(LOGIN_ENDPOINT);
       }
 
@@ -55,7 +55,7 @@ export default function ClubSelectForm() {
       setClubOptions(clubList);
       // setSelectedClub(clubList[0]);
     } catch (error) {
-      console.error("관리 중인 동호회 목록 조회 에러:", error);
+      console.error('관리 중인 동호회 목록 조회 에러:', error);
     }
   };
 
@@ -73,8 +73,7 @@ export default function ClubSelectForm() {
   //   }
   // }, [selectedClub]);
 
-  if (!clubOptions) {
-    // 초기 로딩 상태
+  if (!clubOptions) {  // 초기 로딩 상태
     return null;
   }
 
@@ -105,7 +104,10 @@ export default function ClubSelectForm() {
     await saveClubName(selectedClub.clubName);
     // console.log('클럽 이름 저장 완료:', selectedClub.clubName);
 
-    router.push(CLUB_DASHBOARD_ENDPOINT);
+    // 🚀 100ms 지연 후 refresh() 실행하여 쿠키 반영 대기
+    setTimeout(() => {
+      router.push(CLUB_DASHBOARD_ENDPOINT);
+    }, 100);
   };
 
   return (

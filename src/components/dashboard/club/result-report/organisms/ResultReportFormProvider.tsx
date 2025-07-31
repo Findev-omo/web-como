@@ -1,24 +1,17 @@
 "use client";
 
-import {
-  useForm,
-  FormProvider,
-  type SubmitHandler,
-  type FieldValues,
-  type FieldErrors,
-} from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import toast from "react-hot-toast";
-import { useAutoSave } from "@/hooks/useAutoSave";
-import { AutoSaveRestoreAlert } from "../molecules/AutoSaveRestoreAlert";
-import { ResultReportSchema, ResultReportSchemaType } from "@/lib/types/schema";
-import { getAccessToken, getClubId } from "@/lib/cookies";
-import { useRouter } from "next/navigation";
-import { useEffect, useState, useCallback } from "react";
+import { FieldErrors, FormProvider, useForm } from "react-hook-form";
 import ResultReportAccountsForm from "./ResultReportAccounts";
 import ResultReportForm from "./ResultReportForm";
 import ResultReportSubmitCard from "./ResultReportSubmitCard";
+import { ResultReportSchema, ResultReportSchemaType } from "@/lib/types/schema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { getAccessToken, getClubId } from "@/lib/cookies";
+import { useRouter } from "next/navigation";
+import { useEffect, useState, useCallback } from "react";
+import { useToast } from "@/components/common/ToastContainer";
+import { useAutoSave } from "@/hooks/useAutoSave";
+import { AutoSaveRestoreAlert } from "../molecules/AutoSaveRestoreAlert";
 
 function formatDateToString(date: Date | string) {
   if (typeof date === "string") return date;
@@ -29,6 +22,7 @@ function formatDateToString(date: Date | string) {
 const ResultReportFormProvider = () => {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { showToast } = useToast();
 
   const methods = useForm<ResultReportSchemaType>({
     resolver: zodResolver(ResultReportSchema),
@@ -136,17 +130,17 @@ const ResultReportFormProvider = () => {
           throw new Error("활동 보고서 작성에 실패했습니다.");
         }
         await clearSavedData();
-        toast.success("활동 보고서 작성에 성공했습니다.");
+        showToast("활동 보고서 작성에 성공했습니다.", "success");
 
         methods.reset();
         router.back();
       } catch (error) {
-        toast.error("활동 보고서 작성에 실패했습니다.");
+        showToast("활동 보고서 작성에 실패했습니다.", "error");
       } finally {
         setIsSubmitting(false);
       }
     },
-    [isSubmitting, router, methods, clearSavedData]
+    [isSubmitting, router, methods, clearSavedData, showToast]
   );
 
   const onSubmit = async (data: ResultReportSchemaType) => {
