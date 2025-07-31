@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getData } from "@/api/action";
 import type { MemberListData } from "@/api/types/club/member";
@@ -14,6 +14,7 @@ import { SearchValue } from "@/lib/types/search";
 import { subYears } from "date-fns";
 import { startOfToday } from "date-fns";
 import { DateRange } from "@/components/dashboard/common/DateFilter";
+import * as XLSX from "xlsx";
 
 interface Props {
   clubId?: string;
@@ -31,47 +32,35 @@ export default function MemberList({ clubId }: Props) {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [maxPage, setMaxPage] = useState(1);
-  const [currentSearchValue, setCurrentSearchValue] = useState<SearchValue>({
-    term: "",
-    field: "name",
-  });
   const [members, setMembers] = useState([]);
 
-  const formatDateToString = (date: Date | undefined) => {
-    if (!date) return "";
-    const koreaDate = new Date(date);
-    return koreaDate.toISOString().split("T")[0];
+  const loadMembers = async (searchValue: SearchValue = { term: "" }) => {
+    console.log("현재 페이지", currentPage);
+    console.log("현재 검색어", searchValue.term);
+
+    try {
+      const response = await getData(
+        `v1/executive/club/{clubId}/member/list?page=${currentPage}&search=${searchValue.term}`,
+        true
+      );
+
+      const data = response.data;
+      console.log("data", data);
+      console.log("data.memberList", data.memberList);
+      setMembers(data.memberList);
+      setMaxPage(data.maxPage);
+    } catch (error) {
+      console.error("직원 목록 로딩 오류:", error);
+    }
   };
 
-  const loadMembers = useCallback(
-    async (searchValue: SearchValue = { term: "", field: "name" }) => {
-      try {
-        const response = await getData(
-          `v1/executive/club/${clubId}/member/list?page=${currentPage}&search=${
-            searchValue.term
-          }&startDate=${formatDateToString(
-            currentDateRange.startDate
-          )}&endDate=${formatDateToString(currentDateRange.endDate)}`
-        );
-        if (response.resultCode === "OK") {
-          setMembers(response.data.memberList);
-          setMaxPage(response.data.maxPage);
-        }
-      } catch (error) {
-        console.error("동호회 회원 목록 로딩 오류:", error);
-      }
-    },
-    [clubId, currentPage, currentDateRange]
-  );
-
   const { refetch: getExcelData } = useQuery({
-    queryKey: ["membersExcel", clubId, currentDateRange, currentSearchValue],
+    queryKey: [clubId],
     queryFn: () => getData(`v1/executive/club/${clubId}/members/excel`),
     enabled: false,
   });
 
   const handleExcelDownload = async () => {
-    const XLSX = await import("xlsx");
     try {
       const { data } = await getExcelData();
       if (data) {
@@ -128,7 +117,7 @@ export default function MemberList({ clubId }: Props) {
 
   useEffect(() => {
     loadMembers();
-  }, [loadMembers]);
+  }, [currentPage, currentDateRange]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);

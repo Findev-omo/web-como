@@ -1,16 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { startOfToday, subYears } from "date-fns";
-import type { SearchValue } from "@/lib/types/search";
 import DateFilter, {
   type DateRange,
 } from "@/components/dashboard/common/DateFilter";
 import Pagination from "@/components/dashboard/common/Pagination";
 import ApplicationTable from "@/components/dashboard/company/club/molecules/ApplicationTable";
+import { startOfToday, subYears } from "date-fns";
+import { getData } from "@/api/action";
+import { useEffect } from "react";
 import ApplicationSearch from "@/components/dashboard/company/club/molecules/ApplicationSearch";
-import Skeleton from "@/components/common/Skeleton";
-import { useApplications } from "@/hooks/queries/useApplications";
+import { SearchValue } from "@/lib/types/search";
 
 interface Props {
   currentSearchTerm: string;
@@ -18,28 +18,41 @@ interface Props {
 }
 
 export default function ApplicationList(props: Props) {
+  const [applications, setApplications] = useState([]);
   const [currentDateRange, setCurrentDateRange] = useState<DateRange>({
-    startDate: subYears(startOfToday(), 1),
+    startDate: subYears(startOfToday(), 1), // 1년 전 날짜
     endDate: startOfToday(),
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const [searchValue, setSearchValue] = useState<SearchValue>({
-    term: props.currentSearchTerm,
-    field: props.currentSearchFilter,
-  });
+  const [maxPage, setMaxPage] = useState(1);
 
-  const {
-    data: applicationData,
-    isLoading,
-    isError,
-    error,
-  } = useApplications(currentPage, currentDateRange, searchValue);
+  const formatDateToString = (date: Date | undefined) => {
+    if (!date) return "";
+    const koreaDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+    return koreaDate.toISOString().split("T")[0];
+  };
 
-  const applications = applicationData?.memberList || [];
-  const maxPage = applicationData?.maxPage || 1;
+  const loadApplications = async (
+    searchValue: SearchValue = { term: "", field: "all" }
+  ) => {
+    try {
+      // 목데이터 API 엔드포인트로 변경
+      const response = await getData(`v1/manager/club?page=${currentPage}&search=${searchValue.term}&startDate=${formatDateToString(currentDateRange.startDate)}&endDate=${formatDateToString(currentDateRange.endDate)}`);
+      console.log(response);
+      if (response.resultCode === "OK") {
+        setApplications(response.data.memberList);
+        setMaxPage(response.data.maxPage);
+      }
+    } catch (error) {
+      console.error("동호회 신청 목록 로딩 오류:", error);
+    }
+  };
+
+  useEffect(() => {
+    loadApplications();
+  }, [currentPage, currentDateRange]);
 
   const handleDateRangeChange = (dateRange: DateRange) => {
-    setCurrentPage(1);
     setCurrentDateRange(dateRange);
   };
 
@@ -49,9 +62,8 @@ export default function ApplicationList(props: Props) {
     }
   };
 
-  const handleSearch = (newSearchValue: SearchValue) => {
-    setCurrentPage(1);
-    setSearchValue(newSearchValue);
+  const handleSearch = (searchValue: SearchValue) => {
+    loadApplications(searchValue);
   };
 
   return (
@@ -66,23 +78,15 @@ export default function ApplicationList(props: Props) {
         handleDateRangeChange={handleDateRangeChange}
       />
       <div className="space-y-10">
-        {isLoading ? (
-          <Skeleton className="w-full h-96" />
-        ) : isError ? (
-          <div>Error: {error.message}</div>
-        ) : (
-          <>
-            <ApplicationTable applications={applications} />
-            {applications && applications.length > 0 && (
-              <div className="flex justify-center mt-8">
-                <Pagination
-                  currentPage={currentPage}
-                  maxPage={maxPage}
-                  handlePageChange={handlePageChange}
-                />
-              </div>
-            )}
-          </>
+        <ApplicationTable applications={applications} />
+        {applications && applications.length > 0 && (
+          <div className="flex justify-center mt-8">
+            <Pagination
+              currentPage={currentPage}
+              maxPage={maxPage}
+              handlePageChange={handlePageChange}
+            />
+          </div>
         )}
       </div>
     </div>

@@ -6,7 +6,6 @@ import { getData } from "@/api/action";
 import DateFilter, {
   type DateRange,
 } from "@/components/dashboard/common/DateFilter";
-import Skeleton from "@/components/common/Skeleton";
 import DocUtilButtons from "@/components/dashboard/common/DocUtil";
 import Pagination from "@/components/dashboard/common/Pagination";
 import EmployeeTable from "@/components/dashboard/company/employee/molecules/EmployeeTable";
@@ -23,10 +22,8 @@ export default function EmployeeList({
     endDate: startOfToday(),
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const [maxPage, setMaxPage] = useState(initialEmployees?.maxPage ?? 1);
-  const [employees, setEmployees] = useState(
-    initialEmployees?.memberList ?? []
-  );
+  const [maxPage, setMaxPage] = useState(initialEmployees.maxPage || 1);
+  const [employees, setEmployees] = useState(initialEmployees.memberList || []);
   const [currentSearchValue, setCurrentSearchValue] = useState<SearchValue>({
     term: "",
     field: "all",

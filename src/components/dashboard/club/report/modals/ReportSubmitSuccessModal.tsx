@@ -15,7 +15,7 @@ export default function ReportSubmitSuccessModal() {
   return (
     <div id="report-submit-success" className="modal hidden">
       <Backdrop
-        onClick={() => replace(`${CLUB_DASHBOARD_ENDPOINT}/manage/report`)}
+        handleClose={() => replace(`${CLUB_DASHBOARD_ENDPOINT}/manage/report`)}
       />
       <div className="fixed bottom-1/2 right-1/2 translate-y-1/2 translate-x-1/2 z-50 space-y-9 w-full max-w-lg py-7 px-8 rounded-xl bg-gray-0">
         <h1 className="text-center font-bold text-gray-900">

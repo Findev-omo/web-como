@@ -1,14 +1,10 @@
-import dynamic from "next/dynamic";
-import Skeleton from "@/components/common/Skeleton";
-
-const PDFViewer = dynamic(
-  () => import("@/components/dashboard/club/common/PDFViewer"),
-  {
-    ssr: false,
-    loading: () => <Skeleton className="w-full h-[1080px]" />,
-  }
-);
+import PDFViewer from "@/components/dashboard/club/common/PDFViewer";
 
 export default function ReportViewer() {
-  return <PDFViewer file={"../../../../sample.pdf"} />;
+  return (
+    <div className="flex flex-col gap-3 p-8 rounded-xl bg-gray-50">
+      <h3 className="font-semibold text-gray-900">{"작성한 보고서"}</h3>
+      <PDFViewer file={"../../../../sample.pdf"} />
+    </div>
+  );
 }

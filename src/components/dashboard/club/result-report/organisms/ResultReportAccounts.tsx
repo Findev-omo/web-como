@@ -3,19 +3,13 @@
 import { useFormContext, useFieldArray } from "react-hook-form";
 import Card from "@/components/dashboard/common/Card";
 import Button from "@/components/common/Button";
-import dynamic from "next/dynamic";
-import Skeleton from "@/components/common/Skeleton";
+import DatePicker from "@/components/common/DatePicker";
 import { CustomLabel } from "@/components/common/CustomLabel";
 import DropdownSelect from "@/components/common/DropdownSelect";
 import RHFTextInput from "@/components/common/RHF/RHFTextInput";
 import { ResultReportSchemaType } from "@/lib/types/schema";
 import ImageInput from "../atom/image-input";
 import { cn } from "@/lib/utils";
-
-const DatePicker = dynamic(() => import("@/components/common/DatePicker"), {
-  ssr: false,
-  loading: () => <Skeleton className="w-full h-[340px]" />,
-});
 
 const expenseType = [
   { name: "활정책사업: 인적자원운용", value: "activity" },

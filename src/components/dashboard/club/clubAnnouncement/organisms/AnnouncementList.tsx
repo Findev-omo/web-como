@@ -6,12 +6,11 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Pagination from "@/components/dashboard/common/Pagination";
 import AnnouncementTable from "@/components/dashboard/club/clubAnnouncement/molecules/AnnouncementTable";
 import { Plus } from "@/assets/icons/action";
-import { useInfiniteQuery } from "@tanstack/react-query";
 import { getNotices } from "@/api/actions/club/notice";
 
-export default function AnnouncementList({ clubId }: { clubId: string }) {
-  const router = useRouter();
+export default function AnnouncementList() {
   const pathname = usePathname();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const pageParam = searchParams.get("page");
   const [currentPage, setCurrentPage] = useState<number>(
@@ -24,17 +23,6 @@ export default function AnnouncementList({ clubId }: { clubId: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pageParam]);
 
-  useEffect(() => {
-    const fetchMaxPage = async () => {
-      const res = await getNotices(1);
-      setMaxPage(res?.data.maxPage);
-    };
-
-    if (clubId) {
-      fetchMaxPage();
-    }
-  }, [clubId, currentPage]);
-
   const handlePageChange = (page: number) => {
     if (page !== currentPage) {
       const params = new URLSearchParams(searchParams.toString());
@@ -42,6 +30,19 @@ export default function AnnouncementList({ clubId }: { clubId: string }) {
       router.push(`${pathname}?${params.toString()}`);
     }
   };
+
+  useEffect(() => {
+    const fetchMaxPage = async () => {
+      try {
+        const result = await getNotices(currentPage, "");
+        setMaxPage(result.data.maxPage); // API 응답에서 maxPage 값을 설정합니다.
+      } catch (error) {
+        console.error('Error fetching maxPage:', error);
+      }
+    };
+
+    fetchMaxPage();
+  }, []);
 
   return (
     <div className="space-y-10 p-8 rounded-xl bg-gray-0">

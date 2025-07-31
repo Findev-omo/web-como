@@ -1,6 +1,4 @@
 import { ActivityReportDetail } from "@/api/types/company/report";
-import { formatDate } from "@/lib/format";
-import Image from "next/image";
 
 interface Props {
   data: ActivityReportDetail;
@@ -27,14 +25,15 @@ export default function ReportDetailPrint({ data }: Props) {
               style={{ width: 220, padding: 8, verticalAlign: "top" }}
             >
               {data?.clubImage && (
-                <Image
+                <img
                   src={data.clubImage}
                   alt="clubImage"
-                  layout="responsive"
-                  width={200}
-                  height={200}
-                  objectFit="cover"
-                  unoptimized
+                  style={{
+                    width: 200,
+                    height: 200,
+                    objectFit: "cover",
+                    borderRadius: 8,
+                  }}
                 />
               )}
             </td>
@@ -204,14 +203,15 @@ export default function ReportDetailPrint({ data }: Props) {
                               background: "#eee",
                             }}
                           >
-                            <Image
+                            <img
                               src={photo.url}
                               alt="photo"
-                              layout="responsive"
-                              width={180}
-                              height={180}
-                              objectFit="cover"
-                              unoptimized
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "cover",
+                                borderRadius: 8,
+                              }}
                             />
                           </div>
                         </td>
@@ -427,14 +427,15 @@ export default function ReportDetailPrint({ data }: Props) {
                       margin: "12px 0",
                     }}
                   >
-                    <Image
+                    <img
                       src={(item as any).file}
                       alt="photo"
-                      layout="responsive"
-                      width={300}
-                      height={400}
-                      objectFit="cover"
-                      unoptimized
+                      style={{
+                        borderRadius: 8,
+                        objectFit: "cover",
+                        width: "100%",
+                        height: "100%",
+                      }}
                     />
                   </div>
                 )}

@@ -1,20 +1,11 @@
 "use client";
 
-import BackButton from "@/components/dashboard/common/BackButton";
 import { openModal } from "@/lib/utils";
-import Skeleton from "@/components/common/Skeleton";
-import dynamic from "next/dynamic";
+import BackButton from "@/components/dashboard/common/BackButton";
+import PDFViewer from "@/components/dashboard/club/common/PDFViewer";
 import ExpenseRejectFormModal from "@/components/dashboard/company/club/modals/ExpenseRejectFormModal";
 import ExpensePaymentSuccessModal from "@/components/dashboard/company/club/modals/ExpensePaymentSuccessModal";
 import ExpenseRejectSuccessModal from "@/components/dashboard/company/club/modals/ExpenseRejectSuccessModal";
-
-const PDFViewer = dynamic(
-  () => import("@/components/dashboard/club/common/PDFViewer"),
-  {
-    ssr: false,
-    loading: () => <Skeleton className="w-full h-[1080px]" />,
-  }
-);
 
 interface Props {
   params: { id: string };

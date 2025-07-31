@@ -1,18 +1,12 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import Skeleton from "@/components/common/Skeleton";
+import DatePicker from "@/components/common/DatePicker";
 import { CustomLabel } from "@/components/common/CustomLabel";
 import TimeSelect from "@/components/common/TimeSelect";
 import { useFormContext } from "react-hook-form";
 import { ScheduleRegisterSchemaType } from "@/lib/types/schema";
 import { cn } from "@/lib/utils";
 import { useEffect } from "react";
-
-const DatePicker = dynamic(() => import("@/components/common/DatePicker"), {
-  ssr: false,
-  loading: () => <Skeleton className="w-full h-[340px]" />,
-});
 
 const ScheduleDetailDate = ({
   type,

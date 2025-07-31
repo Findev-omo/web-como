@@ -8,13 +8,6 @@ import type { IResponse } from "@/api/types";
 import { getAccessToken, getClubId } from "@/lib/cookies";
 import Button from "@/components/common/Button";
 import { useToast } from "@/components/common/ToastContainer";
-import Image from "next/image";
-import type { SubmitHandler } from "react-hook-form";
-import toast from "react-hot-toast";
-
-interface IFormValues {
-  question: string;
-}
 
 export default function ClubApplicationTab() {
   const { data } = useQuery({

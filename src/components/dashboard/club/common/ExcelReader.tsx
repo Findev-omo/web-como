@@ -1,10 +1,11 @@
 "use client";
 
+import { read, utils } from "xlsx";
+
 export default function ExcelReader() {
-  const readUploadFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const readUploadFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     if (e.target.files) {
-      const { read, utils } = await import("xlsx");
       const reader = new FileReader();
       reader.onload = (e) => {
         const data = e.target!.result;
