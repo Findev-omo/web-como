@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 import { getData } from "@/api/action";
 import type { UpcomingActivityData } from "@/api/types/club/upcoming/activity";
 import { LOGIN_ENDPOINT } from "@/lib/constants";
@@ -21,9 +21,12 @@ export default function DashboardSchedule() {
   useEffect(() => {
     const loadSchedules = async () => {
       try {
-        const res = await getData("v1/executive/club/{clubId}/dashboard/schedules/upcoming", true);
-        
-        if (res.resultCode === 'OK' && res.data) {
+        const res = await getData(
+          "v1/executive/club/{clubId}/dashboard/schedules/upcoming",
+          true
+        );
+
+        if (res.resultCode === "OK" && res.data) {
           setScheduleData(res.data);
         }
       } catch (error) {
@@ -37,13 +40,15 @@ export default function DashboardSchedule() {
   // 데이터 변환
   const data = {
     count: scheduleData?.length || 0,
-    contents: scheduleData?.map((item, index) => ({
-      date: item.createdDate,
-      order: index + 1,
-      activityName: item.title || `활동 ${item.id}`,
-      memberCount: item.currentMember,
-      detail: item.detail
-    })) || []
+    contents:
+      scheduleData?.map((item, index) => ({
+        id: item.id, // 고유 ID 추가
+        date: item.createdDate,
+        order: index + 1,
+        activityName: item.title || `활동 ${item.id}`,
+        memberCount: item.currentMember,
+        detail: item.detail,
+      })) || [],
   };
 
   return (
@@ -71,7 +76,7 @@ export default function DashboardSchedule() {
         </li>
         {data.count > 0 ? (
           data.contents.map((schedule) => (
-            <li key={schedule.order} className="flex">
+            <li key={schedule.id} className="flex">
               {[
                 schedule.date,
                 schedule.order,
@@ -80,7 +85,7 @@ export default function DashboardSchedule() {
                 schedule.detail,
               ].map((data, i) => (
                 <span
-                  key={data}
+                  key={`${schedule.id}-${i}`}
                   className={cn(
                     "flex-1 py-2.5 px-4 body-1 font-medium text-gray-900 truncate",
                     i === 0 ? "max-w-32 body-2 font-bold" : "",
@@ -91,11 +96,7 @@ export default function DashboardSchedule() {
                     i === 3 ? "body-2 font-medium" : ""
                   )}
                 >
-                  {i === 0
-                    ? data
-                    : i === 3
-                      ? `${data}명`
-                      : data}
+                  {i === 0 ? data : i === 3 ? `${data}명` : data}
                 </span>
               ))}
             </li>

@@ -23,16 +23,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <RQProvider>
-        <body className="min-h-screen font-suit antialiased bg-gray-50">
+      <body className="min-h-screen font-suit antialiased bg-gray-50">
+        <RQProvider>
           <ToastContainer />
           {children}
           <div id="modal-root" />
-          <Script
-            src={`https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID}&submodules=geocoder`}
-          />
-        </body>
-      </RQProvider>
+        </RQProvider>
+        <Script
+          src={`https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID}&submodules=geocoder`}
+        />
+      </body>
     </html>
   );
 }
