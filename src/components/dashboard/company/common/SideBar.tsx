@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState, useMemo, useCallback } from "react";
+import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { COMPANY_DASHBOARD_ENDPOINT, HEADER_HEIGHT } from "@/lib/constants";
 import { ChevronDown } from "@/assets/icons/chevron";
+import OptimizedLink from "@/components/common/OptimizedLink";
 
 const companyDashboardMenus = [
   "employee",
@@ -149,61 +149,61 @@ const menuList: MenuItem[] = [
 
 export default function SideBar() {
   const pathname = usePathname();
-  const { push } = useRouter();
   const [selectedMenu, setSelectedMenu] = useState<CompanyDashboardMenu>();
   const [selectedSubmenu, setSelectedSubMenu] = useState<string>();
 
-  useEffect(() => {
-    document.documentElement.scrollIntoView();
+  // Memoize the current path without dashboard prefix for better performance
+  const currentPath = useMemo(() => {
+    return pathname.replace(COMPANY_DASHBOARD_ENDPOINT, "");
+  }, [pathname]);
 
+  // Optimized path matching logic
+  useEffect(() => {
     let foundMenu: CompanyDashboardMenu | undefined = undefined;
     let foundSubMenu: string | undefined = undefined;
 
     for (const menu of menuList) {
       if (menu.subMenuList) {
         for (const sub of menu.subMenuList) {
-          // 현재 경로에서 대시보드 prefix 제거
-          const currentPath = pathname.replace(COMPANY_DASHBOARD_ENDPOINT, "");
           if (sub.routes.includes(currentPath)) {
             foundMenu = menu.key;
             foundSubMenu = sub.link;
+            break;
           }
         }
+        if (foundMenu) break;
       } else if (
         menu.link &&
         COMPANY_DASHBOARD_ENDPOINT + menu.link === pathname
       ) {
         foundMenu = menu.key;
+        break;
       }
     }
 
     setSelectedMenu(foundMenu);
     setSelectedSubMenu(foundSubMenu);
-  }, [pathname]);
+  }, [currentPath, pathname]);
 
-  const handleMenuClick = (menu: MenuItem) => {
-    if (menu.link) {
-      push(COMPANY_DASHBOARD_ENDPOINT + menu.link);
-      setSelectedMenu(menu.key);
-    } else {
+  // Memoized click handler for better performance
+  const handleMenuClick = useCallback(
+    (menu: MenuItem) => {
       if (menu.key === selectedMenu) {
         setSelectedMenu(undefined);
       } else {
         setSelectedMenu(menu.key);
       }
-    }
-  };
+    },
+    [selectedMenu]
+  );
 
   return (
     <nav className="relative min-w-[248px] min-h-[1080px] border-r border-gray-300 bg-gray-0 no-print">
       <ul className="sticky py-8" style={{ top: HEADER_HEIGHT }}>
         {menuList.map((menu) => (
-          <li
-            key={menu.key}
-            onClick={() => handleMenuClick(menu)}
-            className="pb-3"
-          >
+          <li key={menu.key} className="pb-3">
             <div
+              onClick={() => handleMenuClick(menu)}
               style={{ cursor: "pointer" }}
               className={cn(
                 "flex items-center justify-between mb-3 py-3 px-6 h3 font-bold transition-all duration-200",
@@ -227,21 +227,22 @@ export default function SideBar() {
                 )}
               >
                 {menu.subMenuList.map((subMenu) => (
-                  <Link
+                  <OptimizedLink
                     key={subMenu.link}
                     href={COMPANY_DASHBOARD_ENDPOINT + subMenu.link}
+                    prefetch={true}
                   >
                     <li
                       className={cn(
-                        "py-3 px-6 h4 font-medium",
+                        "py-3 px-6 h4 font-medium transition-colors duration-200",
                         subMenu.routes.includes(selectedSubmenu || "")
                           ? "text-orange-500"
-                          : "text-gray-700"
+                          : "text-gray-700 hover:text-gray-900"
                       )}
                     >
                       {subMenu.name}
                     </li>
-                  </Link>
+                  </OptimizedLink>
                 ))}
               </ul>
             )}

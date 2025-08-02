@@ -8,26 +8,95 @@ const withBundleAnalyzer = bundleAnalyzer({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: { remotePatterns: [{ protocol: "https", hostname: "*" }] },
-  webpack: (config) => {
-    config.optimization.minimize = true;
-    config.optimization.minimizer = [
-      new TerserPlugin({
-        terserOptions: {
-          compress: {
-            drop_console: true,
+
+  // Performance optimizations
+  experimental: {
+    optimizeCss: true,
+    optimizePackageImports: ["@tanstack/react-query", "react-icons"],
+  },
+
+  // Compression and caching
+  compress: true,
+
+  // Static optimization
+  staticPageGenerationTimeout: 120,
+
+  webpack: (config, { dev, isServer }) => {
+    // Production optimizations only
+    if (!dev && !isServer) {
+      config.optimization.minimize = true;
+      config.optimization.minimizer = [
+        new TerserPlugin({
+          terserOptions: {
+            compress: {
+              drop_console: true,
+              drop_debugger: true,
+            },
+            mangle: true,
           },
-          mangle: true,
+          exclude: /node_modules\/react-pdf/,
+        }),
+      ];
+
+      // Split chunks for better caching
+      config.optimization.splitChunks = {
+        chunks: "all",
+        cacheGroups: {
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: "vendors",
+            chunks: "all",
+          },
+          common: {
+            name: "common",
+            minChunks: 2,
+            chunks: "all",
+            enforce: true,
+          },
         },
-        exclude: /node_modules\/react-pdf/,
-      }),
-    ];
+      };
+    }
+
     return config;
   },
+
   async rewrites() {
     return [
       {
         source: "/api/server/:path*",
         destination: `${process.env.NEXT_PUBLIC_SERVER_URL}/:path*`,
+      },
+    ];
+  },
+
+  // Headers for better caching
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          {
+            key: "X-Content-Type-Options",
+            value: "nosniff",
+          },
+          {
+            key: "X-Frame-Options",
+            value: "DENY",
+          },
+          {
+            key: "X-XSS-Protection",
+            value: "1; mode=block",
+          },
+        ],
+      },
+      {
+        source: "/static/(.*)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
       },
     ];
   },
