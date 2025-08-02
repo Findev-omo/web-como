@@ -23,6 +23,7 @@ export default function ProfileDropdown({ profileImage }: Props) {
         setProfileLoading(true);
         try {
           const role = await getRole();
+          console.log("사용자 역할:", role);
           let res;
           if (role === "club") {
             res = await getData(`v1/executive/club/{clubId}/my-profile`, true);
@@ -30,7 +31,10 @@ export default function ProfileDropdown({ profileImage }: Props) {
             res = await getData(`v1/manager/member/my-profile`, true);
           }
 
+          console.log("프로필 API 응답:", res);
           if (res?.resultCode === "OK" && res.data) {
+            console.log("프로필 데이터:", res.data);
+            console.log("프로필 이미지 URL:", res.data.profileImage);
             setProfile(res.data);
           } else {
             console.error("API 오류:", res?.resultMessage);
@@ -45,6 +49,12 @@ export default function ProfileDropdown({ profileImage }: Props) {
 
     loadProfileData();
   }, [profile, isProfileLoading, setProfile, setProfileLoading]);
+
+  console.log("현재 프로필 상태:", {
+    profile: profile,
+    profileImage: profile?.profileImage,
+    propProfileImage: profileImage,
+  });
 
   return (
     <>
