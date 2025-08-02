@@ -1,14 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DateRange } from "@/components/dashboard/common/DateFilter";
-import ReportList from "@/components/dashboard/club/report/organisms/ReportList";
 import { Activity } from "@/api/types/company/report";
-import { useCompanyReports } from "@/hooks/queries/useCompanyReports";
 import Skeleton from "@/components/common/Skeleton";
 import DateFilter from "@/components/dashboard/common/DateFilter";
 import Pagination from "@/components/dashboard/common/Pagination";
 import ReportTable from "@/components/dashboard/company/club/molecules/ReportTable";
+import { useCompanyReports } from "@/hooks/queries/company";
+import { useRouter } from "next/navigation";
 
 interface ReportClientViewProps {
   activities: Activity[];
@@ -23,27 +23,43 @@ export default function ReportClientView({
   maxPage: initialMaxPage,
   initialDateRange,
 }: ReportClientViewProps) {
-  const [currentPage, setCurrentPage] = useState(initialCurrentPage);
+  const router = useRouter();
   const [currentDateRange, setCurrentDateRange] =
     useState<DateRange>(initialDateRange);
+
+  useEffect(() => {
+    setCurrentDateRange(initialDateRange);
+  }, [initialDateRange]);
 
   const {
     data: reportsData,
     isLoading,
     isError,
     error,
-  } = useCompanyReports(currentPage, currentDateRange, {
+  } = useCompanyReports(initialCurrentPage, currentDateRange, {
     list: initialActivities,
     maxPage: initialMaxPage,
   });
 
+  const updateUrl = (page: number, dateRange: DateRange) => {
+    const params = new URLSearchParams();
+    params.set("page", page.toString());
+    if (dateRange.startDate) {
+      params.set("startDate", dateRange.startDate.toISOString());
+    }
+    if (dateRange.endDate) {
+      params.set("endDate", dateRange.endDate.toISOString());
+    }
+    router.push(`/company/dashboard/club/report?${params.toString()}`);
+  };
+
   const handleDateRangeChange = (dateRange: DateRange) => {
-    setCurrentPage(1);
     setCurrentDateRange(dateRange);
+    updateUrl(1, dateRange);
   };
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+    updateUrl(page, currentDateRange);
   };
 
   const activities = reportsData?.list || [];
@@ -64,7 +80,7 @@ export default function ReportClientView({
           <>
             <ReportTable activities={activities} />
             <Pagination
-              currentPage={currentPage}
+              currentPage={initialCurrentPage}
               maxPage={maxPage}
               handlePageChange={handlePageChange}
             />
