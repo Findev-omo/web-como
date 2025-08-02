@@ -161,6 +161,18 @@ export default function ProfileDropdownModal({ profileImage }: Props) {
                 </div>
               </div>
             )}
+            {role === "company" && (
+              <div className="space-y-1 p-3 rounded-md bg-orange-50">
+                <span className="body-2 font-medium text-gray-600">
+                  주무부서
+                </span>
+                <div className="flex items-center justify-between">
+                  <span className="h4 font-bold text-gray-900">
+                    {profile?.companyName}
+                  </span>
+                </div>
+              </div>
+            )}
 
             <div
               className="w-full p-3 h4 font-medium text-gray-700 cursor-pointer"
@@ -170,7 +182,11 @@ export default function ProfileDropdownModal({ profileImage }: Props) {
             </div>
             <div
               className="w-full p-3 h4 font-medium text-gray-700 cursor-pointer"
-              onClick={() => router.push("/club/support")}
+              onClick={() =>
+                router.push(
+                  role === "club" ? "/club/support" : "/company/support"
+                )
+              }
             >
               문의 및 기술지원
             </div>
