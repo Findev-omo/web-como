@@ -83,6 +83,16 @@ const menuList: MenuItem[] = [
       // },
     ],
   },
+  {
+    name: "활동 보고서 관리",
+    key: "report",
+    link: "/report",
+  },
+  {
+    name: "활동지원비 관리",
+    key: "expense",
+    link: "/expense",
+  },
   // {
   //   name: "omo 예약 관리",
   //   key: "shop",
@@ -154,7 +164,7 @@ export default function SideBar() {
     let foundSubMenu: string | undefined = undefined;
 
     for (const menu of menuList) {
-      if (menu.subMenuList) {
+      if (menu.key === "manage" && menu.subMenuList) {
         for (const sub of menu.subMenuList) {
           if (sub.routes.includes(currentPath)) {
             foundMenu = menu.key;
@@ -163,10 +173,7 @@ export default function SideBar() {
           }
         }
         if (foundMenu) break;
-      } else if (
-        menu.link &&
-        CLUB_DASHBOARD_ENDPOINT + menu.link === pathname
-      ) {
+      } else if (menu.link && currentPath.startsWith(menu.link)) {
         foundMenu = menu.key;
         break;
       }
@@ -203,7 +210,16 @@ export default function SideBar() {
                   : "text-gray-800"
               )}
             >
-              {menu.name}
+              {menu.link ? (
+                <OptimizedLink
+                  href={CLUB_DASHBOARD_ENDPOINT + menu.link}
+                  className="w-full"
+                >
+                  {menu.name}
+                </OptimizedLink>
+              ) : (
+                menu.name
+              )}
               {menu.subMenuList && (
                 <ChevronDown className="w-5 h-5 text-gray-400" />
               )}
