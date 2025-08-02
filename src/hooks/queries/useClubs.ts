@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getData } from "@/api/action";
+import { api } from "@/api/client";
 import type { DateRange } from "@/components/dashboard/common/DateFilter";
 import type { SearchValue } from "@/lib/types/search";
 
@@ -14,13 +14,7 @@ const fetchClubs = async ({ queryKey }: { queryKey: any }) => {
   const startDate = formatDateToString(dateRange.startDate);
   const endDate = formatDateToString(dateRange.endDate);
   const url = `v1/manager/club/manage-list?page=${page}&search=${search.term}&filter=${search.field}&startDate=${startDate}&endDate=${endDate}`;
-  const response = await getData(url, true);
-  if (response.resultCode !== "OK") {
-    throw new Error(
-      `사내 동호회 목록을 불러오는데 실패했습니다: ${response.resultMessage}`
-    );
-  }
-  return response.data;
+  return api.get(url);
 };
 
 export const useClubs = (
