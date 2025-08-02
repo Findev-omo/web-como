@@ -47,7 +47,7 @@ export default function ClubSelectForm() {
       }
 
       // 정상 응답 처리
-      const res: IResponse = await response.json();
+      const res: IResponse<any> = await response.json();
       const clubList = res.data;
       // console.log('클럽 목록 데이터:', clubList);
 

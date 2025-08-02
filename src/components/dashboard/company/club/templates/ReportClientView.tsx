@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { DateRange } from "@/components/dashboard/common/DateFilter";
-import ReportList from "@/components/dashboard/company/club/organisms/ReportList";
+import ReportList from "@/components/dashboard/club/report/organisms/ReportList";
 import { Activity } from "@/api/types/company/report";
 import { useCompanyReports } from "@/hooks/queries/useCompanyReports";
 import Skeleton from "@/components/common/Skeleton";

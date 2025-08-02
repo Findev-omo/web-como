@@ -29,7 +29,7 @@ export const getData = async (
   });
   // console.log(endpoint);
   // console.log(response);
-  const res: IResponse = await response.json();
+  const res: IResponse<any> = await response.json();
   // console.log(res);
 
   return res;

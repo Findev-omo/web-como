@@ -9,7 +9,7 @@ import ImageInput from "@/components/common/ImageInput";
 import Input from "@/components/common/Input";
 import FileDragNDropInput from "@/components/common/FileDragNDropInput";
 import { getClubId, getAccessToken } from "@/lib/cookies";
-import { useToast } from "@/components/common/ToastContainer";
+import toast from "react-hot-toast";
 
 interface FormValues {
   title: string;
@@ -28,7 +28,7 @@ export default function NewAnnouncementForm() {
   }>({ title: "", content: "", isPinned: "N" });
   const [currentImages, setCurrentImages] = useState<File[]>([]);
   const [files, setFiles] = useState<File[]>([]);
-  const { showToast } = useToast();
+
   console.log("formValues", formValues);
   console.log("title:", formValues.title);
   console.log("content:", formValues.content);
@@ -102,21 +102,18 @@ export default function NewAnnouncementForm() {
         const responseText = await response.text();
         console.log("API 응답 데이터:", responseText);
         // alert('공지사항 등록에 실패했습니다. 다시 시도해 주세요.'); // 수정된 부분
-        showToast("공지사항 등록에 실패했습니다. 다시 시도해 주세요.", "error");
+        toast.error("공지사항 등록에 실패했습니다. 다시 시도해 주세요.");
         return;
       }
 
       const data = await response.json();
       // alert("공지사항이 성공적으로 등록되었습니다");
-      showToast("공지사항이 성공적으로 등록되었습니다", "success");
+      toast.success("공지사항이 성공적으로 등록되었습니다");
       console.log("공지사항 등록 성공:", data);
       router.push("/club/dashboard/manage/announcement?page=1");
     } catch (error) {
       // alert("공지사항 등록 중 오류가 발생했습니다. 다시 시도해 주세요."); // 수정된 부분
-      showToast(
-        "공지사항 등록 중 오류가 발생했습니다. 다시 시도해 주세요.",
-        "error"
-      );
+      toast.error("공지사항 등록 중 오류가 발생했습니다. 다시 시도해 주세요.");
       console.error("등록 실패:", error);
     }
   };

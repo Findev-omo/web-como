@@ -12,7 +12,7 @@ import { CustomTextarea } from "@/components/common/CustomTextarea";
 import { useMutation } from "@tanstack/react-query";
 import { format } from "path";
 import { File } from "@/assets/icons/info";
-import { useToast } from "@/components/common/ToastContainer";
+import toast from "react-hot-toast";
 import { AutoSaveRestoreAlert } from "../../result-report/molecules/AutoSaveRestoreAlert";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -53,7 +53,7 @@ export default function NewExpenseReportForm({
   const [currentImagesBankAccount, setCurrentImagesBankAccount] = useState<
     File[]
   >([]);
-  const { showToast } = useToast();
+
   const [isChecked, setIsChecked] = useState(false);
   const methods = useForm<ExpenseFormData>({
     resolver: zodResolver(expenseFormSchema),
@@ -86,7 +86,7 @@ export default function NewExpenseReportForm({
 
   const onSubmit = (data: ExpenseFormData) => {
     if (!isChecked) {
-      showToast("동의해주세요.", "error");
+      toast.error("동의해주세요.");
       return;
     }
     mutate(data);
@@ -144,9 +144,8 @@ export default function NewExpenseReportForm({
     onSuccess: (data) => {
       if (data.resultCode === "OK") {
         autoSave.clearSavedData();
-        showToast(
-          "활동비 지급 신청서 (품의서)가 작성 및 담당 부서에게 전달되었습니다.",
-          "success"
+        toast.success(
+          "활동비 지급 신청서 (품의서)가 작성 및 담당 부서에게 전달되었습니다."
         );
         refresh();
         replace(`${CLUB_DASHBOARD_ENDPOINT}/expense`);
@@ -309,7 +308,19 @@ export default function NewExpenseReportForm({
             <Button disabled={!isChecked} content="제출하기" primary />
           </div>
         )}
-        <AutoSaveRestoreAlert form={methods} storageKey="result-expense-form" />
+        <AutoSaveRestoreAlert
+          handleRestore={async () => {
+            const savedData = await autoSave.restoreData();
+            if (savedData) {
+              Object.keys(savedData).forEach((key) => {
+                if (savedData[key] !== undefined) {
+                  setValue(key as any, savedData[key]);
+                }
+              });
+            }
+          }}
+          clearSavedData={autoSave.clearSavedData}
+        />
       </form>
     </FormProvider>
   );

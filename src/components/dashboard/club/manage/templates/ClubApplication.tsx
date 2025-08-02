@@ -7,10 +7,9 @@ import type { ApplicationQuestionData } from "@/api/types/club/join/question";
 import type { IResponse } from "@/api/types";
 import { getAccessToken, getClubId } from "@/lib/cookies";
 import Button from "@/components/common/Button";
-import { useToast } from "@/components/common/ToastContainer";
+import toast from "react-hot-toast";
 import Image from "next/image";
 import type { SubmitHandler } from "react-hook-form";
-import toast from "react-hot-toast";
 
 interface IFormValues {
   question: string;
@@ -27,7 +26,6 @@ export default function ClubApplicationTab() {
 
   const [questions, setQuestions] = useState<string[]>([""]);
   const maxChar = 100;
-  const { showToast } = useToast();
 
   useEffect(() => {
     if (data && data.question) {
@@ -68,11 +66,11 @@ export default function ClubApplicationTab() {
       }
     );
 
-    const res: IResponse = await response.json();
+    const res: IResponse<any> = await response.json();
 
     if (res.resultCode !== "OK") {
       // alert("저장에 실패했습니다. 다시 시도해 주세요.");
-      showToast("저장에 실패했습니다. 다시 시도해 주세요.", "error");
+      toast.error("저장에 실패했습니다. 다시 시도해 주세요.");
     }
   };
 

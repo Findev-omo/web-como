@@ -11,22 +11,22 @@ const getDashboardRankings = async () => {
   try {
     const [clubId, token] = await Promise.all([getClubId(), getAccessToken()]);
     const url = `${process.env.NEXT_PUBLIC_SERVER_URL}v1/executive/club/${clubId}/dashboard/rankings`;
-    
+
     const response = await fetch(url, {
       method: "GET",
       headers: {
         "Authorization": `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      cache: "force-cache"
+      cache: "force-cache",
     });
-    
+
     // 정상 응답 처리
-    const res: IResponse = await response.json();
+    const res: IResponse<any> = await response.json();
     const data = res.data;
     return data;
   } catch (error) {
-    console.error('랭킹 데이터 조회 오류:', error);
+    console.error("랭킹 데이터 조회 오류:", error);
     return { data: null };
   }
 };
@@ -40,7 +40,7 @@ export default async function DashboardRanking() {
 
   // 안전하게 데이터 추출 및 기본값 설정
   const totalClubCount = rankingData?.totalClubCount || 0;
-  console.log('totalClubCount', totalClubCount);
+  console.log("totalClubCount", totalClubCount);
 
   // 현재 클럽 ID 가져오기
   const currentClubId = await getClubId();
@@ -50,11 +50,11 @@ export default async function DashboardRanking() {
   const myClubDetail = rankingData?.rankings?.find(
     (club: { clubId: string }) => club.clubId.toString() === currentClubId
   );
-  
+
   if (myClubDetail) {
     myClubRank = myClubDetail.rank;
   }
-  
+
   // 데이터가 없을 때 처리
   if (!rankingData || !rankingData.rankings) {
     return (
@@ -63,7 +63,7 @@ export default async function DashboardRanking() {
       </div>
     );
   }
-  
+
   // 데이터가 있을 때 처리
   const maxHeight = rankingData.rankings[0]?.memberCount || 0;
 
@@ -74,92 +74,117 @@ export default async function DashboardRanking() {
         <h3 className="h1 font-bold text-brand-black">{"사내동호회 순위"}</h3>
         <div className="flex flex-col">
           <span className="body-2 font-bold text-gray-500">{`총 ${totalClubCount || 0}개 중`}</span>
-          <span className="h1 font-extrabold text-gray-800">{`${myClubRank || '-'}위`}</span>
+          <span className="h1 font-extrabold text-gray-800">{`${myClubRank || "-"}위`}</span>
         </div>
       </div>
       {rankingData ? (
         <div className="flex items-end gap-2.5">
           {myClubRank > 6 ? (
             <>
-              {rankingData.rankings.slice(0, 5).map((club: { clubId: string; clubName: string; memberCount: number; rank: number }) => (
-                <div
-                  key={club.clubId}
-                  id={club.clubName}
-                  className="space-y-2 w-[46px] ranking-other-club cursor-pointer"
-                >
-                  <div className="w-full text-center body-2 font-medium text-gray-500">{`${club.memberCount}명`}</div>
-                  <div className="relative group">
-                    <div className="opacity-0 group-hover:opacity-100 absolute -top-2.5 left-[15px] w-4 h-4 rounded-full border-[3px] border-gray-0 bg-brand-orange shadow-xs transition-opacity duration-200" />
+              {rankingData.rankings
+                .slice(0, 5)
+                .map(
+                  (club: {
+                    clubId: string;
+                    clubName: string;
+                    memberCount: number;
+                    rank: number;
+                  }) => (
                     <div
-                      style={{
-                        height: `${(club.memberCount / maxHeight) * 200}px`,
-                      }}
-                      className="w-full rounded-lg bg-gray-200"
-                    />
-                  </div>
-                  <div className="w-full text-center h4 font-bold text-gray-800">
-                    {club.rank}
-                  </div>
-                </div>
-              ))}
+                      key={club.clubId}
+                      id={club.clubName}
+                      className="space-y-2 w-[46px] ranking-other-club cursor-pointer"
+                    >
+                      <div className="w-full text-center body-2 font-medium text-gray-500">{`${club.memberCount}명`}</div>
+                      <div className="relative group">
+                        <div className="opacity-0 group-hover:opacity-100 absolute -top-2.5 left-[15px] w-4 h-4 rounded-full border-[3px] border-gray-0 bg-brand-orange shadow-xs transition-opacity duration-200" />
+                        <div
+                          style={{
+                            height: `${(club.memberCount / maxHeight) * 200}px`,
+                          }}
+                          className="w-full rounded-lg bg-gray-200"
+                        />
+                      </div>
+                      <div className="w-full text-center h4 font-bold text-gray-800">
+                        {club.rank}
+                      </div>
+                    </div>
+                  )
+                )}
               {rankingData.rankings
                 .slice(myClubRank - 1, myClubRank)
-                .map((club: { clubId: string; clubName: string; memberCount: number; rank: number }) => (
-                  <div key={club.clubId} className="space-y-2 w-[46px]">
+                .map(
+                  (club: {
+                    clubId: string;
+                    clubName: string;
+                    memberCount: number;
+                    rank: number;
+                  }) => (
+                    <div key={club.clubId} className="space-y-2 w-[46px]">
+                      <div className="w-full text-center body-2 font-medium text-gray-500">{`${club.memberCount}명`}</div>
+                      <div
+                        style={{
+                          height: `${(club.memberCount / maxHeight) * 200}px`,
+                        }}
+                        className="w-full rounded-lg bg-brand-orange"
+                      />
+                      <div className="w-full text-center h4 font-bold text-gray-0 rounded-full bg-gray-800">
+                        {club.rank}
+                      </div>
+                    </div>
+                  )
+                )}
+            </>
+          ) : (
+            rankingData.rankings
+              .slice(0, 6)
+              .map(
+                (club: {
+                  clubId: string;
+                  clubName: string;
+                  memberCount: number;
+                  rank: number;
+                }) => (
+                  <div
+                    key={club.clubId}
+                    id={club.clubName}
+                    className={cn(
+                      "space-y-2 w-[46px]",
+                      club.rank === myClubRank
+                        ? ""
+                        : "ranking-other-club cursor-pointer"
+                    )}
+                  >
                     <div className="w-full text-center body-2 font-medium text-gray-500">{`${club.memberCount}명`}</div>
+                    <div className="relative group">
+                      {club.rank !== myClubRank && (
+                        <div className="opacity-0 group-hover:opacity-100 absolute -top-2.5 left-[15px] w-4 h-4 rounded-full border-[3px] border-gray-0 bg-brand-orange shadow-xs transition-opacity duration-200" />
+                      )}
+                      <div
+                        style={{
+                          height: `${(club.memberCount / maxHeight) * 200}px`,
+                        }}
+                        className={cn(
+                          "w-full rounded-lg",
+                          club.rank === myClubRank
+                            ? "bg-brand-orange"
+                            : "bg-gray-200"
+                        )}
+                      />
+                    </div>
                     <div
-                      style={{
-                        height: `${(club.memberCount / maxHeight) * 200}px`,
-                      }}
-                      className="w-full rounded-lg bg-brand-orange"
-                    />
-                    <div className="w-full text-center h4 font-bold text-gray-0 rounded-full bg-gray-800">
+                      className={cn(
+                        "w-full text-center h4 font-bold",
+                        club.rank === myClubRank
+                          ? "text-gray-0 rounded-full bg-gray-800"
+                          : "text-gray-800"
+                      )}
+                    >
                       {club.rank}
                     </div>
                   </div>
-                ))}
-            </>
-          ) : (
-            rankingData.rankings.slice(0, 6).map((club: { clubId: string; clubName: string; memberCount: number; rank: number }) => (
-              <div
-                key={club.clubId}
-                id={club.clubName}
-                className={cn(
-                  "space-y-2 w-[46px]",
-                  club.rank === myClubRank
-                    ? ""
-                    : "ranking-other-club cursor-pointer"
-                )}
-              >
-                <div className="w-full text-center body-2 font-medium text-gray-500">{`${club.memberCount}명`}</div>
-                <div className="relative group">
-                  {club.rank !== myClubRank && (
-                    <div className="opacity-0 group-hover:opacity-100 absolute -top-2.5 left-[15px] w-4 h-4 rounded-full border-[3px] border-gray-0 bg-brand-orange shadow-xs transition-opacity duration-200" />
-                  )}
-                  <div
-                    style={{
-                      height: `${(club.memberCount / maxHeight) * 200}px`,
-                    }}
-                    className={cn(
-                      "w-full rounded-lg",
-                      club.rank === myClubRank
-                        ? "bg-brand-orange"
-                        : "bg-gray-200"
-                    )}
-                  />
-                </div>
-                <div
-                  className={cn(
-                    "w-full text-center h4 font-bold",
-                    club.rank === myClubRank
-                      ? "text-gray-0 rounded-full bg-gray-800"
-                      : "text-gray-800"
-                  )}
-                >
-                  {club.rank}
-                </div>
-              </div>
-            ))
+                )
+              )
           )}
         </div>
       ) : (
@@ -170,4 +195,3 @@ export default async function DashboardRanking() {
     </div>
   );
 }
-

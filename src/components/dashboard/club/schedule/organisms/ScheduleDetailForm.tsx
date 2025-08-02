@@ -15,7 +15,7 @@ import { formatDate } from "date-fns";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import ScheduleDetailPeriod from "../molecues/ScheduleDetail/ScheduleDetailPeriod";
-import { useToast } from "@/components/common/ToastContainer";
+import toast from "react-hot-toast";
 
 interface ScheduleDetailFormProps {
   type: "REGISTER" | "DETAIL" | "EDIT" | "MEMBERS";
@@ -30,7 +30,6 @@ const ScheduleDetailForm = ({
 }: ScheduleDetailFormProps) => {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { showToast } = useToast();
 
   useEffect(() => {
     if (sessionStorage.getItem("refresh-on-back") === "true") {
@@ -131,11 +130,11 @@ const ScheduleDetailForm = ({
             }
 
             sessionStorage.setItem("refresh-on-back", "true");
-            showToast("일정이 등록되었습니다.", "success");
+            toast.success("일정이 등록되었습니다.");
             router.replace(`/club/dashboard/manage/schedule`);
           } catch (error) {
             console.error("일정 처리 실패:", error);
-            showToast("일정 등록에 실패했습니다.", "error");
+            toast.error("일정 등록에 실패했습니다.");
           }
         }
         if (type === "EDIT") {
@@ -177,25 +176,25 @@ const ScheduleDetailForm = ({
             );
 
             if (!response.ok) {
-              showToast("일정 수정에 실패했습니다.", "error");
+              toast.error("일정 수정에 실패했습니다.");
               throw new Error("일정 수정에 실패했습니다.");
             }
             sessionStorage.setItem("refresh-on-back", "true");
-            showToast("일정이 수정되었습니다.", "success");
+            toast.success("일정이 수정되었습니다.");
             router.replace(`/club/dashboard/manage/schedule`);
           } catch (error) {
             console.error("일정 수정 실패:", error);
-            showToast("일정 수정에 실패했습니다.", "error");
+            toast.error("일정 수정에 실패했습니다.");
           }
         }
       } catch (error) {
         console.error("일정 처리 실패:", error);
-        showToast("일정 처리에 실패했습니다.", "error");
+        toast.error("일정 처리에 실패했습니다.");
       } finally {
         setIsSubmitting(false);
       }
     },
-    [type, scheduleId, router, isSubmitting, showToast]
+    [type, scheduleId, router, isSubmitting]
   );
 
   const onSubmit = async (data: ScheduleRegisterSchemaType) => {
