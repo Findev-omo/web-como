@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { DateRange } from "@/components/dashboard/common/DateFilter";
-import { Activity } from "@/api/types/company/report";
 import Skeleton from "@/components/common/Skeleton";
 import DateFilter from "@/components/dashboard/common/DateFilter";
 import Pagination from "@/components/dashboard/common/Pagination";
