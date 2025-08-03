@@ -27,7 +27,7 @@ export default function AnnouncementList({ clubId }: { clubId: string }) {
   useEffect(() => {
     const fetchMaxPage = async () => {
       const res = await getNotices(1);
-      setMaxPage(res?.data.maxPage);
+      setMaxPage(res?.maxPage);
     };
 
     if (clubId) {

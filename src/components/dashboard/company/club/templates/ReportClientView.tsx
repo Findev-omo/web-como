@@ -9,16 +9,17 @@ import Pagination from "@/components/dashboard/common/Pagination";
 import ReportTable from "@/components/dashboard/company/club/molecules/ReportTable";
 import { useCompanyReports } from "@/hooks/queries/company";
 import { useRouter } from "next/navigation";
+import { CompanyReport } from "@/api/services/company";
 
 interface ReportClientViewProps {
-  activities: Activity[];
+  reports: CompanyReport[];
   currentPage: number;
   maxPage: number;
   initialDateRange: DateRange;
 }
 
 export default function ReportClientView({
-  activities: initialActivities,
+  reports: initialReports,
   currentPage: initialCurrentPage,
   maxPage: initialMaxPage,
   initialDateRange,
@@ -37,7 +38,7 @@ export default function ReportClientView({
     isError,
     error,
   } = useCompanyReports(initialCurrentPage, currentDateRange, {
-    list: initialActivities,
+    list: initialReports,
     maxPage: initialMaxPage,
   });
 
@@ -62,7 +63,7 @@ export default function ReportClientView({
     updateUrl(page, currentDateRange);
   };
 
-  const activities = reportsData?.list || [];
+  const reports = reportsData?.list || [];
   const maxPage = reportsData?.maxPage || 1;
 
   return (
@@ -78,7 +79,7 @@ export default function ReportClientView({
           <div>Error: {error.message}</div>
         ) : (
           <>
-            <ReportTable activities={activities} />
+            <ReportTable reports={reports} />
             <Pagination
               currentPage={initialCurrentPage}
               maxPage={maxPage}

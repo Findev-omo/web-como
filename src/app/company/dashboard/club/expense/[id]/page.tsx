@@ -52,7 +52,7 @@ const Page = ({ params }: { params: { id: string } }) => {
         leadersSummary: data.leadersSummary,
         activityPlan: data.activityPlan,
         memberCount: data.memberCount,
-        status: data.status,
+        status: data.status as ExpenseApplicationStatus,
         createdAt: data.createdAt,
         clubName: data.clubName,
       });

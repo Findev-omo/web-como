@@ -15,6 +15,7 @@ import {
 import { HiOutlineTrash } from "react-icons/hi2";
 import { formatDate } from "@/lib/utils";
 import toast from "react-hot-toast";
+import { ClubNotice } from "@/api/services/club";
 
 const tableHeadings = [
   "순번",
@@ -28,7 +29,7 @@ const tableHeadings = [
 function AnnouncementTable({ currentPage }: { currentPage: number }) {
   const pathname = usePathname();
   const { push } = useRouter();
-  const [notices, setNotices] = useState<Notice[]>([]);
+  const [notices, setNotices] = useState<ClubNotice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   // const { showToast } = useToast(); // This line is removed as per the edit hint.
 
@@ -38,33 +39,28 @@ function AnnouncementTable({ currentPage }: { currentPage: number }) {
     const fetchNotices = async () => {
       const result = await getNotices(currentPage, "");
       console.log("fetchNotices result", result);
-      const { noticeList, currentPage: cur, maxPage } = result.data;
-      setNotices(noticeList);
+      const { list, maxPage } = result;
+      setNotices(list);
       setIsLoading(false);
     };
     fetchNotices();
   }, [currentPage]);
 
-  const formatDate = (dateArray: number[]) => {
-    const [year, month, day, hour, minute, second] = dateArray;
-    return `${year}-${month.toString().padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
-  };
-
   // 최대 2개까지 고정 가능하도록 pin/unpin 구현
   const handlePin = (noticeId: number) => {
-    const pinnedCount = notices.filter((n) => n.isPinned === "Y").length;
+    const pinnedCount = notices.filter((n) => n.isPinned).length;
     if (pinnedCount >= 2) {
       toast.error("공지사항 상단 고정은 2개까지 가능합니다.");
       return;
     }
     setNotices((prev) =>
-      prev.map((n) => (n.noticeId === noticeId ? { ...n, isPinned: "Y" } : n))
+      prev.map((n) => (n.id === noticeId ? { ...n, isPinned: true } : n))
     );
     pinNotice(noticeId);
   };
   const handleUnpin = (noticeId: number) => {
     setNotices((prev) =>
-      prev.map((n) => (n.noticeId === noticeId ? { ...n, isPinned: "N" } : n))
+      prev.map((n) => (n.id === noticeId ? { ...n, isPinned: false } : n))
     );
     unpinNotice(noticeId);
   };
@@ -74,7 +70,7 @@ function AnnouncementTable({ currentPage }: { currentPage: number }) {
       let detail = await getNoticeDetail(noticeId);
       detail = {
         ...detail,
-        isPinned: notices.find((n) => n.noticeId === noticeId)?.isPinned,
+        isPinned: notices.find((n) => n.id === noticeId)?.isPinned,
       };
       // 상세 페이지에서 활용할 수 있도록 localStorage에 저장 (또는 필요시 state로 전달)
       localStorage.setItem("noticeDetail", JSON.stringify(detail));
@@ -86,20 +82,16 @@ function AnnouncementTable({ currentPage }: { currentPage: number }) {
   };
 
   const handleDelete = async (noticeId: number) => {
-    const response = await deleteNotice(noticeId);
-    console.log(response);
-    if (response.resultCode === "OK") {
-      // alert("공지사항이 삭제되었습니다.");
-      toast.success("공지사항이 삭제되었습니다.");
-      setNotices((prev) => prev.filter((n) => n.noticeId !== noticeId));
-    }
+    await deleteNotice(noticeId);
+    toast.success("공지사항이 삭제되었습니다.");
+    setNotices((prev) => prev.filter((n) => n.id !== noticeId));
   };
   if (isLoading) {
     return "Loading...";
   }
 
-  const pinnedNotices = notices.filter((n) => n.isPinned === "Y");
-  const normalNotices = notices.filter((n) => n.isPinned !== "Y");
+  const pinnedNotices = notices.filter((n) => n.isPinned);
+  const normalNotices = notices.filter((n) => !n.isPinned);
 
   // pinnedNotices와 normalNotices를 합쳐서 현재 페이지에 맞는 항목만 가져오기
   const allNotices = [...pinnedNotices, ...normalNotices];
@@ -129,20 +121,17 @@ function AnnouncementTable({ currentPage }: { currentPage: number }) {
         ))}
       </li>
       {currentNotices.map((notice, idx) => (
-        <li
-          key={notice.noticeId}
-          className="flex border-b border-gray-400 bg-gray-0"
-        >
+        <li key={notice.id} className="flex border-b border-gray-400 bg-gray-0">
           {[
-            notice.noticeId,
+            notice.id,
             notice.title,
-            notice.name,
-            formatDate(notice.createdDate),
+            notice.author,
+            formatDate(new Date(notice.createdAt)),
             notice.viewCount,
             notice.isPinned,
           ].map((data, i) => (
             <div
-              key={data}
+              key={`${notice.id}-${i}`}
               className={cn(
                 "my-3 mx-6 body-1 font-medium underline-offset-2 underline decoration-transparent line-clamp-1 transition duration-300",
                 i === 0 ? "w-8" : "flex-1",
@@ -158,7 +147,7 @@ function AnnouncementTable({ currentPage }: { currentPage: number }) {
               )}
               onClick={() => {
                 if (i === 1) {
-                  handleTitleClick(notice.noticeId);
+                  handleTitleClick(notice.id);
                 }
               }}
             >
@@ -166,7 +155,7 @@ function AnnouncementTable({ currentPage }: { currentPage: number }) {
                 startIndex + idx + 1 // 현재 페이지의 인덱스 계산
               ) : i === 1 ? (
                 <>
-                  {notice.isPinned === "Y" && (
+                  {notice.isPinned && (
                     <div className="mr-2 px-1">
                       <Pin />
                     </div>
@@ -174,11 +163,11 @@ function AnnouncementTable({ currentPage }: { currentPage: number }) {
                   <p className="flex-1 line-clamp-1">{data}</p>
                 </>
               ) : i === 5 ? (
-                notice.isPinned === "Y" ? (
+                notice.isPinned ? (
                   <>
                     <button
                       className="py-1 px-4 rounded border border-gray-800 body-1 font-medium text-gray-800 bg-gray-0 mr-2"
-                      onClick={() => handleUnpin(notice.noticeId)}
+                      onClick={() => handleUnpin(notice.id)}
                     >
                       {"고정 해제"}
                     </button>
@@ -187,12 +176,12 @@ function AnnouncementTable({ currentPage }: { currentPage: number }) {
                   <>
                     <button
                       className="py-1 px-4 rounded body-1 font-medium text-gray-50 bg-gray-800 mr-2"
-                      onClick={() => handlePin(notice.noticeId)}
+                      onClick={() => handlePin(notice.id)}
                     >
                       {"고정"}
                     </button>
                     <button
-                      onClick={() => handleDelete(notice.noticeId)}
+                      onClick={() => handleDelete(notice.id)}
                       className="py-1 px-4 rounded border border-point-red body-1 font-medium text-point-red bg-gray-0"
                     >
                       {"삭제"}

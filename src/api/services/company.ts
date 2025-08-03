@@ -1,23 +1,43 @@
 import { api } from "../client";
-import type { PaginatedResponse, BaseEntity } from "../types/common";
+import type { PaginatedResponse } from "../types/common";
 
 // 타입 정의
-export interface CompanyExpense extends BaseEntity {
-  title: string;
+export interface CompanyExpenseEntry {
+  id: number;
+  clubName: string;
+  applicantName: string;
+  department: string;
+  eventName: string;
+  createdDate: number[];
+  status: "PENDING" | "APPROVED" | "REJECTED";
+}
+
+export interface CompanyExpense {
+  id: number;
+  eventName: string;
   amount: number;
   status: string;
   clubName: string;
-  requestDate: string;
-  // ... 필요한 필드들 추가
+  createdAt: number[];
 }
 
 export interface CompanyExpenseDetail extends CompanyExpense {
   description: string;
   receipts: string[];
-  // ... 상세 정보 필드들
+  note: string;
+  location: string;
+  participantCount: number;
+  details: string;
+  file: string | null;
+  clubId: number;
+  clubImage: string;
+  leadersSummary: string;
+  activityPlan: string;
+  memberCount: number;
 }
 
-export interface CompanyReport extends BaseEntity {
+export interface CompanyReport {
+  id: number;
   title: string;
   clubName: string;
   submitDate: string;
@@ -36,7 +56,7 @@ export const companyService = {
   // 지출 관리
   expenses: {
     getList: (page: number, startDate: string, endDate: string) =>
-      api.get<PaginatedResponse<CompanyExpense>>(
+      api.get<PaginatedResponse<CompanyExpenseEntry>>(
         `/v1/manager/activity-expenses?page=${page}&startDate=${startDate}&endDate=${endDate}`
       ),
 

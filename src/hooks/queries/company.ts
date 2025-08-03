@@ -3,6 +3,7 @@ import {
   companyService,
   type CompanyExpense,
   type CompanyReport,
+  type CompanyExpenseEntry,
 } from "@/api/services/company";
 import type { DateRange } from "@/components/dashboard/common/DateFilter";
 import { formatDate } from "@/lib/format";
@@ -31,7 +32,7 @@ export const companyKeys = {
 export const useCompanyExpenses = (
   currentPage: number,
   currentDateRange: DateRange,
-  initialData?: { list: CompanyExpense[]; maxPage: number }
+  initialData?: { list: CompanyExpenseEntry[]; maxPage: number }
 ) => {
   const startDate = currentDateRange.startDate
     ? formatDate(currentDateRange.startDate)
