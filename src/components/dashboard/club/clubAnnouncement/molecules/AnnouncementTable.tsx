@@ -8,14 +8,16 @@ import { Notice } from "@/api/types/notice";
 import {
   deleteNotice,
   getNoticeDetail,
-  getNotices,
   pinNotice,
   unpinNotice,
 } from "@/api/actions/club/notice";
+import { getNotices } from "@/api/actions/club/notice/getNotices";
 import { HiOutlineTrash } from "react-icons/hi2";
 import { formatDate } from "@/lib/utils";
 import toast from "react-hot-toast";
 import { ClubNotice } from "@/api/services/club";
+import { ApiError } from "@/api/client";
+import { deleteAllCookies } from "@/lib/cookies";
 
 const tableHeadings = [
   "순번",
@@ -37,14 +39,25 @@ function AnnouncementTable({ currentPage }: { currentPage: number }) {
 
   useEffect(() => {
     const fetchNotices = async () => {
-      const result = await getNotices(currentPage, "");
-      console.log("fetchNotices result", result);
-      const { list, maxPage } = result;
-      setNotices(list);
-      setIsLoading(false);
+      try {
+        const result = await getNotices(currentPage, "");
+        console.log("fetchNotices result", result);
+        setNotices(result?.list || []);
+      } catch (error) {
+        if (error instanceof ApiError && error.code === "UNAUTHORIZED") {
+          toast.error(error.message);
+          await deleteAllCookies();
+          push("/login");
+        } else {
+          toast.error("공지사항 목록을 불러오는 데 실패했습니다.");
+        }
+        setNotices([]);
+      } finally {
+        setIsLoading(false);
+      }
     };
     fetchNotices();
-  }, [currentPage]);
+  }, [currentPage, push]);
 
   // 최대 2개까지 고정 가능하도록 pin/unpin 구현
   const handlePin = (noticeId: number) => {
@@ -88,6 +101,16 @@ function AnnouncementTable({ currentPage }: { currentPage: number }) {
   };
   if (isLoading) {
     return "Loading...";
+  }
+
+  if (!notices.length) {
+    return (
+      <div className="flex items-center justify-center border-b border-gray-400 bg-gray-0 h-96">
+        <p className="body-1 font-medium text-gray-800">
+          등록된 공지사항이 없습니다.
+        </p>
+      </div>
+    );
   }
 
   const pinnedNotices = notices.filter((n) => n.isPinned);

@@ -87,6 +87,10 @@ const nextConfig = {
             key: "X-XSS-Protection",
             value: "1; mode=block",
           },
+          {
+            key: "Access-Control-Expose-Headers",
+            value: "Authorization, authorization-refresh",
+          },
         ],
       },
       {

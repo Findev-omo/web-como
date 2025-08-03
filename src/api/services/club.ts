@@ -2,13 +2,25 @@ import { clubApi } from "../client";
 import type { PaginatedResponse, BaseEntity } from "../types/common";
 
 // 타입 정의
+export interface NoticeResponse {
+  list: {
+    id: number;
+    title: string;
+    writerName: string;
+    createdDate: string;
+    viewCount: number;
+    isPinned: "Y" | "N";
+  }[];
+  currentPage: number;
+  totalPages: number;
+}
+
 export interface ClubNotice extends BaseEntity {
   title: string;
-  content: string;
   author: string;
-  createdAt: string;
-  isPinned: boolean;
+  content?: string;
   viewCount: number;
+  isPinned: boolean;
 }
 
 // Club API 서비스
