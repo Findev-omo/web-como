@@ -15,7 +15,7 @@ import { formatDate } from "date-fns";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import ScheduleDetailPeriod from "../molecues/ScheduleDetail/ScheduleDetailPeriod";
-import { useToast } from "@/components/common/ToastContainer";
+import toast from "react-hot-toast";
 
 interface ScheduleDetailFormProps {
   type: "REGISTER" | "DETAIL" | "EDIT" | "MEMBERS";
@@ -30,14 +30,13 @@ const ScheduleDetailForm = ({
 }: ScheduleDetailFormProps) => {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { showToast } = useToast();
 
   useEffect(() => {
     if (sessionStorage.getItem("refresh-on-back") === "true") {
       sessionStorage.removeItem("refresh-on-back");
       router.refresh();
     }
-  }, [isSubmitting, router, type, scheduleId]);
+  }, [router]);
 
   const methods = useForm<ScheduleRegisterSchemaType>({
     resolver: zodResolver(ScheduleRegisterSchema),
@@ -117,10 +116,10 @@ const ScheduleDetailForm = ({
                   date: formatDate(data.date, "yyyy-MM-dd"),
                   time: data.time,
                   latitude: data.location.latitude
-                    ? data.location.latitude / 1e7
+                    ? parseFloat(String(data.location.latitude)) / 1e7
                     : 0,
                   longitude: data.location.longitude
-                    ? data.location.longitude / 1e7
+                    ? parseFloat(String(data.location.longitude)) / 1e7
                     : 0,
                 }),
               }
@@ -130,12 +129,13 @@ const ScheduleDetailForm = ({
               throw new Error("일정 등록에 실패했습니다.");
             }
 
-            sessionStorage.setItem("refresh-on-back", "true");
-            showToast("일정이 등록되었습니다.", "success");
-            router.replace(`/club/dashboard/manage/schedule`);
+            toast.success("일정이 등록되었습니다.");
+            // 즉시 새로고침하여 최신 데이터 반영
+            router.push(`/club/dashboard/manage/schedule`);
+            router.refresh();
           } catch (error) {
             console.error("일정 처리 실패:", error);
-            showToast("일정 등록에 실패했습니다.", "error");
+            toast.error("일정 등록에 실패했습니다.");
           }
         }
         if (type === "EDIT") {
@@ -167,35 +167,36 @@ const ScheduleDetailForm = ({
                   date: formatDate(data.date, "yyyy-MM-dd"),
                   time: data.time,
                   latitude: data.location.latitude
-                    ? data.location.latitude / 1e7
+                    ? parseFloat(String(data.location.latitude)) / 1e7
                     : 0,
                   longitude: data.location.longitude
-                    ? data.location.longitude / 1e7
+                    ? parseFloat(String(data.location.longitude)) / 1e7
                     : 0,
                 }),
               }
             );
 
             if (!response.ok) {
-              showToast("일정 수정에 실패했습니다.", "error");
+              toast.error("일정 수정에 실패했습니다.");
               throw new Error("일정 수정에 실패했습니다.");
             }
-            sessionStorage.setItem("refresh-on-back", "true");
-            showToast("일정이 수정되었습니다.", "success");
-            router.replace(`/club/dashboard/manage/schedule`);
+            toast.success("일정이 수정되었습니다.");
+            // 즉시 새로고침하여 최신 데이터 반영
+            router.push(`/club/dashboard/manage/schedule`);
+            router.refresh();
           } catch (error) {
             console.error("일정 수정 실패:", error);
-            showToast("일정 수정에 실패했습니다.", "error");
+            toast.error("일정 수정에 실패했습니다.");
           }
         }
       } catch (error) {
         console.error("일정 처리 실패:", error);
-        showToast("일정 처리에 실패했습니다.", "error");
+        toast.error("일정 처리에 실패했습니다.");
       } finally {
         setIsSubmitting(false);
       }
     },
-    [type, scheduleId, router, isSubmitting, showToast]
+    [type, scheduleId, router, isSubmitting]
   );
 
   const onSubmit = async (data: ScheduleRegisterSchemaType) => {

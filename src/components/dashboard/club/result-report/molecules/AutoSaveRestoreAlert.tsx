@@ -7,20 +7,16 @@ import toast from "react-hot-toast";
 import { Checked } from "@/assets/icons/checkbox";
 
 interface Props {
-  form: UseFormReturn<any>;
-  storageKey: string;
+  handleRestore?: () => void;
+  clearSavedData?: () => Promise<void>;
 }
 
-export function AutoSaveRestoreAlert({
-  handleRestore,
-  clearSavedData,
-}: {
-  handleRestore: () => void;
-  clearSavedData: () => Promise<void>;
-}) {
+export function AutoSaveRestoreAlert({ handleRestore, clearSavedData }: Props) {
   const handleConfirmRestore = () => {
-    handleRestore();
-    toast.success("작성중인 내용을 복원했습니다.");
+    if (handleRestore) {
+      handleRestore();
+      toast.success("작성중인 내용을 복원했습니다.");
+    }
   };
 
   return (

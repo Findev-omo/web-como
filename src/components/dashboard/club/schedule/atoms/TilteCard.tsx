@@ -2,7 +2,7 @@
 
 import { PageType } from "@/app/club/dashboard/manage/schedule/[id]/page";
 import { Remove, Plus } from "@/assets/icons/action";
-import { useToast } from "@/components/common/ToastContainer";
+import toast from "react-hot-toast";
 import { getAccessToken, getClubId } from "@/lib/cookies";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -22,27 +22,26 @@ const TitleCard = ({
 }) => {
   const title = ScheduleDetailCardType[type];
   const router = useRouter();
-  const { showToast } = useToast();
+
   const handleDelete = async () => {
     if (window.confirm("정말로 이 일정을 삭제하시겠습니까?")) {
       const token = await getAccessToken();
       const clubId = await getClubId();
-      const response = await fetch(
-        `/api/server/v1/executive/club/${clubId}/schedule/${scheduleId}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
-          },
-        }
-      );
+      const url = `/api/server/v1/executive/club/${clubId}/activity/${scheduleId}`;
+      console.log("Deleting schedule at URL:", url);
+      const response = await fetch(url, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+      });
       if (response.ok) {
-        showToast("일정이 삭제 되었습니다.", "warning");
+        toast.success("일정이 삭제 되었습니다.");
         router.replace("/club/dashboard/manage/schedule");
         router.refresh();
       } else {
-        showToast("일정 삭제에 실패했습니다.", "error");
+        toast.error("일정 삭제에 실패했습니다.");
       }
     }
   };

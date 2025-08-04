@@ -40,7 +40,7 @@ export default async function Page({
     <>
       <ReportOverview stats={stats} />
       <ReportClientView
-        activities={reportsData.list}
+        reports={reportsData.list}
         currentPage={currentPage}
         maxPage={reportsData.maxPage}
         initialDateRange={{ startDate, endDate }}

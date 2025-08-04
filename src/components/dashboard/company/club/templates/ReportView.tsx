@@ -3,10 +3,14 @@
 import { useState } from "react";
 import Search from "@/components/dashboard/common/Search";
 import { SearchValue } from "@/lib/types/search";
-import ReportList from "../organisms/ReportList";
+import ReportList from "@/components/dashboard/club/report/organisms/ReportList";
 import { DateRange } from "@/components/dashboard/common/DateFilter";
 
-export default function ReportView() {
+interface Props {
+  clubId?: string;
+}
+
+export default function ReportView({ clubId }: Props) {
   const [currentSearchValue, setCurrentSearchValue] = useState<SearchValue>({
     filter: "all",
     term: "",
@@ -30,14 +34,7 @@ export default function ReportView() {
         currentSearchFilter={currentSearchValue.filter!}
         handleSearch={handleSearch}
       /> */}
-      <ReportList
-        activities={[]}
-        currentPage={1}
-        maxPage={1}
-        currentDateRange={dateRange}
-        handleDateRangeChange={setDateRange}
-        handlePageChange={() => {}}
-      />
+      <ReportList clubId={clubId} />
     </div>
   );
 }

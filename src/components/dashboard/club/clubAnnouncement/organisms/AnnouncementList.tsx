@@ -7,7 +7,7 @@ import Pagination from "@/components/dashboard/common/Pagination";
 import AnnouncementTable from "@/components/dashboard/club/clubAnnouncement/molecules/AnnouncementTable";
 import { Plus } from "@/assets/icons/action";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { getNotices } from "@/api/actions/club/notice";
+import { getNotices } from "@/api/actions/club/notice/getNotices";
 
 export default function AnnouncementList({ clubId }: { clubId: string }) {
   const router = useRouter();
@@ -26,8 +26,8 @@ export default function AnnouncementList({ clubId }: { clubId: string }) {
 
   useEffect(() => {
     const fetchMaxPage = async () => {
-      const res = await getNotices(1);
-      setMaxPage(res?.data.maxPage);
+      const res = await getNotices(1, "");
+      setMaxPage(res?.maxPage);
     };
 
     if (clubId) {

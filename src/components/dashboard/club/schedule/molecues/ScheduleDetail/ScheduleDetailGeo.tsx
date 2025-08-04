@@ -31,12 +31,9 @@ const ScheduleDetailGeo = ({
             isLabel={false}
             value={location?.roadAddress}
             handleChange={(newLocation) => {
-              setValue("location", {
-                roadAddress: newLocation.roadAddress,
-                latitude: newLocation.latitude,
-                longitude: newLocation.longitude,
-                placeName: "",
-              });
+              setValue("location.roadAddress", newLocation.roadAddress);
+              setValue("location.latitude", newLocation.latitude);
+              setValue("location.longitude", newLocation.longitude);
             }}
             readonly={type === "DETAIL"}
           />
@@ -47,15 +44,6 @@ const ScheduleDetailGeo = ({
             id="location.placeName"
             placeholder="상세 주소를 입력하세요."
             inputStyle="w-full pr-9 h-[60px]"
-            value={location?.placeName}
-            onChange={(e) => {
-              setValue("location", {
-                roadAddress: location.roadAddress,
-                latitude: location.latitude,
-                longitude: location.longitude,
-                placeName: (e.target as HTMLInputElement).value,
-              });
-            }}
             readOnly={type === "DETAIL"}
           />
         </div>

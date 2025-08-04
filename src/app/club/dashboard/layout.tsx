@@ -4,6 +4,7 @@ import { HEADER_HEIGHT } from "@/lib/constants";
 import Header from "@/components/header/Header";
 import Loading from "@/app/club/dashboard/loading";
 import SideBar from "@/components/dashboard/club/common/SideBar";
+import RQProvider from "@/lib/providers";
 
 export default function DashboardLayout({
   children,
@@ -26,7 +27,9 @@ export default function DashboardLayout({
         style={{ marginTop: HEADER_HEIGHT }}
       >
         <SideBar />
-        <Suspense fallback={<Loading />}>{children}</Suspense>
+        <RQProvider>
+          <Suspense fallback={<Loading />}>{children}</Suspense>
+        </RQProvider>
       </main>
     </>
   );

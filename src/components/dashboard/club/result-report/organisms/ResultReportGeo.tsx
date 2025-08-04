@@ -92,14 +92,6 @@ const ResultReportGeo = ({
             id="data.locationDetail"
             placeholder="상세 주소를 입력하세요."
             inputStyle="w-full pr-9 h-[60px]"
-            value={locationDetail}
-            onChange={(e: any) => {
-              setValue(
-                "data.locationDetail",
-                (e.target as HTMLInputElement).value,
-                { shouldValidate: true }
-              );
-            }}
             readOnly={type === "DETAIL"}
           />
         </div>

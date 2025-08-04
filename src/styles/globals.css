@@ -26,6 +26,33 @@
     font-synthesis: none !important;
   }
 
+  /* Performance optimizations */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    text-rendering: optimizeSpeed;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Optimize animations */
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  /* Reduce motion for users who prefer it */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
   h1 {
     @apply text-3xl tracking-tightest;
   }
@@ -117,4 +144,3 @@
     display: none !important;
   }
 }
-

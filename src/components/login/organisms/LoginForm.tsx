@@ -119,17 +119,23 @@ export default function LoginForm() {
         return;
       }
 
-      const accessToken = response.headers.get("Authorization");
-      // console.log("7. 받은 토큰:", accessToken);
+      const accessTokenHeader = response.headers.get("Authorization");
+      const refreshToken = response.headers.get("authorization-refresh"); // 실제 헤더 이름으로 수정
+      // console.log("7. 받은 토큰:", accessToken, refreshToken);
 
-      if (!accessToken) {
+      if (!accessTokenHeader || !refreshToken) {
+        // 두 토큰 모두 확인
         // console.log("8. 토큰 없음");
+        setLoginError("로그인에 실패했습니다. 다시 시도해주세요."); // 사용자에게 피드백
         return;
       }
 
+      // "Bearer " 접두사 제거
+      const accessToken = accessTokenHeader.replace("Bearer ", "");
+
       // console.log("9. 토큰 저장 시작");
       await saveAccessToken(accessToken);
-      await saveRefreshToken(accessToken);
+      await saveRefreshToken(refreshToken); // 올바른 refreshToken 저장
       await saveDashboardType(formData.role);
       await saveRole(formData.role);
       // console.log("10. 저장 완료, role:", formData.role);

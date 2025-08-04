@@ -3,20 +3,20 @@
 import { usePathname, useRouter } from "next/navigation";
 import { cn, formatDate, formatDateArray } from "@/lib/utils";
 import { PrintButton } from "@/components/dashboard/common/DocUtil";
-import { Activity } from "@/api/types/company/report";
 import { useRef, useState, useEffect } from "react";
 import { useReactToPrint } from "react-to-print";
 import { getReportDetail } from "@/api/actions/company/report/getReportDetail";
 import ReportDetailPrint from "../organisms/ReportDetailPrint";
+import { CompanyReport } from "@/api/services/company";
 
 interface Props {
-  activities: Activity[];
+  reports: CompanyReport[];
 }
 
-export default function ReportTable({ activities }: Props) {
+export default function ReportTable({ reports }: Props) {
   const pathname = usePathname();
   const { push } = useRouter();
-  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(
+  const [selectedReport, setSelectedReport] = useState<CompanyReport | null>(
     null
   );
   const [activityDetail, setActivityDetail] = useState<any>(null);
@@ -26,7 +26,7 @@ export default function ReportTable({ activities }: Props) {
   const handlePrint = useReactToPrint({
     content: () => contentRef.current,
     contentRef: contentRef,
-    documentTitle: selectedActivity?.eventName || "활동보고서",
+    documentTitle: selectedReport?.title || "활동보고서",
     pageStyle: `
       @page {
         size: A4;
@@ -42,17 +42,17 @@ export default function ReportTable({ activities }: Props) {
   } as any);
 
   useEffect(() => {
-    if (activityDetail && selectedActivity) {
+    if (activityDetail && selectedReport) {
       handlePrint();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activityDetail, selectedActivity]);
+  }, [activityDetail, selectedReport]);
 
-  const handlePrintClick = async (activity: Activity) => {
-    setSelectedActivity(activity);
+  const handlePrintClick = async (report: CompanyReport) => {
+    setSelectedReport(report);
     setIsLoading(true);
     try {
-      const detail = await getReportDetail(activity.id);
+      const detail = await getReportDetail(report.id);
       setActivityDetail(detail);
     } catch (error) {
       console.error("상세 데이터 조회 실패:", error);
@@ -61,7 +61,7 @@ export default function ReportTable({ activities }: Props) {
     }
   };
 
-  if (!activities) return <div>loading...</div>;
+  if (!reports) return <div>loading...</div>;
   return (
     <>
       <ul className="flex flex-col gap-1 w-full">
@@ -88,9 +88,9 @@ export default function ReportTable({ activities }: Props) {
             인쇄
           </div>
         </li>
-        {activities.map((activity: Activity, idx: number) => (
+        {reports.map((report: CompanyReport, idx: number) => (
           <li
-            key={activity.id}
+            key={report.id}
             className="flex border-b border-gray-400 bg-gray-0 w-full"
           >
             {/* 순번 */}
@@ -99,51 +99,51 @@ export default function ReportTable({ activities }: Props) {
             </div>
             {/* 작성 일자 */}
             <div className="flex-1 min-w-[100px] my-3 mx-6 body-1 font-medium text-center text-gray-800">
-              {formatDateArray(activity.createdDate)}
+              {formatDate(new Date(report.submitDate))}
             </div>
             {/* 동호회명 */}
             <div className="flex-[2] min-w-[180px] my-3 mx-6 body-1 font-medium text-center text-gray-800">
-              {activity.clubName}
+              {report.clubName}
             </div>
             {/* 활동명 */}
             <div
               className="flex-[2] min-w-[250px] my-3 mx-6 body-1 font-medium text-left hover:decoration-gray-800 cursor-pointer underline-offset-2 underline decoration-transparent line-clamp-1 transition duration-300 text-gray-800"
               onClick={() =>
-                push(`${pathname}/${activity.id}?status=${activity.status}`)
+                push(`${pathname}/${report.id}?status=${report.status}`)
               }
             >
-              {activity.eventName}
+              {report.title}
             </div>
             {/* 활동일 */}
             <div className="flex-1 min-w-[100px] my-3 mx-6 body-1 font-medium text-center text-gray-800">
-              {formatDate(new Date(activity.activityDate))}
+              {/* This needs to be implemented */}
             </div>
             {/* 확인 상태 */}
             <div
               className={cn(
                 "flex-1 min-w-[80px] my-3 mx-6 body-1 font-medium text-center",
-                activity.status === "PENDING"
+                report.status === "PENDING"
                   ? "text-gray-500"
-                  : activity.status === "REJECTED"
+                  : report.status === "REJECTED"
                     ? "text-point-red"
                     : "text-point-blue"
               )}
             >
-              {activity.status === "PENDING"
+              {report.status === "PENDING"
                 ? "미확인"
-                : activity.status === "REJECTED"
+                : report.status === "REJECTED"
                   ? "반려"
-                  : activity.status === "APPROVED"
+                  : report.status === "APPROVED"
                     ? "승인"
                     : "-"}
             </div>
             {/* 인쇄 */}
             <div className="flex-[0.7] min-w-[60px] flex items-center justify-center gap-2 m-0 my-3 mx-6">
-              {activity.status === "PENDING" ? (
+              {report.status === "PENDING" ? (
                 "-"
               ) : (
                 <PrintButton
-                  onClick={() => handlePrintClick(activity)}
+                  onClick={() => handlePrintClick(report)}
                   disabled={isLoading}
                   className="disabled:opacity-50"
                 />

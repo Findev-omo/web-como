@@ -67,7 +67,7 @@ const ResultReportFormProvider = () => {
     methods.trigger();
   }, [methods]);
 
-  const { clearSavedData } = useAutoSave({
+  const autoSave = useAutoSave({
     form: methods,
     storageKey: "result-report-form",
     debounceMs: 2000,
@@ -135,7 +135,7 @@ const ResultReportFormProvider = () => {
         if (!response.ok) {
           throw new Error("활동 보고서 작성에 실패했습니다.");
         }
-        await clearSavedData();
+        await autoSave.clearSavedData();
         toast.success("활동 보고서 작성에 성공했습니다.");
 
         methods.reset();
@@ -146,7 +146,7 @@ const ResultReportFormProvider = () => {
         setIsSubmitting(false);
       }
     },
-    [isSubmitting, router, methods, clearSavedData]
+    [isSubmitting, router, methods, autoSave]
   );
 
   const onSubmit = async (data: ResultReportSchemaType) => {
@@ -166,7 +166,19 @@ const ResultReportFormProvider = () => {
           <ResultReportSubmitCard isSubmitting={isSubmitting} />
         </article>
       </form>
-      <AutoSaveRestoreAlert form={methods} storageKey="result-report-form" />
+      <AutoSaveRestoreAlert
+        handleRestore={async () => {
+          const savedData = await autoSave.restoreData();
+          if (savedData) {
+            Object.keys(savedData).forEach((key) => {
+              if (savedData[key] !== undefined) {
+                methods.setValue(key as any, savedData[key]);
+              }
+            });
+          }
+        }}
+        clearSavedData={autoSave.clearSavedData}
+      />
     </FormProvider>
   );
 };

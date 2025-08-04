@@ -6,13 +6,13 @@ import ExpenseTable from "@/components/dashboard/company/club/molecules/ExpenseT
 import DateFilter, {
   DateRange,
 } from "@/components/dashboard/common/DateFilter";
-import { ExpenseApplicationEntry } from "@/api/types/company/expense";
+import { CompanyExpenseEntry } from "@/api/services/company";
 import { formatDate } from "@/lib/format";
-import { useCompanyExpenses } from "@/hooks/queries/useCompanyExpenses";
+import { useCompanyExpenses } from "@/hooks/queries/company";
 import Skeleton from "@/components/common/Skeleton";
 
 interface ClubExpenseClientViewProps {
-  expenseList: ExpenseApplicationEntry[];
+  expenseList: CompanyExpenseEntry[];
   currentPage: number;
   maxPage: number;
   initialDateRange: DateRange;
@@ -34,10 +34,16 @@ export default function ClubExpenseClientView({
     isLoading,
     isError,
     error,
-  } = useCompanyExpenses(currentPage, currentDateRange, {
-    list: expenseList,
-    maxPage: initialMaxPage,
-  });
+  } = useCompanyExpenses(
+    currentPage,
+    currentDateRange,
+    currentPage === initialCurrentPage
+      ? {
+          list: expenseList,
+          maxPage: initialMaxPage,
+        }
+      : undefined
+  );
 
   const handleDateRangeChange = (dateRange: DateRange) => {
     setCurrentPage(1);

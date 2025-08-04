@@ -8,7 +8,7 @@ import {
   unpinNotice,
 } from "@/api/actions/club/notice";
 import { useRouter } from "next/navigation";
-import { useToast } from "@/components/common/ToastContainer";
+import toast from "react-hot-toast";
 
 interface NoticeDetail {
   data?: {
@@ -31,7 +31,7 @@ export default function AnnouncementDetailContent({ isEditable }: Props) {
   const [detail, setDetail] = useState<NoticeDetail | null>(null);
   const [isPinned, setIsPinned] = useState<"Y" | "N">("N");
   const router = useRouter();
-  const { showToast } = useToast();
+  
   useEffect(() => {
     const stored = localStorage.getItem("noticeDetail");
     if (stored) {
@@ -76,7 +76,7 @@ export default function AnnouncementDetailContent({ isEditable }: Props) {
   const handleDelete = async (noticeId: number) => {
     await deleteNotice(noticeId);
     // alert("공지사항이 삭제되었습니다.");
-    showToast("공지사항이 삭제되었습니다.", "warning");
+    toast.success("공지사항이 삭제되었습니다.");
     router.replace("/club/dashboard/manage/announcement");
   };
 

@@ -31,8 +31,8 @@ export default function EmployeeSearch({ onSearch }: Props) {
       handleChange={({ term, field }) => {
         setCurrentSearchValue((prev) => ({
           ...prev,
-          term: term || "",
-          field: field !== undefined ? field : prev.field,
+          term: term === undefined ? prev.term : term,
+          field: field === undefined ? prev.field : field,
         }));
       }}
       handleSearch={handleSearch}

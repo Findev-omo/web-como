@@ -17,14 +17,14 @@ export default async function ManageSchedulePage({
   //   `v1/executive/club/{clubId}/schedule/existence`,
   //   true
   // );
- 
+
   return (
     <>
       <ScheduleTitle />
       <ScheduleList
-        schedules={SchedulesList.List}
-        currentPage={SchedulesList.currentPage}
-        maxPage={SchedulesList.maxPage}
+        schedules={SchedulesList?.List}
+        currentPage={SchedulesList?.currentPage}
+        maxPage={SchedulesList?.maxPage}
         // isExist={isExist.data}
       />
     </>

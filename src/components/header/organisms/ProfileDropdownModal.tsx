@@ -11,7 +11,7 @@ import {
   saveClubName,
 } from "@/lib/cookies";
 import { getData } from "@/api/action";
-import { closeModal } from "@/lib/utils";
+import { closeModal, openModal } from "@/lib/utils";
 import Avatar from "@/components/common/Avatar";
 import Backdrop from "@/components/common/Backdrop";
 import { ChevronDown } from "@/assets/icons/chevron";
@@ -23,8 +23,8 @@ interface Props {
 }
 
 interface Club {
-  id: string;
-  name: string;
+  clubId: number;
+  clubName: string;
 }
 
 export default function ProfileDropdownModal({ profileImage }: Props) {
@@ -63,6 +63,7 @@ export default function ProfileDropdownModal({ profileImage }: Props) {
         try {
           const clubsRes = await getData("v1/executive/club/select", true);
           if (clubsRes.resultCode === "OK" && clubsRes.data) {
+            console.log("동호회 목록 데이터:", clubsRes.data); // 디버깅을 위한 로그
             setClubs(clubsRes.data);
           }
         } catch (error) {
@@ -73,7 +74,7 @@ export default function ProfileDropdownModal({ profileImage }: Props) {
     loadDropdownData();
   }, [isOpen]);
 
-  const handleClose = () => closeModal("profile-dropdown");
+  const handleClose = () => closeModal(); // 모든 모달 닫기
 
   const handleLogout = async () => {
     try {
@@ -86,9 +87,9 @@ export default function ProfileDropdownModal({ profileImage }: Props) {
     }
   };
 
-  const handleClubChange = async (clubId: string, clubName: string) => {
+  const handleClubChange = async (clubId: number, clubName: string) => {
     try {
-      await saveClubId(clubId);
+      await saveClubId(clubId.toString());
       await saveClubName(clubName);
       setCurrentClubName(clubName);
       setIsClubDropdownOpen(false);
@@ -102,65 +103,101 @@ export default function ProfileDropdownModal({ profileImage }: Props) {
   return (
     <div id="profile-dropdown" className="fixed modal hidden">
       <Backdrop onClick={handleClose} />
-      <div className="fixed top-16 right-8 z-50 w-60 rounded-xl bg-gray-0 shadow-lg border border-gray-200">
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h3 className="h3 font-semibold text-gray-900">
-            {profile?.name || "사용자"}님
-          </h3>
-          <button onClick={handleClose}>
-            <Close className="w-6 h-6 text-gray-900" />
-          </button>
-        </div>
-        <div className="flex flex-col text-center">
-          <div className="flex flex-col items-center gap-3.5 p-4">
-            <Avatar size="lg" src={profile?.profileImage || profileImage} />
-            <div className="caption font-medium text-gray-500">
-              {role === "company"
-                ? profile?.departmentName || profile?.companyName
-                : currentClubName}
+      <div className="fixed top-16 right-[30px] z-50 w-[390px] rounded-xl border border-gray-400">
+        <div className="space-y-[28px] p-8 rounded-t-xl bg-gray-0">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <Avatar
+                size="w-10 h-10"
+                src={profile?.profileImage || profileImage}
+              />
+              <span className="h3 font-semibold text-gray-900">
+                {profile?.name || "사용자"}님
+              </span>
             </div>
-          </div>
-
-          {role === "club" && (
             <div
-              className="p-4 body-1 font-medium text-gray-500 hover:text-gray-900 cursor-pointer border-t border-gray-200"
-              onClick={() => setIsClubDropdownOpen((prev) => !prev)}
+              className="flex items-center justify-end w-8 h-8 cursor-pointer"
+              onClick={handleClose}
             >
-              <div className="flex items-center justify-between">
-                {"동호회 전환"}
-                <ChevronDown
-                  className={`w-5 h-5 transition-transform ${
-                    isClubDropdownOpen ? "rotate-180" : ""
-                  }`}
-                />
-              </div>
-              {isClubDropdownOpen && (
-                <ul className="mt-2 flex flex-col gap-1">
-                  {clubs.map((club) => (
-                    <li
-                      key={club.id}
-                      className="p-2 text-left rounded-md hover:bg-gray-100"
-                      onClick={() => handleClubChange(club.id, club.name)}
-                    >
-                      {club.name}
-                    </li>
-                  ))}
-                </ul>
-              )}
+              <Close className="w-6 h-6 text-gray-900" />
             </div>
-          )}
+          </div>
 
-          <div className="p-4 body-1 font-medium text-gray-500 hover:text-gray-900 cursor-pointer border-t border-gray-200">
-            <div className="flex items-center justify-between">
-              {"내 정보 수정"}
+          <div className="space-y-2">
+            {role === "club" && (
+              <div className="space-y-1 p-3 rounded-md bg-orange-50">
+                <span className="body-2 font-medium text-gray-600">
+                  관리중인 동호회
+                </span>
+                <div className="relative">
+                  <div
+                    className="flex items-center justify-between cursor-pointer"
+                    onClick={() => setIsClubDropdownOpen((prev) => !prev)}
+                  >
+                    <span className="h4 font-bold text-gray-900">
+                      {currentClubName || "동호회 개설 테스트"}
+                    </span>
+                    <ChevronDown
+                      className={`w-5 h-5 transition-transform ${
+                        isClubDropdownOpen ? "rotate-180" : ""
+                      }`}
+                    />
+                  </div>
+                  {isClubDropdownOpen && (
+                    <div className="absolute left-0 right-0 mt-2 bg-gray-0 rounded-md shadow-md z-50 border border-gray-200">
+                      {clubs.map((club) => (
+                        <div
+                          key={club.clubId}
+                          className="p-3 h4 font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
+                          onClick={() =>
+                            handleClubChange(club.clubId, club.clubName)
+                          }
+                        >
+                          {club.clubName}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            {role === "company" && (
+              <div className="space-y-1 p-3 rounded-md bg-orange-50">
+                <span className="body-2 font-medium text-gray-600">
+                  주무부서
+                </span>
+                <div className="flex items-center justify-between">
+                  <span className="h4 font-bold text-gray-900">
+                    {profile?.companyName}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            <div
+              className="w-full p-3 h4 font-medium text-gray-700 cursor-pointer"
+              onClick={() => openModal("customer-center")}
+            >
+              고객센터
+            </div>
+            <div
+              className="w-full p-3 h4 font-medium text-gray-700 cursor-pointer"
+              onClick={() =>
+                router.push(
+                  role === "club" ? "/club/support" : "/company/support"
+                )
+              }
+            >
+              문의 및 기술지원
             </div>
           </div>
-          <div
-            className="p-4 body-1 font-medium text-gray-500 hover:text-gray-900 cursor-pointer border-t border-gray-200"
-            onClick={handleLogout}
-          >
-            {"로그아웃"}
-          </div>
+        </div>
+
+        <div
+          className="w-full py-3.5 rounded-b-xl text-center h3 font-semibold text-gray-0 bg-brand-orange cursor-pointer"
+          onClick={handleLogout}
+        >
+          로그아웃
         </div>
       </div>
     </div>

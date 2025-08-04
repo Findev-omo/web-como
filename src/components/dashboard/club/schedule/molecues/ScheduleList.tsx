@@ -38,10 +38,9 @@ const ScheduleList = ({
   useEffect(() => {
     if (sessionStorage.getItem("refresh-on-back") === "true") {
       sessionStorage.removeItem("refresh-on-back");
-
       router.refresh();
     }
-  }, []);
+  }, [router]);
 
   return (
     <div className="space-y-10 p-8 rounded-xl bg-gray-0">
