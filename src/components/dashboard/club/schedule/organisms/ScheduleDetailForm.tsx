@@ -116,10 +116,10 @@ const ScheduleDetailForm = ({
                   date: formatDate(data.date, "yyyy-MM-dd"),
                   time: data.time,
                   latitude: data.location.latitude
-                    ? data.location.latitude / 1e7
+                    ? parseFloat(String(data.location.latitude)) / 1e7
                     : 0,
                   longitude: data.location.longitude
-                    ? data.location.longitude / 1e7
+                    ? parseFloat(String(data.location.longitude)) / 1e7
                     : 0,
                 }),
               }
@@ -166,10 +166,10 @@ const ScheduleDetailForm = ({
                   date: formatDate(data.date, "yyyy-MM-dd"),
                   time: data.time,
                   latitude: data.location.latitude
-                    ? data.location.latitude / 1e7
+                    ? parseFloat(String(data.location.latitude)) / 1e7
                     : 0,
                   longitude: data.location.longitude
-                    ? data.location.longitude / 1e7
+                    ? parseFloat(String(data.location.longitude)) / 1e7
                     : 0,
                 }),
               }
