@@ -41,7 +41,6 @@ function AnnouncementTable({ currentPage }: { currentPage: number }) {
     const fetchNotices = async () => {
       try {
         const result = await getNotices(currentPage, "");
-        console.log("fetchNotices result", result);
         setNotices(result?.list || []);
       } catch (error) {
         if (error instanceof ApiError && error.code === "UNAUTHORIZED") {
@@ -79,6 +78,11 @@ function AnnouncementTable({ currentPage }: { currentPage: number }) {
   };
 
   const handleTitleClick = async (noticeId: number) => {
+    if (!noticeId || noticeId === undefined) {
+      toast.error("공지사항 ID가 유효하지 않습니다.");
+      return;
+    }
+
     try {
       let detail = await getNoticeDetail(noticeId);
       detail = {
@@ -89,7 +93,6 @@ function AnnouncementTable({ currentPage }: { currentPage: number }) {
       localStorage.setItem("noticeDetail", JSON.stringify(detail));
       push(`${pathname}/${noticeId}`);
     } catch (error) {
-      // alert("공지사항 상세 정보를 불러오지 못했습니다.");
       toast.error("공지사항 상세 정보를 불러오지 못했습니다.");
     }
   };
@@ -127,7 +130,7 @@ function AnnouncementTable({ currentPage }: { currentPage: number }) {
       <li className="flex border-y border-gray-400 bg-gray-200">
         {tableHeadings.map((heading, i) => (
           <div
-            key={heading}
+            key={`heading-${i}`}
             className={cn(
               "my-3 mx-6 body-1 font-bold text-gray-900",
               i === 0 ? "w-8" : "flex-1",
@@ -143,81 +146,87 @@ function AnnouncementTable({ currentPage }: { currentPage: number }) {
           </div>
         ))}
       </li>
-      {currentNotices.map((notice, idx) => (
-        <li key={notice.id} className="flex border-b border-gray-400 bg-gray-0">
-          {[
-            notice.id,
-            notice.title,
-            notice.author,
-            formatDate(new Date(notice.createdAt)),
-            notice.viewCount,
-            notice.isPinned,
-          ].map((data, i) => (
-            <div
-              key={`${notice.id}-${i}`}
-              className={cn(
-                "my-3 mx-6 body-1 font-medium underline-offset-2 underline decoration-transparent line-clamp-1 transition duration-300",
-                i === 0 ? "w-8" : "flex-1",
-                i === 1
-                  ? "flex items-center hover:decoration-gray-800 cursor-pointer hover:underline"
-                  : "text-center",
-                i === 4 ? "max-w-20" : "",
-                [2, 3].includes(i) ? "max-w-36" : "",
-                i === 5
-                  ? "flex items-center justify-center gap-2 min-w-32 max-w-48 m-0"
-                  : "",
-                "text-gray-800"
-              )}
-              onClick={() => {
-                if (i === 1) {
-                  handleTitleClick(notice.id);
-                }
-              }}
-            >
-              {i === 0 ? (
-                startIndex + idx + 1 // 현재 페이지의 인덱스 계산
-              ) : i === 1 ? (
-                <>
-                  {notice.isPinned && (
-                    <div className="mr-2 px-1">
-                      <Pin />
-                    </div>
-                  )}
-                  <p className="flex-1 line-clamp-1">{data}</p>
-                </>
-              ) : i === 5 ? (
-                notice.isPinned ? (
+      {currentNotices.map((notice, idx) => {
+        // 각 공지사항마다 별도의 클릭 핸들러 생성 (클로저 문제 해결)
+        const handleCurrentNoticeClick = () => {
+          handleTitleClick(notice.id);
+        };
+
+        return (
+          <li
+            key={notice.id || `notice-${idx}`}
+            className="flex border-b border-gray-400 bg-gray-0"
+          >
+            {[
+              notice.id,
+              notice.title,
+              notice.author,
+              formatDate(new Date(notice.createdAt)),
+              notice.viewCount,
+              notice.isPinned,
+            ].map((data, i) => (
+              <div
+                key={`${notice.id || idx}-${i}`}
+                className={cn(
+                  "my-3 mx-6 body-1 font-medium underline-offset-2 underline decoration-transparent line-clamp-1 transition duration-300",
+                  i === 0 ? "w-8" : "flex-1",
+                  i === 1
+                    ? "flex items-center hover:decoration-gray-800 cursor-pointer hover:underline"
+                    : "text-center",
+                  i === 4 ? "max-w-20" : "",
+                  [2, 3].includes(i) ? "max-w-36" : "",
+                  i === 5
+                    ? "flex items-center justify-center gap-2 min-w-32 max-w-48 m-0"
+                    : "",
+                  "text-gray-800"
+                )}
+                onClick={i === 1 ? handleCurrentNoticeClick : undefined}
+              >
+                {i === 0 ? (
+                  startIndex + idx + 1 // 현재 페이지의 인덱스 계산
+                ) : i === 1 ? (
                   <>
-                    <button
-                      className="py-1 px-4 rounded border border-gray-800 body-1 font-medium text-gray-800 bg-gray-0 mr-2"
-                      onClick={() => handleUnpin(notice.id)}
-                    >
-                      {"고정 해제"}
-                    </button>
+                    {notice.isPinned && (
+                      <div className="mr-2 px-1">
+                        <Pin />
+                      </div>
+                    )}
+                    <p className="flex-1 line-clamp-1">{data}</p>
                   </>
+                ) : i === 5 ? (
+                  notice.isPinned ? (
+                    <>
+                      <button
+                        className="py-1 px-4 rounded border border-gray-800 body-1 font-medium text-gray-800 bg-gray-0 mr-2"
+                        onClick={() => handleUnpin(notice.id)}
+                      >
+                        {"고정 해제"}
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        className="py-1 px-4 rounded body-1 font-medium text-gray-50 bg-gray-800 mr-2"
+                        onClick={() => handlePin(notice.id)}
+                      >
+                        {"고정"}
+                      </button>
+                      <button
+                        onClick={() => handleDelete(notice.id)}
+                        className="py-1 px-4 rounded border border-point-red body-1 font-medium text-point-red bg-gray-0"
+                      >
+                        {"삭제"}
+                      </button>
+                    </>
+                  )
                 ) : (
-                  <>
-                    <button
-                      className="py-1 px-4 rounded body-1 font-medium text-gray-50 bg-gray-800 mr-2"
-                      onClick={() => handlePin(notice.id)}
-                    >
-                      {"고정"}
-                    </button>
-                    <button
-                      onClick={() => handleDelete(notice.id)}
-                      className="py-1 px-4 rounded border border-point-red body-1 font-medium text-point-red bg-gray-0"
-                    >
-                      {"삭제"}
-                    </button>
-                  </>
-                )
-              ) : (
-                data
-              )}
-            </div>
-          ))}
-        </li>
-      ))}
+                  data
+                )}
+              </div>
+            ))}
+          </li>
+        );
+      })}
     </ul>
   );
 }
