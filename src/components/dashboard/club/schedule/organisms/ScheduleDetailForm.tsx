@@ -36,7 +36,7 @@ const ScheduleDetailForm = ({
       sessionStorage.removeItem("refresh-on-back");
       router.refresh();
     }
-  }, [isSubmitting, router, type, scheduleId]);
+  }, [router]);
 
   const methods = useForm<ScheduleRegisterSchemaType>({
     resolver: zodResolver(ScheduleRegisterSchema),
@@ -129,9 +129,10 @@ const ScheduleDetailForm = ({
               throw new Error("일정 등록에 실패했습니다.");
             }
 
-            sessionStorage.setItem("refresh-on-back", "true");
             toast.success("일정이 등록되었습니다.");
-            router.replace(`/club/dashboard/manage/schedule`);
+            // 즉시 새로고침하여 최신 데이터 반영
+            router.push(`/club/dashboard/manage/schedule`);
+            router.refresh();
           } catch (error) {
             console.error("일정 처리 실패:", error);
             toast.error("일정 등록에 실패했습니다.");
@@ -179,9 +180,10 @@ const ScheduleDetailForm = ({
               toast.error("일정 수정에 실패했습니다.");
               throw new Error("일정 수정에 실패했습니다.");
             }
-            sessionStorage.setItem("refresh-on-back", "true");
             toast.success("일정이 수정되었습니다.");
-            router.replace(`/club/dashboard/manage/schedule`);
+            // 즉시 새로고침하여 최신 데이터 반영
+            router.push(`/club/dashboard/manage/schedule`);
+            router.refresh();
           } catch (error) {
             console.error("일정 수정 실패:", error);
             toast.error("일정 수정에 실패했습니다.");
