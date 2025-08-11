@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 export async function handler(req: NextRequest) {
   const { pathname, search } = new URL(req.url);
@@ -7,6 +8,13 @@ export async function handler(req: NextRequest) {
 
   const headers = new Headers(req.headers);
   headers.delete("host");
+
+  // 쿠키의 accessToken을 Authorization 헤더로 주입 (클라이언트가 헤더를 안 붙여도 동작하도록)
+  const cookieStore = cookies();
+  const accessToken = cookieStore.get("accessToken")?.value;
+  if (!headers.get("Authorization") && accessToken) {
+    headers.set("Authorization", `Bearer ${accessToken}`);
+  }
 
   const fetchOptions: RequestInit = {
     method: req.method,

@@ -9,12 +9,12 @@ import {
 } from "./lib/constants";
 
 export function middleware(req: NextRequest) {
-  const refreshToken = cookies().get("refreshToken");
+  const accessToken = cookies().get("accessToken");
   const type = cookies().get("type");
   const clubId = cookies().get("clubId");
 
   if (req.nextUrl.pathname === "/") {
-    if (refreshToken) {
+    if (accessToken) {
       if (type?.value === "club") {
         if (clubId?.value) {
           return NextResponse.redirect(
@@ -33,7 +33,7 @@ export function middleware(req: NextRequest) {
     }
   }
 
-  if (!req.nextUrl.pathname.startsWith(LOGIN_ENDPOINT) && !refreshToken) {
+  if (!req.nextUrl.pathname.startsWith(LOGIN_ENDPOINT) && !accessToken) {
     return NextResponse.redirect(new URL(LOGIN_ENDPOINT, req.url));
   } else if (
     req.nextUrl.pathname.startsWith(CLUB_ENDPOINT) &&
@@ -61,7 +61,7 @@ export function middleware(req: NextRequest) {
     req.nextUrl.pathname.startsWith(LOGIN_ENDPOINT) &&
     !req.nextUrl.pathname.startsWith(LOGIN_ENDPOINT + "/club") &&
     !req.nextUrl.pathname.startsWith(LOGIN_ENDPOINT + "/company") &&
-    refreshToken
+    accessToken
   ) {
     if (type?.value === "club" && clubId?.value) {
       return NextResponse.redirect(new URL(CLUB_DASHBOARD_ENDPOINT, req.url));
@@ -74,7 +74,7 @@ export function middleware(req: NextRequest) {
 
   if (
     req.nextUrl.pathname.startsWith(LOGIN_ENDPOINT + "/club") &&
-    !refreshToken
+    !accessToken
   ) {
     return NextResponse.redirect(new URL(LOGIN_ENDPOINT, req.url));
   }

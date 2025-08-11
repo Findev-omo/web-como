@@ -36,13 +36,13 @@ export default function DashboardOverview() {
     useState<NotificationData>();
   const getDashboardNotifications = useCallback(async () => {
     try {
-      const response = await getData(
-        "v1/executive/club/{clubId}/dashboard/notifications",
-        true
+      const response = await fetch(
+        "/api/server/v1/executive/club/{clubId}/dashboard/notifications",
+        { headers: { "Content-Type": "application/json" } }
       );
-
-      if (response.resultCode === "OK") {
-        setDashboardNotifications(response.data);
+      const res = await response.json();
+      if (res.resultCode === "OK") {
+        setDashboardNotifications(res.data);
       }
     } catch (error) {
       console.error("알림 카드 목록 조회 에러:", error);

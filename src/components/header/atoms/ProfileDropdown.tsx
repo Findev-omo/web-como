@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import useAuthStore from "@/lib/store/authStore";
-import { getData } from "@/api/action";
 import { getRole } from "@/lib/cookies";
 import { openModal } from "@/lib/utils";
 import Avatar from "@/components/common/Avatar";
@@ -24,20 +23,27 @@ export default function ProfileDropdown({ profileImage }: Props) {
         try {
           const role = await getRole();
           console.log("사용자 역할:", role);
-          let res;
+          let endpoint = "";
           if (role === "club") {
-            res = await getData(`v1/executive/club/{clubId}/my-profile`, true);
+            endpoint = `v1/executive/club/{clubId}/my-profile`;
           } else if (role === "company") {
-            res = await getData(`v1/manager/member/my-profile`, true);
+            endpoint = `v1/manager/member/my-profile`;
           }
 
-          console.log("프로필 API 응답:", res);
-          if (res?.resultCode === "OK" && res.data) {
-            console.log("프로필 데이터:", res.data);
-            console.log("프로필 이미지 URL:", res.data.profileImage);
-            setProfile(res.data);
-          } else {
-            console.error("API 오류:", res?.resultMessage);
+          if (endpoint) {
+            const response = await fetch(`/api/server/${endpoint}`, {
+              method: "GET",
+              headers: { "Content-Type": "application/json" },
+            });
+            const res = await response.json();
+            console.log("프로필 API 응답:", res);
+            if (res?.resultCode === "OK" && res.data) {
+              console.log("프로필 데이터:", res.data);
+              console.log("프로필 이미지 URL:", res.data.profileImage);
+              setProfile(res.data);
+            } else {
+              console.error("API 오류:", res?.resultMessage);
+            }
           }
         } catch (error) {
           console.error("API 호출 오류:", error);

@@ -4,20 +4,13 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  saveAccessToken,
-  saveDashboardType,
-  saveRefreshToken,
-  saveRole,
-} from "@/lib/cookies";
+import { saveAccessToken, saveDashboardType, saveRole } from "@/lib/cookies";
 import { LOGIN_ENDPOINT, COMPANY_DASHBOARD_ENDPOINT } from "@/lib/constants";
 import Button from "@/components/common/Button";
 import Input from "@/components/common/Input";
 import RadioSelect from "@/components/login/molecules/RadioSelect";
 import BrandImage from "@/assets/images/brand_image.svg";
 import LogoImage from "@/assets/logos/como_logo.svg";
-import { SHA256 } from "crypto-js";
-import { enc } from "crypto-js";
 
 interface UserLoginDto {
   id: string;
@@ -92,15 +85,11 @@ export default function LoginForm() {
 
     setIsLoading(true);
     try {
-      // 비밀번호 해싱
-      const hashedPassword = SHA256(formData.password).toString(enc.Hex);
-      // console.log("2. 비밀번호 해싱 완료");
-
       const response = await fetch(`/api/server/login`, {
         method: "POST",
         body: JSON.stringify({
           email: formData.id,
-          password: hashedPassword, // 해싱된 비밀번호 전송
+          password: formData.password,
         }),
         headers: {
           "Content-Type": "application/json",
@@ -119,14 +108,14 @@ export default function LoginForm() {
         return;
       }
 
-      const accessTokenHeader = response.headers.get("Authorization");
-      const refreshToken = response.headers.get("authorization-refresh"); // 실제 헤더 이름으로 수정
+      // 헤더 이름은 대소문자 구분 없이 동작하지만, 안전하게 소문자/대문자 모두 시도
+      const accessTokenHeader =
+        response.headers.get("Authorization") ||
+        response.headers.get("authorization");
       // console.log("7. 받은 토큰:", accessToken, refreshToken);
 
-      if (!accessTokenHeader || !refreshToken) {
-        // 두 토큰 모두 확인
-        // console.log("8. 토큰 없음");
-        setLoginError("로그인에 실패했습니다. 다시 시도해주세요."); // 사용자에게 피드백
+      if (!accessTokenHeader) {
+        setLoginError("로그인에 실패했습니다. 다시 시도해주세요.");
         return;
       }
 
@@ -135,7 +124,6 @@ export default function LoginForm() {
 
       // console.log("9. 토큰 저장 시작");
       await saveAccessToken(accessToken);
-      await saveRefreshToken(refreshToken); // 올바른 refreshToken 저장
       await saveDashboardType(formData.role);
       await saveRole(formData.role);
       // console.log("10. 저장 완료, role:", formData.role);
