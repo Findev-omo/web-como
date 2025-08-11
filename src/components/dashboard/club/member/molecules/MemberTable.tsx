@@ -133,7 +133,11 @@ export default function MemberTable({ data }: Props) {
             </li>
           ))
         ) : (
-          <></>
+          <li className="py-10 border-b border-gray-400 bg-gray-0">
+            <div className="text-center body-1 font-medium text-gray-500">
+              {"일치하는 검색어가 없습니다."}
+            </div>
+          </li>
         )}
       </ul>
     </>

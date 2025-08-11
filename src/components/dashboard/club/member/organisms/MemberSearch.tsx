@@ -41,11 +41,6 @@ export default function MemberSearch({ onSearch, currentPage }: Props) {
 
       if (response.data) {
         onSearch(currentSearchValue);
-        // 검색 후 검색어 초기화
-        setCurrentSearchValue((prev) => ({
-          ...prev,
-          term: "",
-        }));
       } else {
         console.error("검색 실패");
       }
@@ -61,7 +56,7 @@ export default function MemberSearch({ onSearch, currentPage }: Props) {
       currentValue={currentSearchValue}
       handleChange={({ term }) => {
         setCurrentSearchValue((prev) => {
-          const newValue = { term: term || '' };
+          const newValue = { ...prev, term: term || "" };
           console.log("=== 입력값 변경 ===");
           console.log("이전 값:", prev);
           console.log("새로운 값:", newValue);
