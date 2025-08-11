@@ -14,6 +14,7 @@ export default function ClubPolicyTab({ clubId }: { clubId: string | null }) {
       getData(`v1/executive/club/${clubId}/policy`, true).then(
         (res) => res.data as PolicyData
       ),
+    enabled: !!clubId,
   });
 
   console.log("ClubPolicyTab 실행됨");
@@ -26,16 +27,24 @@ export default function ClubPolicyTab({ clubId }: { clubId: string | null }) {
         {/* <h2 className="font-semibold text-gray-900">{"동호회 상세 규정"}</h2> */}
         <PrintButton />
       </div>
-      {typeof data === "string" && (
-        <div className="relative w-full h-64">
-          <Image
-            src={data}
-            alt="동호회 회칙 이미지"
-            layout="fill"
-            objectFit="contain"
-          />
-        </div>
-      )}
+      {(() => {
+        const imageSrc = typeof data === "string" ? data : undefined;
+        const isValidSrc =
+          !!imageSrc &&
+          (imageSrc.startsWith("/") ||
+            imageSrc.startsWith("http://") ||
+            imageSrc.startsWith("https://"));
+        return isValidSrc ? (
+          <div className="relative w-full h-64">
+            <Image
+              src={imageSrc as string}
+              alt="동호회 회칙 이미지"
+              layout="fill"
+              objectFit="contain"
+            />
+          </div>
+        ) : null;
+      })()}
       {/* <p className="overflow-y-auto scrollbar-custom h-full max-h-[70dvh] body-1 font-medium text-gray-700">
         <div className="mb-4 h3 font-bold">{POLICY_TITLE}</div>
         {data && data.content}
