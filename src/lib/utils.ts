@@ -48,16 +48,15 @@ export const formatDate = (date: Date | undefined) => {
   if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
     return "";
   }
-  // 한국 시간으로 변환
-  const koreaDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
-  return koreaDate
-    .toLocaleDateString("ko-KR", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    })
-    .replace(/\. /g, "-")
-    .replace(".", "");
+  // 타임존 보정은 수동(+9h)으로 하지 않고, 포맷 단계에서 Asia/Seoul 적용
+  const formatted = new Intl.DateTimeFormat("ko-KR", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+
+  return formatted.replace(/\. /g, "-").replace(".", "");
 };
 
 export function formatTime(date: Date | undefined, withIndicator?: boolean) {
