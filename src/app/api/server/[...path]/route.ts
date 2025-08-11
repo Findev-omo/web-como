@@ -3,14 +3,22 @@ import { cookies } from "next/headers";
 
 export async function handler(req: NextRequest) {
   const { pathname, search } = new URL(req.url);
-  const apiPath = pathname.replace("/api/server", "");
+  const rawApiPath = pathname.replace("/api/server", "");
+
+  // 쿠키에서 clubId를 읽어 placeholder 대체
+  const cookieStore = cookies();
+  const clubId = cookieStore.get("clubId")?.value || "";
+  // %7BclubId%7D (URL-encoded), {clubId} 모두 치환
+  const apiPath = rawApiPath
+    .replace(/%7BclubId%7D/gi, clubId)
+    .replace(/{clubId}/g, clubId);
+
   const destination = `${process.env.NEXT_PUBLIC_SERVER_URL}${apiPath}${search}`;
 
   const headers = new Headers(req.headers);
   headers.delete("host");
 
   // 쿠키의 accessToken을 Authorization 헤더로 주입 (클라이언트가 헤더를 안 붙여도 동작하도록)
-  const cookieStore = cookies();
   const accessToken = cookieStore.get("accessToken")?.value;
   if (!headers.get("Authorization") && accessToken) {
     headers.set("Authorization", `Bearer ${accessToken}`);

@@ -1,11 +1,9 @@
 "use client";
 
 import { Edit } from "@/assets/icons/util";
-import { getAccessToken, getClubId } from "@/lib/cookies";
 import Image from "next/image";
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useState } from "react";
 import { FieldValues, Path, PathValue, useFormContext } from "react-hook-form";
-import { HiOutlinePhoto } from "react-icons/hi2";
 import toast from "react-hot-toast";
 
 type Props<T extends FieldValues> = {
@@ -21,23 +19,11 @@ export default function ClubIndexImageSection<T extends FieldValues>({
 
   // 밑의 previewImage는 미리보기를 위한 상태값
   const [previewImage, setPreviewImage] = useState<string>(clubImage);
-  const [clubId, setClubId] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
 
   console.log("3. ClubIndexImageSection 실행됨");
 
-  useEffect(() => {
-    const fetchClubId = async () => {
-      try {
-        const id = await getClubId(); // clubId 가져오기
-        setClubId(id || null); // 상태 업데이트
-      } catch (error) {
-        console.error("클럽 ID를 가져오는 중 오류 발생:", error);
-      }
-    };
-
-    fetchClubId(); // 함수 호출
-  }, []); // 컴포넌트가 마운트될 때 한 번만 실행
+  // clubId는 프록시에서 {clubId} 플레이스홀더로 자동 치환됩니다.
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     console.log("e.target.files", e.target.files);
@@ -66,22 +52,20 @@ export default function ClubIndexImageSection<T extends FieldValues>({
     formData.append("clubImage", file as Blob); // 키를 "clubImage"로 변경
 
     try {
-      const token = await getAccessToken();
-      console.log("clubId", clubId);
       console.log("formData", formData);
 
-      const response = await fetch(`/api/server/v1/executive/club/${clubId}`, {
+      const response = await fetch(`/api/server/v1/executive/club/{clubId}`, {
         method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
         body: formData,
       });
 
       const result = await response.json();
       console.log("result", result);
 
-      if (result.resultCode === "OK") {
+      if (
+        response.ok &&
+        (result?.resultCode === 200 || result?.resultCode === "OK")
+      ) {
         // console.log("이미지가 성공적으로 저장되었습니다.");
         // alert("이미지가 성공적으로 저장되었습니다.");
         toast.success("이미지가 성공적으로 저장되었습니다.");
@@ -89,7 +73,7 @@ export default function ClubIndexImageSection<T extends FieldValues>({
       } else {
         // console.log("이미지 저장에 실패했습니다.");
         // alert("이미지 저장에 실패했습니다.");
-        toast.error("이미지 저장에 실패했습니다.");
+        toast.error(result?.resultMessage || "이미지 저장에 실패했습니다.");
       }
     } catch (error) {
       console.error("이미지 저장 실패:", error);

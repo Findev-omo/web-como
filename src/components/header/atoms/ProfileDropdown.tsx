@@ -23,27 +23,26 @@ export default function ProfileDropdown({ profileImage }: Props) {
         try {
           const role = await getRole();
           console.log("사용자 역할:", role);
-          let endpoint = "";
-          if (role === "club") {
-            endpoint = `v1/executive/club/{clubId}/my-profile`;
-          } else if (role === "company") {
-            endpoint = `v1/manager/member/my-profile`;
-          }
-
-          if (endpoint) {
-            const response = await fetch(`/api/server/${endpoint}`, {
-              method: "GET",
-              headers: { "Content-Type": "application/json" },
-            });
-            const res = await response.json();
-            console.log("프로필 API 응답:", res);
-            if (res?.resultCode === "OK" && res.data) {
-              console.log("프로필 데이터:", res.data);
-              console.log("프로필 이미지 URL:", res.data.profileImage);
-              setProfile(res.data);
-            } else {
-              console.error("API 오류:", res?.resultMessage);
-            }
+          // OpenAPI에 따라 유저 정보는 /member로 통일
+          const response = await fetch(`/api/server/member`, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+          });
+          const res = await response.json();
+          console.log("프로필 API 응답:", res);
+          if (
+            (res?.resultCode === 200 || res?.resultCode === "OK") &&
+            res.data
+          ) {
+            const profileData = {
+              profileImage: res.data.profileImage ?? undefined,
+              name: res.data.name ?? "",
+              departmentName: res.data.Department ?? res.data.departmentName,
+              companyName: res.data.companyName ?? undefined,
+            } as any;
+            setProfile(profileData);
+          } else {
+            console.error("API 오류:", res?.resultMessage);
           }
         } catch (error) {
           console.error("API 호출 오류:", error);
