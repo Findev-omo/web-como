@@ -49,7 +49,7 @@ export default function RHFTextInput<T extends FieldValues>({
     formState: { errors },
   } = useFormContext<T>();
 
-  console.log(errors);
+  // console.log(errors); // noisy in production
 
   const value = useWatch<T>({ name: name });
 

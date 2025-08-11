@@ -93,12 +93,7 @@ const ScheduleDetailForm = ({
     // 주의: 페이지 재방문 시 캐시는 no-store로 꺼놓았습니다.
     //       (getData(..., { noCache: true }))
     //       멤버 목록은 schedule/{id}/members 에서 가져옵니다.
-    console.log("[ScheduleDetailForm] props", {
-      type,
-      scheduleId,
-      initialData,
-    });
-    console.log("[ScheduleDetailForm] form defaultValues", methods.getValues());
+    // Debug logs removed to reduce noise
   }, [type, scheduleId, initialData, methods]);
 
   const debouncedSubmit = useCallback(

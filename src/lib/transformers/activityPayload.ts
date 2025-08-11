@@ -4,7 +4,7 @@ import { ScheduleRegisterSchemaType } from "@/lib/types/schema";
 type CreatePayload = {
   clubId: number;
   title: string;
-  detail: string;
+  description: string;
   date: string; // YYYY-MM-DD
   time: string; // HH:mm
   location: string; // roadAddress or address fallback
@@ -13,7 +13,16 @@ type CreatePayload = {
   longitude: string;
 };
 
-type UpdatePayload = Omit<CreatePayload, "clubId">;
+type UpdatePayload = {
+  title: string;
+  description: string;
+  date: string; // YYYY-MM-DD
+  time: string; // HH:mm
+  location: string; // roadAddress or address fallback
+  addressDetail: string; // placeName
+  latitude: string;
+  longitude: string;
+};
 
 export const toCreateActivityPayload = (
   form: ScheduleRegisterSchemaType,
@@ -22,7 +31,7 @@ export const toCreateActivityPayload = (
   return {
     clubId,
     title: form.title,
-    detail: form.description,
+    description: form.description,
     date: formatDate(new Date(form.date), "yyyy-MM-dd"),
     time: form.time,
     location:
@@ -38,7 +47,7 @@ export const toUpdateActivityPayload = (
 ): UpdatePayload => {
   return {
     title: form.title,
-    detail: form.description,
+    description: form.description,
     date: formatDate(new Date(form.date), "yyyy-MM-dd"),
     time: form.time,
     location:

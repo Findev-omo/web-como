@@ -3,6 +3,7 @@ import MapPlaceSearch from "../../../manage/organisms/MapPlaceSearch";
 import RHFTextInput from "@/components/common/RHF/RHFTextInput";
 import { ScheduleRegisterSchemaType } from "@/lib/types/schema";
 import { useFormContext } from "react-hook-form";
+import { useCallback } from "react";
 import { cn } from "@/lib/utils";
 
 const ScheduleDetailGeo = ({
@@ -15,6 +16,23 @@ const ScheduleDetailGeo = ({
   const { setValue, watch } = useFormContext<ScheduleRegisterSchemaType>();
 
   const location = watch("location");
+
+  const handleLocationChange = useCallback(
+    (newLocation: {
+      roadAddress: string;
+      title?: string;
+      latitude?: number;
+      longitude?: number;
+    }) => {
+      setValue("location.roadAddress", newLocation.roadAddress);
+      if (newLocation?.title) {
+        setValue("location.placeName", newLocation.title);
+      }
+      setValue("location.latitude", newLocation.latitude);
+      setValue("location.longitude", newLocation.longitude);
+    },
+    [setValue]
+  );
 
   return (
     <div className={cn("flex flex-col gap-2", maxWidth)}>
@@ -30,14 +48,7 @@ const ScheduleDetailGeo = ({
             maxWidth="w-full"
             isLabel={false}
             value={location?.roadAddress}
-            handleChange={(newLocation) => {
-              setValue("location.roadAddress", newLocation.roadAddress);
-              if (newLocation?.title) {
-                setValue("location.placeName", newLocation.title);
-              }
-              setValue("location.latitude", newLocation.latitude);
-              setValue("location.longitude", newLocation.longitude);
-            }}
+            handleChange={handleLocationChange}
             readonly={type === "DETAIL"}
           />
         </div>
