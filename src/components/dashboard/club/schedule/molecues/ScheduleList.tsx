@@ -28,11 +28,17 @@ const ScheduleList = ({
   const router = useRouter();
 
   const handlePageChange = (page: number) => {
-    router.push(`/club/dashboard/manage/schedule?page=${page}`);
+    const safePage =
+      Number.isFinite(Number(page)) && Number(page) > 0 ? page : 1;
+    router.push(`/club/dashboard/manage/schedule?page=${safePage}`);
   };
 
   useEffect(() => {
-    router.replace(`/club/dashboard/manage/schedule?page=${currentPage}`);
+    const safePage =
+      Number.isFinite(Number(currentPage)) && Number(currentPage) > 0
+        ? currentPage
+        : 1;
+    router.replace(`/club/dashboard/manage/schedule?page=${safePage}`);
   }, [currentPage, router]);
 
   useEffect(() => {
