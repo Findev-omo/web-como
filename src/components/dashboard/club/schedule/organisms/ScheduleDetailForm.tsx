@@ -12,6 +12,10 @@ import { ScheduleDetailCardInitialData } from "../molecues/ScheduleDetail/Schedu
 import { getAccessToken, getClubId } from "@/lib/cookies";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format as formatDate } from "date-fns";
+import {
+  toCreateActivityPayload,
+  toUpdateActivityPayload,
+} from "@/lib/transformers/activityPayload";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import ScheduleDetailPeriod from "../molecues/ScheduleDetail/ScheduleDetailPeriod";
@@ -44,10 +48,10 @@ const ScheduleDetailForm = ({
       type !== "REGISTER"
         ? {
             title: initialData?.title,
-            description: initialData?.detail,
+            description: initialData?.description ?? "",
             location: {
-              roadAddress: initialData?.location,
-              placeName: initialData?.addressDetail,
+              roadAddress: initialData?.location ?? "",
+              placeName: initialData?.addressDetail ?? "",
             },
             date: initialData?.date ? new Date(initialData?.date) : new Date(),
             time: initialData?.time,
@@ -81,6 +85,22 @@ const ScheduleDetailForm = ({
     mode: type !== "DETAIL" ? "onChange" : "onSubmit",
   });
 
+  useEffect(() => {
+    // 디버그: 이 컴포넌트가 어디서 어떤 데이터로 렌더되는지 확인
+    // 상세 데이터는 서버 컴포넌트(`app/club/dashboard/manage/schedule/[id]/page.tsx`)에서
+    // GET /v1/executive/club/{clubId}/activity/{activityId} 호출 결과를 initialData로 내려줍니다.
+    // 아래 로그는 브라우저 콘솔에서 확인 가능합니다.
+    // 주의: 페이지 재방문 시 캐시는 no-store로 꺼놓았습니다.
+    //       (getData(..., { noCache: true }))
+    //       멤버 목록은 schedule/{id}/members 에서 가져옵니다.
+    console.log("[ScheduleDetailForm] props", {
+      type,
+      scheduleId,
+      initialData,
+    });
+    console.log("[ScheduleDetailForm] form defaultValues", methods.getValues());
+  }, [type, scheduleId, initialData, methods]);
+
   const debouncedSubmit = useCallback(
     async (data: ScheduleRegisterSchemaType) => {
       if (isSubmitting) return;
@@ -92,12 +112,14 @@ const ScheduleDetailForm = ({
           try {
             const token = await getAccessToken();
             const clubId = await getClubId();
-            const latitudeNumber = data.location.latitude
-              ? parseFloat(String(data.location.latitude)) / 1e7
-              : 0;
-            const longitudeNumber = data.location.longitude
-              ? parseFloat(String(data.location.longitude)) / 1e7
-              : 0;
+            const createBody = toCreateActivityPayload(
+              data,
+              Number.isFinite(Number(clubId)) ? Number(clubId) : 0
+            );
+            console.log(
+              "[ScheduleDetailForm] CREATE -> /v1/executive/club/activity",
+              createBody
+            );
 
             const response = await fetch(
               `/api/server/v1/executive/club/activity`,
@@ -107,17 +129,7 @@ const ScheduleDetailForm = ({
                   "Content-Type": "application/json",
                   "Authorization": `Bearer ${token}`,
                 },
-                body: JSON.stringify({
-                  clubId: Number.isFinite(Number(clubId)) ? Number(clubId) : 0,
-                  title: data.title,
-                  detail: data.description,
-                  date: formatDate(new Date(data.date), "yyyy-MM-dd"),
-                  time: data.time,
-                  location: `${data.location.roadAddress} ${data.location.placeName}`,
-                  addressDetail: data.location.placeName,
-                  latitude: String(latitudeNumber),
-                  longitude: String(longitudeNumber),
-                }),
+                body: JSON.stringify(createBody),
               }
             );
 
@@ -139,36 +151,21 @@ const ScheduleDetailForm = ({
             const token = await getAccessToken();
             const clubId = await getClubId();
 
+            const patchBody = toUpdateActivityPayload(data);
+            console.log(
+              `[ScheduleDetailForm] PATCH -> ${process.env.NEXT_PUBLIC_SERVER_URL}/v1/executive/club/${clubId}/activity/${scheduleId}`,
+              patchBody
+            );
+
             const response = await fetch(
-              `/api/server/v1/executive/club/${clubId}/schedule/${scheduleId}`,
+              `${process.env.NEXT_PUBLIC_SERVER_URL}/v1/executive/club/${clubId}/activity/${scheduleId}`,
               {
                 method: "PATCH",
                 headers: {
                   "Content-Type": "application/json",
                   "Authorization": `Bearer ${token}`,
                 },
-                body: JSON.stringify({
-                  title: data.title,
-                  recruitStartDate: formatDate(
-                    new Date(data.recruitStartDate),
-                    "yyyy-MM-dd"
-                  ),
-                  recruitEndDate: formatDate(
-                    new Date(data.recruitEndDate),
-                    "yyyy-MM-dd"
-                  ),
-                  detail: data.description,
-                  location: `${data.location.roadAddress} ${data.location.placeName}`,
-                  addressDetail: data.location.placeName,
-                  date: formatDate(data.date, "yyyy-MM-dd"),
-                  time: data.time,
-                  latitude: data.location.latitude
-                    ? parseFloat(String(data.location.latitude)) / 1e7
-                    : 0,
-                  longitude: data.location.longitude
-                    ? parseFloat(String(data.location.longitude)) / 1e7
-                    : 0,
-                }),
+                body: JSON.stringify(patchBody),
               }
             );
 

@@ -4,7 +4,7 @@ import ScheduleDetailForm from "../../organisms/ScheduleDetailForm";
 
 export type ScheduleDetailCardInitialData = {
   title: string;
-  detail: string;
+  description: string;
   date: string;
   time: string;
   location: string;

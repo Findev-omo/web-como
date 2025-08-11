@@ -12,7 +12,7 @@ const PAGE_TYPES = {
 } as const;
 
 const API_ENDPOINTS = {
-  DETAIL: "v1/executive/club/{clubId}/schedule",
+  DETAIL: "v1/executive/club/{clubId}/activity",
   MEMBERS: "v1/executive/club/{clubId}/schedule/{id}/members",
 } as const;
 
@@ -38,14 +38,68 @@ const getPageType = (id: string): PageType => {
 };
 
 export const fetchScheduleData = async (id: string, page: string) => {
-  const detailResponse = await getData(`${API_ENDPOINTS.DETAIL}/${id}`, true);
+  const detailResponse = await getData(
+    `${API_ENDPOINTS.DETAIL}/${id}`,
+    true,
+    undefined,
+    { noCache: true }
+  );
   const memberListResponse = await getData(
     `${API_ENDPOINTS.MEMBERS.replace("{id}", id)}?page=${page}`,
-    true
+    true,
+    undefined,
+    { noCache: true }
   );
 
+  const raw = detailResponse?.data ?? {};
+
+  const toIsoDate = (value: any): string => {
+    if (!value) return new Date().toISOString();
+    if (Array.isArray(value) && value.length >= 3) {
+      const [y, m, d] = value;
+      const dt = new Date(Number(y), Number(m) - 1, Number(d));
+      return isNaN(dt.getTime()) ? new Date().toISOString() : dt.toISOString();
+    }
+    if (typeof value === "string") {
+      const base = value.includes("T") ? value.split("T")[0] : value;
+      const [y, m, d] = base.split("-");
+      const dt = new Date(Number(y), Number(m) - 1, Number(d));
+      return isNaN(dt.getTime()) ? new Date().toISOString() : dt.toISOString();
+    }
+    return new Date().toISOString();
+  };
+
+  const initialData = {
+    title: raw?.title ?? raw?.name ?? "",
+    description:
+      raw?.detail ??
+      raw?.description ??
+      raw?.details ??
+      raw?.content ??
+      raw?.activityContent ??
+      raw?.activityDetail ??
+      raw?.activityDescription ??
+      "",
+    date: (() => {
+      const v = raw?.date ?? raw?.activityDate ?? raw?.createdDate;
+      if (!v) return new Date().toISOString();
+      if (Array.isArray(v)) {
+        const [y, m, d] = v;
+        return `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+      }
+      if (typeof v === "string") return v;
+      return new Date().toISOString();
+    })(),
+    time: raw?.time ?? raw?.activityTime ?? "",
+    location:
+      raw?.roadAddress ?? raw?.location ?? raw?.address ?? raw?.place ?? "",
+    addressDetail: raw?.placeName ?? raw?.addressDetail ?? "",
+    recruitStartDate: toIsoDate(raw?.recruitStartDate),
+    recruitEndDate: toIsoDate(raw?.recruitEndDate),
+  };
+
   return {
-    initialData: detailResponse.data,
+    initialData,
     memberList: memberListResponse.data,
   };
 };

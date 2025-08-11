@@ -15,6 +15,7 @@ interface Props {
   isLabel?: boolean;
   handleChange?: (newLocation: {
     roadAddress: string;
+    title?: string;
     latitude?: number;
     longitude?: number;
   }) => void;
@@ -43,14 +44,16 @@ export default function MapPlaceSearch({
     }[]
   >();
   const [closeSearchResult, setCloseSearchResult] = useState<boolean>(false);
-  const [searchTerm, setSearchTerm] = useState<string>();
+  const [searchTerm, setSearchTerm] = useState<string>(value ?? "");
   const [query, setQuery] = useState<string>();
   const { data: placeData } = usePlaceSearch(searchTerm);
   const { data: geocodeData } = useGeocode(query);
 
   useEffect(() => {
-    if (value) {
+    if (typeof value === "string") {
       setSearchTerm(value);
+    } else {
+      setSearchTerm("");
     }
   }, [value]);
 
@@ -108,6 +111,7 @@ export default function MapPlaceSearch({
     if (selectedPlace) {
       handleChange?.({
         roadAddress: selectedPlace.roadAddress,
+        title: selectedPlace.title,
         latitude: selectedPlace.latitude,
         longitude: selectedPlace.longitude,
       });

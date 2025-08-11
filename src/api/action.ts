@@ -6,7 +6,8 @@ import type { IResponse } from "@/api/types/index";
 export const getData = async (
   endpoint: string,
   useClubId?: boolean,
-  params?: { [key: string]: string | number }
+  params?: { [key: string]: string | number },
+  options?: { noCache?: boolean }
 ) => {
   const clubId = await getClubId();
   const token = await getAccessToken();
@@ -18,15 +19,21 @@ export const getData = async (
   const url = `${process.env.NEXT_PUBLIC_SERVER_URL}/${finalEndpoint}`;
   console.log("url", url);
 
-  const response = await fetch(url, {
+  const fetchInit: RequestInit & { next?: { revalidate: number } } = {
     headers: {
       "Authorization": `Bearer ${token}`,
       "Content-Type": "application/json",
     },
-    next: {
-      revalidate: 60,
-    },
-  });
+  };
+
+  if (options?.noCache) {
+    // 최신값 강제 조회
+    (fetchInit as RequestInit).cache = "no-store";
+  } else {
+    fetchInit.next = { revalidate: 60 };
+  }
+
+  const response = await fetch(url, fetchInit);
   // console.log(endpoint);
   // console.log(response);
   const res: IResponse<any> = await response.json();

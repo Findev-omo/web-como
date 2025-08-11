@@ -27,7 +27,7 @@ const TitleCard = ({
     if (window.confirm("정말로 이 일정을 삭제하시겠습니까?")) {
       const token = await getAccessToken();
       const clubId = await getClubId();
-      const url = `/api/server/v1/executive/club/${clubId}/activity/${scheduleId}`;
+      const url = `${process.env.NEXT_PUBLIC_SERVER_URL}/v1/executive/club/${clubId}/activity/${scheduleId}`;
       console.log("Deleting schedule at URL:", url);
       const response = await fetch(url, {
         method: "DELETE",
