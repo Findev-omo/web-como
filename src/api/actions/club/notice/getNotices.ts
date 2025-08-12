@@ -12,7 +12,10 @@ export const getNotices = async (
   if (!token) throw new Error("토큰 정보가 없습니다.");
   if (!clubId) throw new Error("클럽 정보가 없습니다.");
 
-  const url = `/api/server/v1/executive/club/${clubId}/notices?page=${page}&search=${search}`;
+  // 서버는 page=0 기반, UI는 1 기반 → 변환
+  const serverPage = Math.max(0, Number(page) - 1);
+  const encodedSearch = encodeURIComponent(search ?? "");
+  const url = `/api/server/v1/executive/club/${clubId}/notices?page=${serverPage}&search=${encodedSearch}`;
 
   const response = await fetch(url, {
     method: "GET",
@@ -29,7 +32,7 @@ export const getNotices = async (
   const data = await response.json();
 
   // API 응답 구조 확인 및 안전한 처리
-  if (data.data && data.data.noticeList) {
+  if (data?.data && data.data.noticeList) {
     // 실제 API 응답 구조에 맞게 변환
     const noticeResponse: NoticeResponse = {
       list: data.data.noticeList,
@@ -37,7 +40,15 @@ export const getNotices = async (
       totalPages: data.data.maxPage,
     };
     return toClubNotice(noticeResponse);
-  } else if (data.list) {
+  } else if (data?.data && data.data.list) {
+    // 공통 래퍼 내부에 list/currentPage/totalPages가 있는 경우
+    const noticeResponse: NoticeResponse = {
+      list: data.data.list,
+      currentPage: data.data.currentPage,
+      totalPages: data.data.totalPages ?? data.data.maxPage,
+    };
+    return toClubNotice(noticeResponse);
+  } else if (data?.list) {
     // 원래 예상 구조
     return toClubNotice(data);
   } else {

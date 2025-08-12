@@ -2,17 +2,21 @@ import { clubApi } from "../client";
 import type { PaginatedResponse, BaseEntity } from "../types/common";
 
 // 타입 정의
+// 공지 목록 응답 DTO (유연 매핑용)
 export interface NoticeResponse {
   list: {
-    id: number;
+    id?: number;
+    noticeId?: number;
     title: string;
-    writerName: string;
-    createdDate: string;
+    writerName?: string;
+    name?: string;
+    createdDate: string | number[] | number;
     viewCount: number;
     isPinned: "Y" | "N";
   }[];
-  currentPage: number;
-  totalPages: number;
+  currentPage?: number;
+  totalPages?: number;
+  maxPage?: number;
 }
 
 export interface ClubNotice extends BaseEntity {
@@ -28,9 +32,16 @@ export const clubService = {
   // 공지사항 관리
   notices: {
     getList: (page: number = 1, search: string = "") =>
-      clubApi.get<PaginatedResponse<ClubNotice>>(
-        `/v1/executive/club/{clubId}/notices?page=${page}&search=${search}`
-      ),
+      clubApi.get<
+        | NoticeResponse
+        | {
+            data: {
+              noticeList: NoticeResponse["list"];
+              currentPage: number;
+              maxPage: number;
+            };
+          }
+      >(`/v1/executive/club/{clubId}/notices?page=${page}&search=${search}`),
 
     getDetail: (noticeId: number) =>
       clubApi.get<ClubNotice>(
