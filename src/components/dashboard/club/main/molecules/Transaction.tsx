@@ -9,6 +9,11 @@ export default async function DashboardTransaction() {
   const res = await getData("v2/club/web/transactions/", true);
   const data: TransactionData = res.data;
 
+  const formatCurrency = (value: unknown) => {
+    const num = typeof value === "number" ? value : Number(value);
+    return Number.isFinite(num) ? num.toLocaleString() : "0";
+  };
+
   return (
     <div className="flex flex-col gap-3 p-8 rounded-xl bg-gray-0">
       <div className="flex justify-between">
@@ -22,7 +27,7 @@ export default async function DashboardTransaction() {
       <div className="flex flex-col gap-6">
         <div className="flex items-center gap-3">
           <span className="h2 font-semibold text-gray-900">{"잔여회비"}</span>
-          <span className="h1 font-extrabold text-brand-orange">{`${data ? data.remainingFee.toLocaleString() : 0}원`}</span>
+          <span className="h1 font-extrabold text-brand-orange">{`${formatCurrency(data?.remainingFee)}원`}</span>
         </div>
         <ul className="space-y-1 h-[284px]">
           <li className="flex rounded bg-gray-100">
@@ -44,7 +49,8 @@ export default async function DashboardTransaction() {
               )
             )}
           </li>
-          {data && data.clubTransactionHistoryListDTOS.length > 0 ? (
+          {data?.clubTransactionHistoryListDTOS &&
+          data.clubTransactionHistoryListDTOS.length > 0 ? (
             data.clubTransactionHistoryListDTOS.map((transaction, i) => (
               <li key={i} className="flex">
                 {[
@@ -72,8 +78,8 @@ export default async function DashboardTransaction() {
                     {i === 0
                       ? formatDate(new Date(data))
                       : i === 2
-                        ? `${transaction.transactionType === "입금" ? "" : "-"}${data.toLocaleString()}원`
-                        : data}
+                        ? `${transaction.transactionType === "입금" ? "" : "-"}${formatCurrency(data)}원`
+                        : (data as any)}
                   </span>
                 ))}
               </li>
