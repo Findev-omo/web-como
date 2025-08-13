@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import useAuthStore from "@/lib/store/authStore";
 // 서버 액션 사용 중단 (무한 호출 방지)
 import { getRole } from "@/lib/cookies";
@@ -16,16 +16,20 @@ interface Props {
 export default function ProfileDropdown({ profileImage }: Props) {
   const { profile, setProfile, isProfileLoading, setProfileLoading } =
     useAuthStore();
+  const hasRequestedRef = useRef(false);
 
   useEffect(() => {
     const loadProfileData = async () => {
-      // 이미 로딩 중이거나 프로필이 존재하면 재호출하지 않음
-      if (isProfileLoading || profile) return;
+      // 이미 요청했던 적이 있거나, 로딩 중이거나, 프로필이 존재하면 재호출하지 않음
+      if (hasRequestedRef.current || isProfileLoading || profile) return;
+      hasRequestedRef.current = true;
       setProfileLoading(true);
       try {
         const role = await getRole();
         let res: any;
         if (role === "club") {
+          // clubId 쿠키가 없으면 요청하지 않음
+          if (!document.cookie.includes("clubId=")) return;
           const r = await fetch(
             `/api/server/v1/executive/club/{clubId}/my-profile`,
             {
@@ -59,7 +63,7 @@ export default function ProfileDropdown({ profileImage }: Props) {
     };
 
     loadProfileData();
-    // 의존성 최소화: 프로필 미로딩/미보유 상태에서 단 한 번 로드하도록 제한
+    // 의존성 최소화: 최초 1회만 시도
   }, [profile, isProfileLoading]);
 
   console.log("현재 프로필 상태:", {
