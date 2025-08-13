@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getData } from "@/api/action";
 import type { MemberListData } from "@/api/types/club/member";
@@ -36,6 +36,18 @@ export default function MemberList({ clubId }: Props) {
     field: "name",
   });
   const [members, setMembers] = useState([]);
+  const filteredMembers = useMemo(() => {
+    const term = (currentSearchValue.term || "").trim().toLowerCase();
+    if (!term) return members;
+    return members.filter((m: any) => {
+      const name = String(m?.name ?? "").toLowerCase();
+      const dept = String(m?.department ?? "").toLowerCase();
+      const role = String(
+        (m as any)?.clubRole ?? m?.position ?? ""
+      ).toLowerCase();
+      return name.includes(term) || dept.includes(term) || role.includes(term);
+    });
+  }, [members, currentSearchValue]);
 
   const formatDateToString = (date: Date | undefined) => {
     if (!date) return "";
@@ -44,28 +56,20 @@ export default function MemberList({ clubId }: Props) {
   };
 
   const { data: listResponse, isLoading } = useQuery({
-    queryKey: [
-      "clubMembers",
-      clubId,
-      currentPage,
-      currentDateRange.startDate,
-      currentDateRange.endDate,
-      currentSearchValue.term,
-    ],
+    queryKey: ["clubMembers", clubId],
     queryFn: async () => {
       if (!clubId) return null as any;
-      // 목록은 엑셀 엔드포인트 데이터로 구성
-      const endpoint = `v1/executive/club/${clubId}/members/excel`;
+      // 동호회 회원 목록 조회 (일반 사용자)
+      const endpoint = `v1/club/member/list/${clubId}`;
       return getData(endpoint);
     },
     enabled: !!clubId,
+    keepPreviousData: true,
   });
 
   useEffect(() => {
     const response = listResponse as any;
-    if (!response) {
-      setMembers([]);
-      setMaxPage(1);
+    if (!response || isLoading) {
       return;
     }
     const code = response?.resultCode as string | number | undefined;
@@ -80,10 +84,9 @@ export default function MemberList({ clubId }: Props) {
       setMembers(list);
       setMaxPage(1);
     } else {
-      setMembers([]);
-      setMaxPage(1);
+      // 실패 시 기존 데이터 유지
     }
-  }, [listResponse]);
+  }, [listResponse, isLoading]);
 
   const { refetch: getExcelData } = useQuery({
     queryKey: ["membersExcel", clubId, currentDateRange, currentSearchValue],
@@ -183,7 +186,7 @@ export default function MemberList({ clubId }: Props) {
           <SaveButton onClick={() => handleExcelDownload()} />
         </div>
         <MemberSearch onSearch={handleSearch} currentPage={currentPage} />
-        <MemberTable data={members} />
+        <MemberTable data={filteredMembers} />
         {members && members.length > 0 && (
           <div className="flex justify-center mt-8">
             <Pagination

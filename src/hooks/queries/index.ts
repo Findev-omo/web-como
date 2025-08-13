@@ -8,3 +8,4 @@ export * from "./club";
 export { useApplications } from "./useApplications";
 export { useClubs } from "./useClubs";
 export { useCompanyExpenses } from "./useCompanyExpenses";
+export { useMemberSearch } from "./useMemberSearch";

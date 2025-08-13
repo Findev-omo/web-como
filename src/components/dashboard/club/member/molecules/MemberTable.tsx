@@ -23,7 +23,7 @@ export default function MemberTable({ data }: Props) {
       </div>
       <ul>
         <li className="flex py-0.5 border-y border-gray-400 bg-gray-200">
-          {["순번", "이름", "부서", "직급", "가입 일시", "상태"].map(
+          {["순번", "이름", "부서", "직책", "가입 일시", "상태"].map(
             (heading, i) => (
               <div
                 key={heading}
@@ -66,7 +66,7 @@ export default function MemberTable({ data }: Props) {
                 item.id,
                 item.name,
                 item.department,
-                item.position,
+                (item as any).clubRole ?? item.position,
                 item.requestDate ?? (item as any).createdDate,
                 item.status,
               ].map((data, i) => (
