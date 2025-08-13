@@ -7,6 +7,19 @@ export async function handler(req: NextRequest) {
 
   const headers = new Headers(req.headers);
   headers.delete("host");
+  // 쿠키의 accessToken을 Authorization 헤더로 전달 (백엔드 Bearer 보안 스펙 대응)
+  if (!headers.has("authorization")) {
+    const cookieHeader = req.headers.get("cookie") || "";
+    const accessTokenPair = cookieHeader
+      .split(";")
+      .find((c) => c.trim().toLowerCase().startsWith("accesstoken="));
+    if (accessTokenPair) {
+      const token = decodeURIComponent(
+        accessTokenPair.split("=").slice(1).join("=").trim()
+      );
+      if (token) headers.set("authorization", `Bearer ${token}`);
+    }
+  }
 
   const fetchOptions: RequestInit = {
     method: req.method,

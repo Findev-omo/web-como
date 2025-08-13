@@ -2,8 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import useAuthStore from "@/lib/store/authStore";
-// 서버 액션 사용 중단 (무한 호출 방지)
-import { getRole } from "@/lib/cookies";
+
 import { openModal } from "@/lib/utils";
 import Avatar from "@/components/common/Avatar";
 import { ChevronDown } from "@/assets/icons/chevron";
@@ -25,26 +24,11 @@ export default function ProfileDropdown({ profileImage }: Props) {
       hasRequestedRef.current = true;
       setProfileLoading(true);
       try {
-        const role = await getRole();
-        let res: any;
-        if (role === "club") {
-          // clubId 쿠키가 없으면 요청하지 않음
-          if (!document.cookie.includes("clubId=")) return;
-          const r = await fetch(
-            `/api/server/v1/executive/club/{clubId}/my-profile`,
-            {
-              headers: { accept: "application/json" },
-            }
-          );
-          res = await r.json();
-        } else if (role === "company") {
-          const r = await fetch(`/api/server/v1/manager/member/my-profile`, {
-            headers: { accept: "application/json" },
-          });
-          res = await r.json();
-        } else {
-          return; // 역할이 없으면 한 번만 시도 후 종료
-        }
+        // 통합 유저 정보 엔드포인트로 변경
+        const r = await fetch(`/api/server/member`, {
+          headers: { accept: "application/json" },
+        });
+        const res: any = await r.json();
 
         if (
           (res?.resultCode === "OK" ||
@@ -64,13 +48,9 @@ export default function ProfileDropdown({ profileImage }: Props) {
 
     loadProfileData();
     // 의존성 최소화: 최초 1회만 시도
-  }, [profile, isProfileLoading]);
+  }, [profile, isProfileLoading, setProfile, setProfileLoading]);
 
-  console.log("현재 프로필 상태:", {
-    profile: profile,
-    profileImage: profile?.profileImage,
-    propProfileImage: profileImage,
-  });
+  // 불필요한 콘솔 출력 제거
 
   return (
     <>
