@@ -12,8 +12,8 @@ const PAGE_TYPES = {
 } as const;
 
 const API_ENDPOINTS = {
-  DETAIL: "v1/executive/club/{clubId}/schedule",
-  MEMBERS: "v1/executive/club/{clubId}/schedule/{id}/members",
+  DETAIL: "v1/executive/club/{clubId}/activity",
+  MEMBERS: "v1/executive/club/{clubId}/activity/{id}/members",
 } as const;
 
 // Types

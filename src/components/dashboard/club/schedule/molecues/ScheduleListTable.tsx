@@ -16,6 +16,12 @@ export default function ScheduleListTable({
 }) {
   const pathname = usePathname();
   const { push } = useRouter();
+  console.log("[ScheduleListTable] props", {
+    currentPage,
+    itemsPerPage,
+    schedulesCount: schedules?.length,
+    schedules,
+  });
 
   return (
     <div className="w-full overflow-x-auto">

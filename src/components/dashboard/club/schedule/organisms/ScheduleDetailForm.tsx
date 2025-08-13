@@ -93,7 +93,7 @@ const ScheduleDetailForm = ({
             const token = await getAccessToken();
             const clubId = await getClubId();
             const response = await fetch(
-              `/api/server/v1/executive/club/${clubId}/schedule`,
+              `/api/server/v1/executive/club/activity`,
               {
                 method: "POST",
                 headers: {
@@ -101,26 +101,27 @@ const ScheduleDetailForm = ({
                   "Authorization": `Bearer ${token}`,
                 },
                 body: JSON.stringify({
+                  clubId: Number(clubId),
                   title: data.title,
-                  recruitStartDate: formatDate(
-                    new Date(data.recruitStartDate),
-                    "yyyy-MM-dd"
-                  ),
-                  recruitEndDate: formatDate(
-                    new Date(data.recruitEndDate),
-                    "yyyy-MM-dd"
-                  ),
                   detail: data.description,
-                  location: `${data.location.roadAddress} ${data.location.placeName}`,
-                  addressDetail: data.location.placeName,
                   date: formatDate(data.date, "yyyy-MM-dd"),
                   time: data.time,
-                  latitude: data.location.latitude
-                    ? parseFloat(String(data.location.latitude)) / 1e7
-                    : 0,
-                  longitude: data.location.longitude
-                    ? parseFloat(String(data.location.longitude)) / 1e7
-                    : 0,
+                  location: `${data.location.roadAddress} ${data.location.placeName}`,
+                  addressDetail: data.location.placeName,
+                  latitude: (() => {
+                    const v = data.location.latitude;
+                    const n = Number(v);
+                    if (!isFinite(n)) return "0";
+                    const dec = Math.abs(n) > 180 ? n / 1e7 : n;
+                    return dec.toString();
+                  })(),
+                  longitude: (() => {
+                    const v = data.location.longitude;
+                    const n = Number(v);
+                    if (!isFinite(n)) return "0";
+                    const dec = Math.abs(n) > 180 ? n / 1e7 : n;
+                    return dec.toString();
+                  })(),
                 }),
               }
             );
@@ -131,7 +132,7 @@ const ScheduleDetailForm = ({
 
             toast.success("일정이 등록되었습니다.");
             // 즉시 새로고침하여 최신 데이터 반영
-            router.push(`/club/dashboard/manage/schedule`);
+            router.push(`/club/dashboard/manage/schedule?page=1`);
             router.refresh();
           } catch (error) {
             console.error("일정 처리 실패:", error);
@@ -144,7 +145,7 @@ const ScheduleDetailForm = ({
             const clubId = await getClubId();
 
             const response = await fetch(
-              `/api/server/v1/executive/club/${clubId}/schedule/${scheduleId}`,
+              `/api/server/v1/executive/club/activity/${scheduleId}`,
               {
                 method: "PATCH",
                 headers: {
@@ -153,25 +154,25 @@ const ScheduleDetailForm = ({
                 },
                 body: JSON.stringify({
                   title: data.title,
-                  recruitStartDate: formatDate(
-                    new Date(data.recruitStartDate),
-                    "yyyy-MM-dd"
-                  ),
-                  recruitEndDate: formatDate(
-                    new Date(data.recruitEndDate),
-                    "yyyy-MM-dd"
-                  ),
                   detail: data.description,
-                  location: `${data.location.roadAddress} ${data.location.placeName}`,
-                  addressDetail: data.location.placeName,
                   date: formatDate(data.date, "yyyy-MM-dd"),
                   time: data.time,
-                  latitude: data.location.latitude
-                    ? parseFloat(String(data.location.latitude)) / 1e7
-                    : 0,
-                  longitude: data.location.longitude
-                    ? parseFloat(String(data.location.longitude)) / 1e7
-                    : 0,
+                  location: `${data.location.roadAddress} ${data.location.placeName}`,
+                  addressDetail: data.location.placeName,
+                  latitude: (() => {
+                    const v = data.location.latitude;
+                    const n = Number(v);
+                    if (!isFinite(n)) return "0";
+                    const dec = Math.abs(n) > 180 ? n / 1e7 : n;
+                    return dec.toString();
+                  })(),
+                  longitude: (() => {
+                    const v = data.location.longitude;
+                    const n = Number(v);
+                    if (!isFinite(n)) return "0";
+                    const dec = Math.abs(n) > 180 ? n / 1e7 : n;
+                    return dec.toString();
+                  })(),
                 }),
               }
             );
@@ -182,7 +183,7 @@ const ScheduleDetailForm = ({
             }
             toast.success("일정이 수정되었습니다.");
             // 즉시 새로고침하여 최신 데이터 반영
-            router.push(`/club/dashboard/manage/schedule`);
+            router.push(`/club/dashboard/manage/schedule?page=1`);
             router.refresh();
           } catch (error) {
             console.error("일정 수정 실패:", error);

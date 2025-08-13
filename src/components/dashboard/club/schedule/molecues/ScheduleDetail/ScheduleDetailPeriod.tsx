@@ -13,18 +13,20 @@ const DatePicker = dynamic(() => import("@/components/common/DatePicker"), {
 const ScheduleDetailPeriod = ({ type }: { type: string }) => {
   const { setValue, watch } = useFormContext<ScheduleRegisterSchemaType>();
 
-  const recruitStartDate = watch("recruitStartDate");
-  const recruitEndDate = watch("recruitEndDate");
+  const recruitStartDateRaw = watch("recruitStartDate");
+  const recruitEndDateRaw = watch("recruitEndDate");
 
   // recruitStartDate가 없으면 오늘 날짜로 설정
   const startDate = useMemo(() => {
-    const date = recruitStartDate ? new Date(recruitStartDate) : new Date();
+    const date = recruitStartDateRaw
+      ? new Date(recruitStartDateRaw)
+      : new Date();
     date.setHours(0, 0, 0, 0);
     return date;
-  }, [recruitStartDate]);
+  }, [recruitStartDateRaw]);
   const endDate = useMemo(() => {
-    if (recruitEndDate) {
-      const date = new Date(recruitEndDate);
+    if (recruitEndDateRaw) {
+      const date = new Date(recruitEndDateRaw);
       date.setHours(0, 0, 0, 0);
       return date;
     }
@@ -33,17 +35,33 @@ const ScheduleDetailPeriod = ({ type }: { type: string }) => {
     defaultEndDate.setDate(defaultEndDate.getDate() + 1);
     defaultEndDate.setHours(0, 0, 0, 0);
     return defaultEndDate;
-  }, [recruitEndDate, startDate]);
+  }, [recruitEndDateRaw, startDate]);
 
   useEffect(() => {
     if (type !== "DETAIL") {
-      setValue("recruitStartDate", startDate.toISOString());
+      const currentStart = recruitStartDateRaw
+        ? new Date(recruitStartDateRaw)
+        : null;
+      const needUpdateStart =
+        !currentStart || currentStart.getTime() !== startDate.getTime();
+      if (needUpdateStart) {
+        setValue("recruitStartDate", startDate.toISOString(), {
+          shouldDirty: true,
+          shouldValidate: false,
+        });
+      }
 
-      if (new Date(recruitStartDate) > endDate) {
-        setValue("recruitEndDate", startDate.toISOString());
+      const currentEnd = recruitEndDateRaw ? new Date(recruitEndDateRaw) : null;
+      const shouldClampEnd =
+        currentStart && currentEnd && currentStart > currentEnd;
+      if (shouldClampEnd) {
+        setValue("recruitEndDate", startDate.toISOString(), {
+          shouldDirty: true,
+          shouldValidate: false,
+        });
       }
     }
-  }, [startDate, endDate, setValue, type]);
+  }, [startDate, recruitStartDateRaw, recruitEndDateRaw, setValue, type]);
 
   return (
     <div className="flex flex-col gap-2">
@@ -71,7 +89,7 @@ const ScheduleDetailPeriod = ({ type }: { type: string }) => {
           id="recruit-end-date"
           size="h-[60px]"
           disabledDatesMatcher={(date) => {
-            return date < new Date(recruitStartDate);
+            return date < new Date(recruitStartDateRaw);
           }}
           textStyle="h4 font-medium text-gray-900"
           currentDate={endDate}
