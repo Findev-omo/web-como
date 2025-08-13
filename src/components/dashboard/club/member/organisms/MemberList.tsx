@@ -43,26 +43,47 @@ export default function MemberList({ clubId }: Props) {
     return koreaDate.toISOString().split("T")[0];
   };
 
-  const loadMembers = useCallback(
-    async (searchValue: SearchValue = { term: "", field: "name" }) => {
-      try {
-        const response = await getData(
-          `v1/executive/club/${clubId}/member/list?page=${currentPage}&search=${
-            searchValue.term
-          }&startDate=${formatDateToString(
-            currentDateRange.startDate
-          )}&endDate=${formatDateToString(currentDateRange.endDate)}`
-        );
-        if (response.resultCode === "OK") {
-          setMembers(response.data.memberList);
-          setMaxPage(response.data.maxPage);
-        }
-      } catch (error) {
-        console.error("동호회 회원 목록 로딩 오류:", error);
-      }
+  const { data: listResponse, isLoading } = useQuery({
+    queryKey: [
+      "clubMembers",
+      clubId,
+      currentPage,
+      currentDateRange.startDate,
+      currentDateRange.endDate,
+      currentSearchValue.term,
+    ],
+    queryFn: async () => {
+      if (!clubId) return null as any;
+      // 목록은 엑셀 엔드포인트 데이터로 구성
+      const endpoint = `v1/executive/club/${clubId}/members/excel`;
+      return getData(endpoint);
     },
-    [clubId, currentPage, currentDateRange]
-  );
+    enabled: !!clubId,
+  });
+
+  useEffect(() => {
+    const response = listResponse as any;
+    if (!response) {
+      setMembers([]);
+      setMaxPage(1);
+      return;
+    }
+    const code = response?.resultCode as string | number | undefined;
+    if (code === "OK" || code === 200 || code === "200") {
+      const list = Array.isArray(response?.data)
+        ? (response.data as any[])
+        : Array.isArray(response?.data?.memberList)
+          ? response.data.memberList
+          : Array.isArray(response?.data?.list)
+            ? response.data.list
+            : [];
+      setMembers(list);
+      setMaxPage(1);
+    } else {
+      setMembers([]);
+      setMaxPage(1);
+    }
+  }, [listResponse]);
 
   const { refetch: getExcelData } = useQuery({
     queryKey: ["membersExcel", clubId, currentDateRange, currentSearchValue],
@@ -74,68 +95,83 @@ export default function MemberList({ clubId }: Props) {
     const XLSX = await import("xlsx");
     try {
       const { data } = await getExcelData();
-      if (data) {
-        const newData = data?.data.map(
-          (
-            item: {
-              id: number;
-              name: string;
-              department: string;
-              profileMessage: string;
-              createdDate: string;
-              status: string;
-            },
-            idx: number
-          ) => {
-            const newItem: Record<string, any> = { ...item };
+      const rows = Array.isArray(data?.data)
+        ? data?.data
+        : Array.isArray((data as any)?.data?.memberList)
+          ? (data as any)?.data?.memberList
+          : [];
 
-            const date = newItem.requestDate.slice(0, 3).join("-");
-
-            newItem.id = idx + 1;
-            newItem["이름"] = newItem.name;
-            newItem["부서"] = newItem.department;
-            newItem["직급"] = newItem.position;
-            newItem["상태"] =
-              newItem.status === "APPROVED" ? "활동중" : "비활동중";
-            newItem["가입일"] = date;
-
-            delete newItem["name"];
-            delete newItem["department"];
-            delete newItem["position"];
-            delete newItem["status"];
-            delete newItem["requestDate"];
-
-            return newItem;
-          }
-        );
-
-        const wb = XLSX.utils.book_new(); // 새로운 워크북 생성
-
-        // 엑셀 스타일 지정
-        const ws = XLSX.utils.json_to_sheet(newData);
-
-        XLSX.utils.book_append_sheet(wb, ws, "Club Members"); // 시트를 워크북에 추가
-
-        // 엑셀 파일 생성
-        XLSX.writeFile(wb, "club_members.xlsx"); // 엑셀 파일 다운로드
-      } else {
+      if (!Array.isArray(rows) || rows.length === 0) {
         console.error("엑셀 데이터가 없습니다.");
+        return;
       }
+
+      const toDateString = (value: any): string => {
+        if (!value) return "";
+        // 배열 형태 [yyyy, mm, dd]
+        if (Array.isArray(value)) return value.slice(0, 3).join("-");
+        // 문자열 형태 'yyyy-mm-dd...' 또는 ISO
+        if (typeof value === "string") return value.slice(0, 10);
+        return "";
+      };
+
+      const newData = rows.map(
+        (
+          item: {
+            id?: number;
+            name?: string;
+            department?: string;
+            position?: string;
+            profileMessage?: string;
+            createdDate?: string | any[];
+            requestDate?: string | any[];
+            status?: string;
+          },
+          idx: number
+        ) => {
+          const newItem: Record<string, any> = { ...item };
+
+          const dateStr = toDateString(
+            newItem.requestDate ?? newItem.createdDate
+          );
+
+          newItem.id = idx + 1;
+          newItem["이름"] = newItem.name ?? "";
+          newItem["부서"] = newItem.department ?? "";
+          newItem["직급"] = newItem.position ?? "-";
+          newItem["상태"] =
+            newItem.status === "APPROVED" ? "활동중" : "비활동중";
+          newItem["가입일"] = dateStr;
+
+          delete newItem["name"];
+          delete newItem["department"];
+          delete newItem["position"];
+          delete newItem["status"];
+          delete newItem["requestDate"];
+          delete newItem["createdDate"];
+
+          return newItem;
+        }
+      );
+
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(newData);
+      XLSX.utils.book_append_sheet(wb, ws, "Club Members");
+      XLSX.writeFile(wb, "club_members.xlsx");
     } catch (error) {
       console.error("엑셀 다운로드 중 오류 발생:", error);
     }
   };
 
-  useEffect(() => {
-    loadMembers();
-  }, [loadMembers]);
+  // useQuery로 목록을 가져오므로 별도 초기 로딩 훅은 불필요
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
   const handleSearch = (searchValue: SearchValue) => {
-    loadMembers(searchValue);
+    setCurrentPage(1);
+    setCurrentSearchValue(searchValue);
   };
 
   return (

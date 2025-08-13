@@ -13,7 +13,7 @@ interface Props {
 export default function MemberTable({ data }: Props) {
   const [selectedId, setSelectedId] = useState<number>();
   const [selectedName, setSelectedName] = useState<string>("");
-  console.log("memberTable data", data)
+  console.log("memberTable data", data);
 
   return (
     <>
@@ -55,7 +55,7 @@ export default function MemberTable({ data }: Props) {
             //   }}
             // >
             <li
-              key={idx}
+              key={item.id ?? `row-${idx}`}
               className="flex py-0.5 border-b border-gray-400 bg-gray-0"
               // onClick={() => {
               //   setSelectedId(item.id);
@@ -67,13 +67,13 @@ export default function MemberTable({ data }: Props) {
                 item.name,
                 item.department,
                 item.position,
-                item.requestDate,
+                item.requestDate ?? (item as any).createdDate,
                 item.status,
               ].map((data, i) => (
                 <div
-                  key={data}
+                  key={`col-${item.id ?? idx}-${i}`}
                   className={cn(
-                   "my-3 mx-6 body-1 font-bold text-gray-900",
+                    "my-3 mx-6 body-1 font-bold text-gray-900",
                     i === 0 ? "w-[5%] pl-4" : "",
                     i === 1 ? "w-[19%]" : "",
                     i === 2 ? "w-[19%]" : "",
@@ -97,9 +97,11 @@ export default function MemberTable({ data }: Props) {
                   {i === 0 ? (
                     idx + 1
                   ) : i === 4 ? (
-                    Array.isArray(data) ? 
-                    formatDate(new Date(data[0], data[1]-1, data[2])) : 
-                    formatDate(new Date(data))
+                    Array.isArray(data) ? (
+                      formatDate(new Date(data[0], data[1] - 1, data[2]))
+                    ) : (
+                      formatDate(new Date(data))
+                    )
                   ) : i === 5 ? (
                     data === "SIGNOUT" ? (
                       "탈퇴"
