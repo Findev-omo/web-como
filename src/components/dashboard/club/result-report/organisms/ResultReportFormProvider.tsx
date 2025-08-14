@@ -83,36 +83,40 @@ const ResultReportFormProvider = () => {
       try {
         setIsSubmitting(true);
 
-        const submitData = {
-          ...data,
-          data: {
-            ...data.data,
-            activityDate: data.data.activityDate
-              ? formatDateToString(data.data.activityDate)
-              : "",
-            expenses: data.data.expenses.map((expense) => ({
-              ...expense,
-              supportAmount: Number(expense.supportAmount),
-              usedAmount: Number(expense.usedAmount),
-              remainingAmount: Number(expense.remainingAmount),
-              amount: Number(expense.amount),
-              issuedDate: expense.issuedDate
-                ? formatDateToString(expense.issuedDate)
-                : "",
-            })),
-          },
+        const receiptsForApi = data.data.expenses.map((expense) => ({
+          ...expense,
+          supportAmount: Number(expense.supportAmount),
+          usedAmount: Number(expense.usedAmount),
+          remainingAmount: Number(expense.remainingAmount),
+          amount: Number(expense.amount),
+          issuedDate: expense.issuedDate
+            ? formatDateToString(expense.issuedDate)
+            : "",
+        }));
+
+        const dataForApi = {
+          eventName: data.data.eventName,
+          activityDate: data.data.activityDate
+            ? formatDateToString(data.data.activityDate)
+            : "",
+          activityTime: data.data.activityTime,
+          location: data.data.location,
+          locationDetail: data.data.locationDetail,
+          participantCount: data.data.participantCount,
+          activityContent: data.data.activityContent,
+          note: data.data.note,
+          receipts: receiptsForApi,
         };
 
         const formData = new FormData();
         formData.append(
           "data",
-          new Blob([JSON.stringify(submitData.data)], {
-            type: "application/json",
-          })
+          new Blob([JSON.stringify(dataForApi)], { type: "application/json" })
         );
 
+        // OpenAPI 명세에 맞춰 필드명을 images로 전송
         (data.photos || []).forEach((file: File) => {
-          formData.append("photos", file);
+          formData.append("images", file);
         });
         (data.receipts || []).forEach((file: File) => {
           formData.append("receipts", file);
