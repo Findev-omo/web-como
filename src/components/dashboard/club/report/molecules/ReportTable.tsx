@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { cn, formatDateArray } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 const tableHeadings = ["순번", "활동명", "활동일", "작성 상태", "반려 사유"];
 
@@ -12,7 +12,7 @@ interface Props {
       list: {
         id: number;
         eventName: string;
-        activityDate: number[] | string;
+        activityDate: number[];
         status: string;
         rejectReason?: string;
       }[];
@@ -87,9 +87,7 @@ export default function ReportListTable({ data, clubId, currentPage }: Props) {
               "my-3 mx-6 body-1 font-medium text-center max-w-[220px] flex-1"
             )}
           >
-            {Array.isArray(report.activityDate)
-              ? formatDateArray(report.activityDate)
-              : String(report.activityDate)}
+            {report.activityDate.join("-")}
           </div>
 
           {/* 작성 상태 */}

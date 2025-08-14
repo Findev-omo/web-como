@@ -49,6 +49,8 @@ export default function RHFTextInput<T extends FieldValues>({
     formState: { errors },
   } = useFormContext<T>();
 
+  // console.log(errors); // noisy in production
+
   const value = useWatch<T>({ name: name });
 
   // CustomInput의 컴포넌트는 forwardRef를 사용하여 ref가 function으로 할당되었음

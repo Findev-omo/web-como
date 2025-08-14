@@ -11,7 +11,7 @@ export const ExpenseCounts = ({ clubId }: Props) => {
   const { data, isLoading } = useQuery({
     queryKey: [clubId, "expenseSummary"],
     queryFn: () =>
-      getData(`v1/executive/club/${clubId}/activity-expense/summary`),
+      getData(`v1/executive/club/${clubId}/activity-expenses/summary`),
   });
 
   if (isLoading) {

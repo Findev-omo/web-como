@@ -3,7 +3,7 @@ import { getAccessToken, getClubId } from "@/lib/cookies";
 
 // 응답 타입 정의
 export interface ApiResponse<T = any> {
-  resultCode: string | number;
+  resultCode: string;
   resultMessage: string;
   data: T;
 }
@@ -35,19 +35,9 @@ const createApiClient = (): AxiosInstance => {
   // 응답 인터셉터 - 에러 처리 통합
   client.interceptors.response.use(
     (response) => {
-      const data = response.data as Partial<ApiResponse> | any;
-      // 성공 판정: resultCode가 "OK" 또는 200("200") 이면 성공으로 간주
-      const code = (data && (data as any).resultCode) as
-        | string
-        | number
-        | undefined;
-      const isSuccess =
-        code === "OK" || code === 200 || code === "200" || code === undefined;
-      if (!isSuccess) {
-        throw new ApiError(
-          (data as any)?.resultMessage ?? "요청 실패",
-          String(code ?? "UNKNOWN")
-        );
+      const data = response.data as ApiResponse;
+      if (data.resultCode !== "OK") {
+        throw new ApiError(data.resultMessage, data.resultCode);
       }
       return response;
     },

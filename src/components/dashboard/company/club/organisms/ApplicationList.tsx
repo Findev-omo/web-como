@@ -35,8 +35,8 @@ export default function ApplicationList(props: Props) {
     error,
   } = useApplications(currentPage, currentDateRange, searchValue);
 
-  const applications = applicationData?.list || [];
-  const maxPage = applicationData?.totalPages || 1;
+  const applications = applicationData?.memberList || [];
+  const maxPage = applicationData?.maxPage || 1;
 
   const handleDateRangeChange = (dateRange: DateRange) => {
     setCurrentPage(1);

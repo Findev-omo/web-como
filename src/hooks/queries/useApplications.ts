@@ -15,7 +15,7 @@ const fetchApplications = async ({ queryKey }: { queryKey: any }) => {
   const endDate = formatDateToString(dateRange.endDate);
   const url = `v1/manager/club?page=${page}&search=${search.term}&filter=${search.field}&startDate=${startDate}&endDate=${endDate}`;
   const response = await getData(url);
-  if (response.resultCode !== 200) {
+  if (response.resultCode !== "OK") {
     throw new Error(
       `동호회 신청 목록을 불러오는데 실패했습니다: ${response.resultMessage}`
     );

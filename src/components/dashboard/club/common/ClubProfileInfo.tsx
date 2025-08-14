@@ -53,7 +53,21 @@ export default function ClubProfileInfo({
   memberCount,
   activityPlan,
 }: ClubProfileInfoType) {
-  const convertDate = formatCreatedDate(createdAt);
+  const date = new Date(
+    createdAt[0],
+    createdAt[1],
+    createdAt[2],
+    createdAt[3],
+    createdAt[4],
+    createdAt[5]
+  );
+  const formattedDate = new Intl.DateTimeFormat("ko-KR", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  }).format(date);
+
+  const convertDate = formattedDate.replace(/\.$/, "");
 
   return (
     <div className="flex items-center gap-2 body-1 font-medium text-gray-500">

@@ -9,8 +9,8 @@ import DateFilter, {
 import ReportTable from "@/components/dashboard/club/report/molecules/ReportTable";
 import ReportTableSkeleton from "@/components/dashboard/club/report/molecules/ReportTableSkeleton";
 import Pagination from "@/components/dashboard/common/Pagination";
-import { useQuery } from "@tanstack/react-query";
-import { getClubReports } from "@/api/actions/club/report/getReports";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { getData } from "@/api/action";
 import { usePathname, useRouter } from "next/navigation";
 
 interface Props {
@@ -37,31 +37,43 @@ export default function ReportList({ clubId }: Props) {
     }
   };
 
-  const { data, isLoading } = useQuery({
-    queryKey: [
-      clubId,
-      "reportList",
-      currentDateRange.startDate,
-      currentDateRange.endDate,
-      currentPage,
-    ],
-    queryFn: async () => {
-      return getClubReports(
+  const { data, isLoading, fetchNextPage, fetchPreviousPage } =
+    useInfiniteQuery({
+      queryKey: [
         clubId,
-        currentPage,
-        formatDate(currentDateRange.startDate)!,
-        formatDate(currentDateRange.endDate)!
-      );
-    },
-    staleTime: 60_000,
-    gcTime: 300_000,
-  });
+        "reportList",
+        currentDateRange.startDate,
+        currentDateRange.endDate,
+      ],
+      queryFn: ({ pageParam }) =>
+        getData(
+          `v1/executive/club/${clubId}/reports?startDate=${formatDate(currentDateRange.startDate)}&endDate=${formatDate(currentDateRange.endDate)}&page=${pageParam}`,
+          false
+        ),
+      getNextPageParam: (lastPage) => {
+        if (lastPage?.data?.currentPage && lastPage?.data?.maxPage) {
+          if (lastPage.data.currentPage < lastPage.data.maxPage) {
+            return lastPage.data.currentPage + 1;
+          }
+        }
+        return false;
+      },
+
+      initialPageParam: 1,
+    });
 
   const handlePageChange = (page: number) => {
-    if (page !== currentPage) setCurrentPage(page);
+    if (page !== currentPage) {
+      setCurrentPage(page);
+      if (page > currentPage) {
+        fetchNextPage();
+      } else {
+        fetchPreviousPage();
+      }
+    }
   };
 
-  const maxPage = data?.totalPages ?? 1;
+  const maxPage = data?.pages[0].data.maxPage;
 
   return (
     <div className="space-y-10 p-8 rounded-2xl bg-gray-0">
@@ -83,7 +95,7 @@ export default function ReportList({ clubId }: Props) {
           <ReportTableSkeleton />
         ) : (
           <ReportTable
-            data={data ? [{ data }] : []}
+            data={data?.pages}
             clubId={clubId}
             currentPage={currentPage}
           />

@@ -31,22 +31,15 @@ export default function ExpenseList({ clubId }: Props) {
       queryKey: [clubId, "expense"],
       queryFn: ({ pageParam }) =>
         getData(
-          `v1/executive/club/${clubId}/activity-expenses?page=${Math.max(
-            0,
-            (pageParam as number) - 1
-          )}`,
-          false,
-          undefined,
-          { cache: "no-store", revalidate: 0 }
+          `v1/executive/club/${clubId}/activity-expenses?page=${pageParam}`,
+          false
         ),
-      getNextPageParam: (lastPage, allPages) => {
-        const totalPages = Number(lastPage?.data?.totalPages) || 0;
-        const loadedPages = allPages.length; // 1-based UI 페이지 수
-        return loadedPages < totalPages ? loadedPages + 1 : undefined;
-      },
-      getPreviousPageParam: (_firstPage, allPages) => {
-        const loadedPages = allPages.length;
-        return loadedPages > 1 ? loadedPages - 1 : undefined;
+      getNextPageParam: (lastPage) => {
+        if (lastPage.data?.currentPage < lastPage.data?.maxPage) {
+          return lastPage.data.currentPage + 1;
+        } else {
+          return false;
+        }
       },
       initialPageParam: 1,
     });
@@ -64,7 +57,7 @@ export default function ExpenseList({ clubId }: Props) {
     }
   };
 
-  const maxPage = data?.pages[0].data.totalPages;
+  const maxPage = data?.pages[0].data.maxPage;
 
   return (
     <div className="space-y-6 p-8 rounded-xl bg-gray-0">

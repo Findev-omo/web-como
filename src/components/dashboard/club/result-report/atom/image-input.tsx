@@ -5,7 +5,7 @@ import { useFormContext } from "react-hook-form";
 import { ResultReportSchemaType } from "@/lib/types/schema";
 
 const ImageInput = ({ idx }: { idx: number }) => {
-  const { setValue, watch } = useFormContext<ResultReportSchemaType>();
+  const { setValue, watch } = useFormContext();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [fileName, setFileName] = useState<string>("");
 
@@ -14,12 +14,12 @@ const ImageInput = ({ idx }: { idx: number }) => {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.currentTarget.files;
-    if (!files || files.length === 0) return;
-    const file = files[0];
-    setFileName(file.name ?? "");
+    if (!e.target.files) return;
+    setFileName(e.target.files[0].name);
     const currentReceipts = watch("receipts") || [];
-    setValue("receipts", [...currentReceipts, file]);
+
+    // setValue(`receipts`, [URL.createObjectURL(e.target.files[0])]);
+    setValue("receipts", [...currentReceipts, e.target.files[0]]); // File 객체로 저장
   };
 
   return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Pin } from "@/assets/icons/info";
@@ -18,7 +18,6 @@ import toast from "react-hot-toast";
 import { ClubNotice } from "@/api/services/club";
 import { ApiError } from "@/api/client";
 import { deleteAllCookies } from "@/lib/cookies";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 const tableHeadings = [
   "순번",
@@ -32,32 +31,17 @@ const tableHeadings = [
 function AnnouncementTable({ currentPage }: { currentPage: number }) {
   const pathname = usePathname();
   const { push } = useRouter();
-  const queryClient = useQueryClient();
+  const [notices, setNotices] = useState<ClubNotice[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   // const { showToast } = useToast(); // This line is removed as per the edit hint.
 
   const itemsPerPage = 10; // 페이지당 항목 수
 
-  const noticesQueryKey = useMemo(
-    () => ["club", "notices", "list", currentPage, ""],
-    [currentPage]
-  );
-
-  const { data, isLoading } = useQuery({
-    queryKey: noticesQueryKey,
-    queryFn: async () => {
+  useEffect(() => {
+    const fetchNotices = async () => {
       try {
         const result = await getNotices(currentPage, "");
-        // 상세에서 삭제 직후 돌아온 경우, sessionStorage에 기록된 삭제 ID를 제외
-        let list = result?.list || [];
-        try {
-          const deleted = JSON.parse(
-            sessionStorage.getItem("deletedNoticeIds") || "[]"
-          );
-          if (Array.isArray(deleted) && deleted.length) {
-            list = list.filter((n) => !deleted.includes(n.id));
-          }
-        } catch {}
-        return list as ClubNotice[];
+        setNotices(result?.list || []);
       } catch (error) {
         if (error instanceof ApiError && error.code === "UNAUTHORIZED") {
           toast.error(error.message);
@@ -66,41 +50,31 @@ function AnnouncementTable({ currentPage }: { currentPage: number }) {
         } else {
           toast.error("공지사항 목록을 불러오는 데 실패했습니다.");
         }
-        return [] as ClubNotice[];
+        setNotices([]);
+      } finally {
+        setIsLoading(false);
       }
-    },
-    staleTime: 60_000,
-    gcTime: 300_000,
-  });
+    };
+    fetchNotices();
+  }, [currentPage, push]);
 
-  const notices = data ?? [];
-
-  // 최대 2개까지 고정 가능하도록 pin/unpin 구현 (React Query 기반)
-  const { mutate: mutatePin } = useMutation({
-    mutationFn: pinNotice,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["club", "notices"] });
-    },
-    onError: () => toast.error("공지사항 고정에 실패했습니다."),
-  });
-  const { mutate: mutateUnpin } = useMutation({
-    mutationFn: unpinNotice,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["club", "notices"] });
-    },
-    onError: () => toast.error("공지사항 고정 해제에 실패했습니다."),
-  });
-
+  // 최대 2개까지 고정 가능하도록 pin/unpin 구현
   const handlePin = (noticeId: number) => {
     const pinnedCount = notices.filter((n) => n.isPinned).length;
     if (pinnedCount >= 2) {
       toast.error("공지사항 상단 고정은 2개까지 가능합니다.");
       return;
     }
-    mutatePin(noticeId);
+    setNotices((prev) =>
+      prev.map((n) => (n.id === noticeId ? { ...n, isPinned: true } : n))
+    );
+    pinNotice(noticeId);
   };
   const handleUnpin = (noticeId: number) => {
-    mutateUnpin(noticeId);
+    setNotices((prev) =>
+      prev.map((n) => (n.id === noticeId ? { ...n, isPinned: false } : n))
+    );
+    unpinNotice(noticeId);
   };
 
   const handleTitleClick = async (noticeId: number) => {
@@ -114,78 +88,19 @@ function AnnouncementTable({ currentPage }: { currentPage: number }) {
       detail = {
         ...detail,
         isPinned: notices.find((n) => n.id === noticeId)?.isPinned,
-      } as any;
+      };
+      // 상세 페이지에서 활용할 수 있도록 localStorage에 저장 (또는 필요시 state로 전달)
       localStorage.setItem("noticeDetail", JSON.stringify(detail));
       push(`${pathname}/${noticeId}`);
     } catch (error) {
-      // 삭제되었거나 접근 불가 시 상세 진입 차단
-      toast.error(
-        "공지사항을 불러올 수 없습니다. 삭제되었거나 존재하지 않습니다."
-      );
-      // 목록이 서버와 불일치할 수 있으므로 즉시 목록 캐시 무효화 → 재조회
-      // 현재 세션에서 해당 항목을 즉시 숨김 처리
-      try {
-        const key = "invalidNoticeIds";
-        const prev = JSON.parse(sessionStorage.getItem(key) || "[]");
-        const next = Array.isArray(prev)
-          ? Array.from(new Set([...prev, noticeId]))
-          : [noticeId];
-        sessionStorage.setItem(key, JSON.stringify(next));
-      } catch {}
-      // 현재 캐시된 모든 목록에서 해당 항목 제거 (낙관적 동기화)
-      const allLists = queryClient.getQueriesData<ClubNotice[]>({
-        queryKey: ["club", "notices", "list"],
-      });
-      allLists.forEach(([key, data]) => {
-        if (Array.isArray(data)) {
-          queryClient.setQueryData(
-            key,
-            data.filter((n) => n.id !== noticeId)
-          );
-        }
-      });
-      await queryClient.invalidateQueries({ queryKey: ["club", "notices"] });
+      toast.error("공지사항 상세 정보를 불러오지 못했습니다.");
     }
   };
 
-  const { mutate: mutateDelete, isPending: isDeleting } = useMutation({
-    mutationFn: deleteNotice,
-    onSuccess: async (_res, noticeId) => {
-      toast.success("공지사항이 삭제되었습니다.");
-      try {
-        localStorage.removeItem("noticeDetail");
-      } catch {}
-      // 동일 세션에서 즉시 숨김(서버가 느리게 반영되어도 리스트엔 안 보이도록)
-      try {
-        const key = "deletedNoticeIds";
-        const prev = JSON.parse(sessionStorage.getItem(key) || "[]");
-        const next = Array.isArray(prev)
-          ? Array.from(new Set([...prev, noticeId]))
-          : [noticeId];
-        sessionStorage.setItem(key, JSON.stringify(next));
-      } catch {}
-      // 모든 페이지 캐시에서 해당 항목 제거 (낙관적 반영)
-      const allLists = queryClient.getQueriesData<ClubNotice[]>({
-        queryKey: ["club", "notices", "list"],
-      });
-      allLists.forEach(([key, data]) => {
-        if (Array.isArray(data)) {
-          queryClient.setQueryData(
-            key,
-            data.filter((n) => n.id !== noticeId)
-          );
-        }
-      });
-      // 서버 재검증으로 최종 동기화
-      await queryClient.invalidateQueries({ queryKey: ["club", "notices"] });
-    },
-    onError: () => {
-      toast.error("공지사항 삭제에 실패했습니다.");
-    },
-  });
-
   const handleDelete = async (noticeId: number) => {
-    mutateDelete(noticeId);
+    await deleteNotice(noticeId);
+    toast.success("공지사항이 삭제되었습니다.");
+    setNotices((prev) => prev.filter((n) => n.id !== noticeId));
   };
   if (isLoading) {
     return "Loading...";

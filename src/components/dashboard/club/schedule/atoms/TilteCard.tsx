@@ -38,7 +38,7 @@ const TitleCard = ({
       });
       if (response.ok) {
         toast.success("일정이 삭제 되었습니다.");
-        router.replace("/club/dashboard/manage/schedule?page=1");
+        router.replace("/club/dashboard/manage/schedule");
         router.refresh();
       } else {
         toast.error("일정 삭제에 실패했습니다.");

@@ -42,7 +42,11 @@ const TableCell = ({
       )}
       onClick={onClick}
     >
-      {index === 0 ? data : index === 3 ? formatDate(data as number[]) : data}
+      {index === 0
+        ? calculateRowNumber()
+        : index === 3
+          ? formatDate(data as number[])
+          : data}
     </div>
   );
 };
