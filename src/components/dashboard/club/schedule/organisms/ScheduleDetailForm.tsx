@@ -123,7 +123,57 @@ const ScheduleDetailForm = ({
                   detail: data.description,
                   date: formatDate(data.date, "yyyy-MM-dd"),
                   time: data.time,
-                  location: `${data.location.roadAddress} ${data.location.placeName}`,
+                  location: (() => {
+                    const base = (data.location.roadAddress ?? "").toString();
+                    const detail = (data.location.placeName ?? "").toString();
+                    const normalizedBase = base.replace(/\s+/g, " ").trim();
+                    const normalizedDetail = detail.replace(/\s+/g, " ").trim();
+                    const splitOutDetail = (() => {
+                      if (!normalizedDetail) return normalizedBase;
+                      if (normalizedBase.endsWith(normalizedDetail)) {
+                        return normalizedBase
+                          .slice(
+                            0,
+                            normalizedBase.length - normalizedDetail.length
+                          )
+                          .trim();
+                      }
+                      const idx = normalizedBase.indexOf(normalizedDetail);
+                      if (idx > -1) {
+                        return (
+                          normalizedBase.slice(0, idx) +
+                          normalizedBase.slice(idx + normalizedDetail.length)
+                        ).trim();
+                      }
+                      return normalizedBase;
+                    })();
+                    const removeTrailingNonAddressWord = (
+                      addr: string
+                    ): string => {
+                      const parts = addr.split(" ");
+                      const isPureHangul = (s: string) => /^[가-힣]+$/.test(s);
+                      const hasDigits = (s: string) => /\d/.test(s);
+                      const isAddressSuffix = (s: string) =>
+                        /(동|읍|면|리|구|군|시|도|로|길|번길|대로|지하|층|호)$/.test(
+                          s
+                        );
+                      while (parts.length > 0) {
+                        const last = parts[parts.length - 1];
+                        if (
+                          last &&
+                          isPureHangul(last) &&
+                          !hasDigits(last) &&
+                          !isAddressSuffix(last)
+                        ) {
+                          parts.pop();
+                          continue;
+                        }
+                        break;
+                      }
+                      return parts.join(" ").trim();
+                    };
+                    return removeTrailingNonAddressWord(splitOutDetail);
+                  })(),
                   addressDetail: data.location.placeName,
                   latitude: (() => {
                     const v = data.location.latitude;
@@ -174,7 +224,57 @@ const ScheduleDetailForm = ({
                   detail: data.description,
                   date: formatDate(data.date, "yyyy-MM-dd"),
                   time: data.time,
-                  location: `${data.location.roadAddress} ${data.location.placeName}`,
+                  location: (() => {
+                    const base = (data.location.roadAddress ?? "").toString();
+                    const detail = (data.location.placeName ?? "").toString();
+                    const normalizedBase = base.replace(/\s+/g, " ").trim();
+                    const normalizedDetail = detail.replace(/\s+/g, " ").trim();
+                    const splitOutDetail = (() => {
+                      if (!normalizedDetail) return normalizedBase;
+                      if (normalizedBase.endsWith(normalizedDetail)) {
+                        return normalizedBase
+                          .slice(
+                            0,
+                            normalizedBase.length - normalizedDetail.length
+                          )
+                          .trim();
+                      }
+                      const idx = normalizedBase.indexOf(normalizedDetail);
+                      if (idx > -1) {
+                        return (
+                          normalizedBase.slice(0, idx) +
+                          normalizedBase.slice(idx + normalizedDetail.length)
+                        ).trim();
+                      }
+                      return normalizedBase;
+                    })();
+                    const removeTrailingNonAddressWord = (
+                      addr: string
+                    ): string => {
+                      const parts = addr.split(" ");
+                      const isPureHangul = (s: string) => /^[가-힣]+$/.test(s);
+                      const hasDigits = (s: string) => /\d/.test(s);
+                      const isAddressSuffix = (s: string) =>
+                        /(동|읍|면|리|구|군|시|도|로|길|번길|대로|지하|층|호)$/.test(
+                          s
+                        );
+                      while (parts.length > 0) {
+                        const last = parts[parts.length - 1];
+                        if (
+                          last &&
+                          isPureHangul(last) &&
+                          !hasDigits(last) &&
+                          !isAddressSuffix(last)
+                        ) {
+                          parts.pop();
+                          continue;
+                        }
+                        break;
+                      }
+                      return parts.join(" ").trim();
+                    };
+                    return removeTrailingNonAddressWord(splitOutDetail);
+                  })(),
                   addressDetail: data.location.placeName,
                   latitude: (() => {
                     const v = data.location.latitude;
