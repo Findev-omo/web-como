@@ -43,16 +43,33 @@ const ScheduleDetailForm = ({
     defaultValues:
       type !== "REGISTER"
         ? {
-            title: initialData?.title,
-            description: initialData?.detail,
+            title: initialData?.title ?? "",
+            description: initialData?.detail ?? "",
             location: {
-              roadAddress: initialData?.location,
-              placeName: initialData?.addressDetail,
+              roadAddress: initialData?.location ?? "",
+              placeName: initialData?.addressDetail ?? "",
             },
             date: initialData?.date ? new Date(initialData?.date) : new Date(),
-            time: initialData?.time,
-            recruitStartDate: initialData?.recruitStartDate,
-            recruitEndDate: initialData?.recruitEndDate,
+            time:
+              initialData?.time ??
+              (() => {
+                const now = new Date();
+                const minutes = now.getMinutes();
+                const roundedMinutes = Math.round(minutes / 30) * 30;
+                now.setMinutes(roundedMinutes);
+                return now.toLocaleTimeString("ko-KR", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: false,
+                });
+              })(),
+            recruitStartDate:
+              initialData?.recruitStartDate ?? new Date().toISOString(),
+            recruitEndDate:
+              initialData?.recruitEndDate ??
+              new Date(
+                new Date().getTime() + 24 * 60 * 60 * 1000
+              ).toISOString(),
           }
         : {
             title: "",
@@ -145,7 +162,7 @@ const ScheduleDetailForm = ({
             const clubId = await getClubId();
 
             const response = await fetch(
-              `/api/server/v1/executive/club/activity/${scheduleId}`,
+              `/api/server/v1/executive/club/${clubId}/activity/${scheduleId}`,
               {
                 method: "PATCH",
                 headers: {

@@ -11,27 +11,21 @@ export default function ClubBasicInfo({ clubId }: { clubId: string | null }) {
   console.log("5. ClubBasicInfo 실행됨");
   const [clubBasicInfo, setClubBasicInfo] = useState<any | null>(null);
   const { setValue } = useFormContext<ClubIndexSchemaType>();
+  const { data } = useClubBasicInfo(clubId);
 
   useEffect(() => {
-    // Use custom hook
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const { data } = useClubBasicInfo(clubId);
-    if (data) {
-      setClubBasicInfo(data);
-      setValue("companyName", data?.companyName ?? "");
-      setValue(
-        "clubName",
-        (data as any)?.name ?? (data as any)?.clubName ?? ""
-      );
-      setValue(
-        "category",
-        (data as any)?.clubCategory ?? (data as any)?.category ?? ""
-      );
-      setValue("goal", data?.goal ?? "");
-      setValue("intro", data?.intro ?? "");
-      setValue("detail", data?.detail ?? "");
-    }
-  }, [clubId, setValue]);
+    if (!data) return;
+    setClubBasicInfo(data);
+    setValue("companyName", data?.companyName ?? "");
+    setValue("clubName", (data as any)?.name ?? (data as any)?.clubName ?? "");
+    setValue(
+      "category",
+      (data as any)?.clubCategory ?? (data as any)?.category ?? ""
+    );
+    setValue("goal", data?.goal ?? "");
+    setValue("intro", data?.intro ?? "");
+    setValue("detail", data?.detail ?? "");
+  }, [data, setValue]);
 
   return (
     <div className="flex w-full flex-col gap-6 rounded-xl bg-gray-0 p-8">
