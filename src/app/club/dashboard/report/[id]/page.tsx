@@ -72,7 +72,17 @@ export default function ClubReportDetailPage() {
     queryFn: () => getData(`v1/executive/club/${clubId}/reports/${reportId}`),
   });
 
-  const data = reportDetail?.data as ClubData;
+  const raw = reportDetail?.data as any;
+  const data: ClubData | undefined = raw
+    ? {
+        ...raw,
+        photos: Array.isArray(raw?.photos)
+          ? raw.photos
+          : Array.isArray(raw?.images)
+            ? raw.images
+            : [],
+      }
+    : undefined;
 
   return (
     <>
@@ -88,7 +98,7 @@ export default function ClubReportDetailPage() {
         <div className="flex space-x-3">
           {/* <ClubInfoCard /> */}
           {/* <NewReportForm /> */}
-          <ReportDetail data={data} />
+          <ReportDetail data={data as ClubData} />
         </div>
       </>
       {/* )} */}
