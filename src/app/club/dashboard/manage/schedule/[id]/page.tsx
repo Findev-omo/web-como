@@ -45,8 +45,11 @@ export const fetchScheduleData = async (id: string, page: string) => {
     undefined,
     { cache: "no-store", revalidate: 0 }
   );
+  const safePage =
+    Number.isFinite(Number(page)) && Number(page) > 0 ? page : "1";
+  const serverPage = Math.max(0, Number(safePage) - 1); // 서버 0-base 가정
   const memberListResponse = await getData(
-    `${API_ENDPOINTS.MEMBERS.replace("{id}", id)}?page=${page}`,
+    `${API_ENDPOINTS.MEMBERS.replace("{id}", id)}?page=${serverPage}`,
     true,
     undefined,
     { cache: "no-store", revalidate: 0 }
@@ -186,9 +189,63 @@ export const fetchScheduleData = async (id: string, page: string) => {
       })()
     : undefined;
 
+  // Normalize member list payload for Pagination and table
+  const memberRaw = memberListResponse?.data as any;
+  const toDateArray = (val?: any): number[] => {
+    if (!val) return [] as unknown as number[];
+    try {
+      if (Array.isArray(val) && val.length >= 3) return val as number[];
+      const d = new Date(val);
+      if (!isNaN(d.getTime()))
+        return [d.getFullYear(), d.getMonth() + 1, d.getDate()];
+      if (typeof val === "string") {
+        const m = val.match(/(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
+        if (m) return [Number(m[1]), Number(m[2]), Number(m[3])];
+      }
+    } catch {}
+    return [] as unknown as number[];
+  };
+
+  const extractMembers = (pl: any): any[] => {
+    if (!pl) return [];
+    if (Array.isArray(pl)) return pl;
+    if (Array.isArray(pl.List)) return pl.List;
+    if (Array.isArray(pl.list)) return pl.list;
+    if (Array.isArray(pl.content)) return pl.content;
+    if (pl.data && Array.isArray(pl.data)) return pl.data;
+    if (pl.data && Array.isArray(pl.data.List)) return pl.data.List;
+    if (pl.data && Array.isArray(pl.data.list)) return pl.data.list;
+    if (Array.isArray(pl.members)) return pl.members;
+    if (Array.isArray(pl.participants)) return pl.participants;
+    return [];
+  };
+
+  const memberItems = extractMembers(memberRaw);
+  const mappedMembers = memberItems.map((item: any, index: number) => ({
+    id: item?.id ?? item?.memberId ?? index + 1,
+    name: item?.name ?? item?.username ?? item?.memberName ?? "-",
+    department: item?.department ?? item?.dept ?? item?.departmentName ?? "-",
+    requestDate: toDateArray(
+      item?.requestDate ?? item?.createdAt ?? item?.createDate
+    ),
+  }));
+
+  const current =
+    typeof memberRaw?.currentPage === "number"
+      ? Number(memberRaw.currentPage)
+      : typeof memberRaw?.page === "number"
+        ? Number(memberRaw.page)
+        : serverPage;
+
+  const max = memberRaw?.maxPage ?? memberRaw?.totalPages ?? 1;
+
   return {
     initialData,
-    memberList: memberListResponse.data,
+    memberList: {
+      List: mappedMembers,
+      currentPage: current + 1, // UI는 1-base
+      maxPage: Number(max) || 1,
+    },
   };
 };
 
