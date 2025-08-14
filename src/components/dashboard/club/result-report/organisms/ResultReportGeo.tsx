@@ -5,6 +5,7 @@ import {
   ResultReportSchemaType,
   ScheduleRegisterSchemaType,
 } from "@/lib/types/schema";
+import { useCallback } from "react";
 import { useFormContext } from "react-hook-form";
 import { cn } from "@/lib/utils";
 
@@ -59,6 +60,15 @@ const ResultReportGeo = ({
   const locationError = getLocationErrorMessage();
   const locationDetailError = getLocationDetailErrorMessage();
 
+  const handleLocationChange = useCallback(
+    (newLocation: any) => {
+      setValue("data.location", newLocation.roadAddress, {
+        shouldValidate: true,
+      });
+    },
+    [setValue]
+  );
+
   return (
     <div className={cn("flex flex-col gap-2", maxWidth)}>
       <CustomLabel
@@ -73,11 +83,7 @@ const ResultReportGeo = ({
             maxWidth="w-full"
             isLabel={false}
             value={location}
-            handleChange={(newLocation: any) => {
-              setValue("data.location", newLocation.roadAddress, {
-                shouldValidate: true,
-              });
-            }}
+            handleChange={handleLocationChange}
             readonly={type === "DETAIL"}
           />
           {locationError && (

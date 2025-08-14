@@ -1,21 +1,26 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useAutoSave } from "@/hooks/useAutoSave";
-import { UseFormReturn } from "react-hook-form";
+import { useState } from "react";
 import toast from "react-hot-toast";
-import { Checked } from "@/assets/icons/checkbox";
 
 interface Props {
-  handleRestore?: () => void;
+  handleRestore?: () => void | Promise<void>;
   clearSavedData?: () => Promise<void>;
 }
 
 export function AutoSaveRestoreAlert({ handleRestore, clearSavedData }: Props) {
-  const handleConfirmRestore = () => {
-    if (handleRestore) {
-      handleRestore();
-      toast.success("작성중인 내용을 복원했습니다.");
+  const [isOpen, setIsOpen] = useState(true);
+
+  if (!isOpen) return null;
+
+  const handleConfirmRestore = async () => {
+    try {
+      if (handleRestore) {
+        await handleRestore();
+        toast.success("작성중인 내용을 복원했습니다.");
+      }
+    } finally {
+      setIsOpen(false);
     }
   };
 
@@ -32,12 +37,20 @@ export function AutoSaveRestoreAlert({ handleRestore, clearSavedData }: Props) {
 
         <div className="flex gap-4 w-full">
           <button
-            onClick={clearSavedData}
+            type="button"
+            onClick={async () => {
+              try {
+                await clearSavedData?.();
+              } finally {
+                setIsOpen(false);
+              }
+            }}
             className="flex-1 font-bold text-xl text-[#ffffff] bg-[#FD7E2D] py-3 px-6 rounded-xl hover:bg-gray-50 transition-colors shadow-sm"
           >
             무시하기
           </button>
           <button
+            type="button"
             onClick={handleConfirmRestore}
             className="flex-1 text-xl font-bold bg-white text-[#FD7E2D] py-3 px-6 rounded-xl hover:bg-gray-50 transition-colors shadow-sm"
           >

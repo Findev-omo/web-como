@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePlaceSearch } from "@/app/api/map/hook";
 import { useGeocode } from "@/app/api/map/hook";
 import { cn } from "@/lib/utils";
@@ -48,11 +48,17 @@ export default function MapPlaceSearch({
   const { data: placeData } = usePlaceSearch(searchTerm);
   const { data: geocodeData } = useGeocode(query);
 
+  // 안정적인 콜백 참조 유지 (deps 길이 경고 방지)
+  const handleChangeRef = useRef<Props["handleChange"]>();
   useEffect(() => {
-    if (value) {
+    handleChangeRef.current = handleChange;
+  }, [handleChange]);
+
+  useEffect(() => {
+    if (value && value !== searchTerm) {
       setSearchTerm(value);
     }
-  }, [value]);
+  }, [value, searchTerm]);
 
   useEffect(() => {
     if (placeData) {
@@ -105,18 +111,21 @@ export default function MapPlaceSearch({
   }, [readonly, searchResult]);
 
   useEffect(() => {
-    if (selectedPlace) {
-      handleChange?.({
-        roadAddress: selectedPlace.roadAddress,
-        latitude: selectedPlace.latitude,
-        longitude: selectedPlace.longitude,
-      });
+    if (!selectedPlace) return;
 
-      if (selectedPlace) {
-        setSearchTerm(selectedPlace.roadAddress);
-      }
+    // 부모 통지: 장소가 바뀔 때만 수행
+    handleChangeRef.current?.({
+      roadAddress: selectedPlace.roadAddress,
+      latitude: selectedPlace.latitude,
+      longitude: selectedPlace.longitude,
+    });
+
+    // 불필요한 상태 업데이트 방지
+    if (selectedPlace.roadAddress !== searchTerm) {
+      setSearchTerm(selectedPlace.roadAddress);
     }
-  }, [selectedPlace, handleChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedPlace, searchTerm]);
 
   const handleSearchResultClick = (item: {
     roadAddress: string;
