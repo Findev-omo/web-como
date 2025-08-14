@@ -11,7 +11,7 @@ export default function ClubPolicyTab({ clubId }: { clubId: string | null }) {
     queryKey: ["club-manage", "policy", clubId],
     enabled: !!clubId,
     queryFn: async () => {
-      const r = await fetch(`/api/server/v1/executive/club/${clubId}/policy`, {
+      const r = await fetch(`/api/server/v1/club/${clubId}/policy`, {
         headers: { accept: "application/json" },
       });
       const b = await r.json();

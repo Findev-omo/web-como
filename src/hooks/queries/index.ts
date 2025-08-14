@@ -3,6 +3,7 @@ export * from "./company";
 
 // Club hooks
 export * from "./club";
+export * from "./useClubBasicInfo";
 
 // Legacy hooks (gradually migrate these)
 export { useApplications } from "./useApplications";

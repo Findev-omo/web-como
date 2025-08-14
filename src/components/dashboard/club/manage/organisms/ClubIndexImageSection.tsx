@@ -64,6 +64,14 @@ export default function ClubIndexImageSection<T extends FieldValues>({
 
     const formData = new FormData();
     formData.append("clubImage", file as Blob); // 키를 "clubImage"로 변경
+    // 디버그: 실제 포함된 엔트리 확인 (브라우저 콘솔에서 FormData는 비어 보일 수 있음)
+    try {
+      const entries = Array.from(formData.entries()).map(([k, v]) => [
+        k,
+        v instanceof File ? { name: v.name, type: v.type, size: v.size } : v,
+      ]);
+      console.log("formData entries", entries);
+    } catch {}
 
     try {
       const token = await getAccessToken();
@@ -78,13 +86,28 @@ export default function ClubIndexImageSection<T extends FieldValues>({
         body: formData,
       });
 
-      const result = await response.json();
-      console.log("result", result);
+      let result: any = null;
+      try {
+        result = await response.json();
+      } catch {}
+      console.log("result", result, {
+        status: response.status,
+        ok: response.ok,
+      });
 
-      if (result.resultCode === "OK") {
+      const success =
+        response.ok ||
+        result?.resultCode === "OK" ||
+        result?.resultCode === 200 ||
+        result?.resultCode === "200";
+
+      if (success) {
         // console.log("이미지가 성공적으로 저장되었습니다.");
         // alert("이미지가 성공적으로 저장되었습니다.");
         toast.success("이미지가 성공적으로 저장되었습니다.");
+        try {
+          sessionStorage.setItem("club-image-bust", String(Date.now()));
+        } catch {}
         window.location.reload(); // 페이지 새로 고침
       } else {
         // console.log("이미지 저장에 실패했습니다.");

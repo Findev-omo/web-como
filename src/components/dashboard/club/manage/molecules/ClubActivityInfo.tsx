@@ -17,7 +17,7 @@ export default function ClubActivityInfo({
     queryKey: ["club", "detail", clubId],
     queryFn: async () => {
       if (!clubId) throw new Error("NO_CLUB");
-      const r = await fetch(`/api/server/v1/executive/club/${clubId}`, {
+      const r = await fetch(`/api/server/v1/club/${clubId}`, {
         headers: { accept: "application/json" },
       });
       const b = await r.json();
