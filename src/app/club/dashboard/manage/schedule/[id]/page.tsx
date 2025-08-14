@@ -44,8 +44,68 @@ export const fetchScheduleData = async (id: string, page: string) => {
     true
   );
 
+  // normalize detail payload to ScheduleDetailCardInitialData shape
+  const raw = detailResponse?.data as any;
+
+  const toDateString = (val?: any): string => {
+    try {
+      if (!val) return new Date().toISOString().slice(0, 10);
+      if (Array.isArray(val) && val.length >= 3) {
+        const [y, m, d] = val;
+        const mm = String(Number(m)).padStart(2, "0");
+        const dd = String(Number(d)).padStart(2, "0");
+        return `${y}-${mm}-${dd}`;
+      }
+      const d = new Date(val);
+      if (!isNaN(d.getTime())) return d.toISOString().slice(0, 10);
+    } catch {}
+    return new Date().toISOString().slice(0, 10);
+  };
+
+  const toTimeString = (val?: any): string => {
+    try {
+      if (!val)
+        return new Date().toLocaleTimeString("ko-KR", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        });
+      if (Array.isArray(val) && val.length >= 2) {
+        const [h, m] = val;
+        return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+      }
+      if (typeof val === "string") {
+        const m = val.match(/^(\d{1,2}):(\d{2})/);
+        if (m) return `${m[1].padStart(2, "0")}:${m[2]}`;
+        const d = new Date(`1970-01-01T${val}`);
+        if (!isNaN(d.getTime()))
+          return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+      }
+    } catch {}
+    const now = new Date();
+    return `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+  };
+
+  const initialData = raw
+    ? {
+        title: raw?.title ?? raw?.name ?? "",
+        detail: raw?.Detail ?? raw?.detail ?? raw?.description ?? "",
+        date: toDateString(
+          raw?.date ?? raw?.activityDate ?? raw?.createdAt ?? raw?.createDate
+        ),
+        time: toTimeString(raw?.time ?? raw?.activityTime),
+        location: raw?.location ?? raw?.address ?? raw?.roadAddress ?? "",
+        addressDetail:
+          raw?.addressDetail ?? raw?.locationDetail ?? raw?.placeName ?? "",
+        recruitStartDate: toDateString(
+          raw?.recruitStartDate ?? raw?.recruitFrom
+        ),
+        recruitEndDate: toDateString(raw?.recruitEndDate ?? raw?.recruitTo),
+      }
+    : undefined;
+
   return {
-    initialData: detailResponse.data,
+    initialData,
     memberList: memberListResponse.data,
   };
 };
