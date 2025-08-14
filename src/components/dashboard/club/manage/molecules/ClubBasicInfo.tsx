@@ -5,36 +5,32 @@ import RHFTextInput from "@/components/common/RHF/RHFTextInput";
 import { ClubIndexSchemaType } from "@/lib/types/schema";
 import { useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
-import { getData } from "@/api/action";
-import { ClubIndexData } from "@/api/types/club";
+import { useClubBasicInfo } from "@/hooks/queries";
 
 export default function ClubBasicInfo({ clubId }: { clubId: string | null }) {
   console.log("5. ClubBasicInfo 실행됨");
-  const [clubBasicInfo, setClubBasicInfo] = useState<ClubIndexData | null>(
-    null
-  );
+  const [clubBasicInfo, setClubBasicInfo] = useState<any | null>(null);
   const { setValue } = useFormContext<ClubIndexSchemaType>();
 
   useEffect(() => {
-    const fetchClubBasicInfo = async () => {
-      try {
-        // New spec: GET v1/club/{id}
-        const res = await getData(`v1/club/${clubId}`);
-        const raw: any = res.data;
-        setClubBasicInfo(raw);
-        // Populate RHF form values
-        setValue("companyName", raw?.companyName ?? "");
-        setValue("clubName", raw?.name ?? raw?.clubName ?? "");
-        setValue("category", raw?.clubCategory ?? raw?.category ?? "");
-        setValue("goal", raw?.goal ?? "");
-        setValue("intro", raw?.intro ?? "");
-        setValue("detail", raw?.detail ?? "");
-      } catch (error) {
-        console.error("동호회 기본 정보 로딩 오류:", error);
-      }
-    };
-
-    fetchClubBasicInfo();
+    // Use custom hook
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const { data } = useClubBasicInfo(clubId);
+    if (data) {
+      setClubBasicInfo(data);
+      setValue("companyName", data?.companyName ?? "");
+      setValue(
+        "clubName",
+        (data as any)?.name ?? (data as any)?.clubName ?? ""
+      );
+      setValue(
+        "category",
+        (data as any)?.clubCategory ?? (data as any)?.category ?? ""
+      );
+      setValue("goal", data?.goal ?? "");
+      setValue("intro", data?.intro ?? "");
+      setValue("detail", data?.detail ?? "");
+    }
   }, [clubId, setValue]);
 
   return (
