@@ -3,6 +3,7 @@ import dynamic from "next/dynamic";
 import RQProvider from "@/lib/providers";
 import "@/styles/globals.css";
 import Script from "next/script";
+import AuthInitializer from "@/components/auth/AuthInitializer";
 
 const ToastContainer = dynamic(
   () => import("react-hot-toast").then((c) => c.Toaster),
@@ -26,6 +27,7 @@ export default function RootLayout({
       <body className="min-h-screen font-suit antialiased bg-gray-50">
         <RQProvider>
           <ToastContainer />
+          <AuthInitializer />
           {children}
           <div id="modal-root" />
         </RQProvider>

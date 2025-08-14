@@ -8,9 +8,11 @@ import { ChevronRight } from "@/assets/icons/chevron";
 export default async function DashboardTransaction() {
   const res = await getData("v2/club/web/transactions/", true);
   const data: TransactionData = res.data;
-  const list = Array.isArray((data as any)?.clubTransactionHistoryListDTOS)
-    ? (data as any).clubTransactionHistoryListDTOS
-    : [];
+
+  const formatCurrency = (value: unknown) => {
+    const num = typeof value === "number" ? value : Number(value);
+    return Number.isFinite(num) ? num.toLocaleString() : "0";
+  };
 
   return (
     <div className="flex flex-col gap-3 p-8 rounded-xl bg-gray-0">
@@ -25,7 +27,7 @@ export default async function DashboardTransaction() {
       <div className="flex flex-col gap-6">
         <div className="flex items-center gap-3">
           <span className="h2 font-semibold text-gray-900">{"잔여회비"}</span>
-          <span className="h1 font-extrabold text-brand-orange">{`${Number(data?.remainingFee ?? 0).toLocaleString()}원`}</span>
+          <span className="h1 font-extrabold text-brand-orange">{`${formatCurrency(data?.remainingFee)}원`}</span>
         </div>
         <ul className="space-y-1 h-[284px]">
           <li className="flex rounded bg-gray-100">
@@ -47,8 +49,9 @@ export default async function DashboardTransaction() {
               )
             )}
           </li>
-          {list.length > 0 ? (
-            list.map((transaction: any, i: number) => (
+          {data?.clubTransactionHistoryListDTOS &&
+          data.clubTransactionHistoryListDTOS.length > 0 ? (
+            data.clubTransactionHistoryListDTOS.map((transaction, i) => (
               <li key={i} className="flex">
                 {[
                   transaction.date,
@@ -56,9 +59,9 @@ export default async function DashboardTransaction() {
                   transaction.amount,
                   transaction.department,
                   transaction.detail,
-                ].map((cell, i) => (
+                ].map((data, i) => (
                   <span
-                    key={`${i}-${String(cell)}`}
+                    key={data}
                     className={cn(
                       "flex-1 py-2.5 px-4 body-1 font-medium text-gray-900 truncate",
                       [1, 3].includes(i) ? "text-center" : "",
@@ -68,17 +71,15 @@ export default async function DashboardTransaction() {
                       i === 2 ? "max-w-60" : "",
                       i === 3 ? "max-w-44 body-2" : "",
                       i === 4 ? "text-gray-700" : "",
-                      cell === "입금" ? "text-point-blue" : "",
-                      cell === "출금" ? "text-point-red" : ""
+                      data === "입금" ? "text-point-blue" : "",
+                      data === "출금" ? "text-point-red" : ""
                     )}
                   >
                     {i === 0
-                      ? cell
-                        ? formatDate(new Date(cell))
-                        : "-"
+                      ? formatDate(new Date(data))
                       : i === 2
-                        ? `${transaction.transactionType === "입금" ? "" : "-"}${Number(cell ?? 0).toLocaleString()}원`
-                        : cell}
+                        ? `${transaction.transactionType === "입금" ? "" : "-"}${formatCurrency(data)}원`
+                        : (data as any)}
                   </span>
                 ))}
               </li>

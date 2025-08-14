@@ -7,7 +7,7 @@ const COLUMN_WIDTHS = {
   DATE: "w-[220px] min-w-[150px]",
 } as const;
 
-const TABLE_HEADINGS = ["순번", "제목", "작성자", "작성일자"] as const;
+const TABLE_HEADINGS = ["ID", "제목", "작성자", "작성일자"] as const;
 
 export const getColumnWidth = (index: number): string => {
   switch (index) {

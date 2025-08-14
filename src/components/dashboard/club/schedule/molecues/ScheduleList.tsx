@@ -26,20 +26,30 @@ const ScheduleList = ({
   // isExist,
 }: ScheduleListProps) => {
   const router = useRouter();
+  console.log("[ScheduleList] props", {
+    schedulesCount: schedules?.length,
+    currentPage,
+    maxPage,
+    schedules,
+  });
 
   const handlePageChange = (page: number) => {
-    const safePage =
-      Number.isFinite(Number(page)) && Number(page) > 0 ? page : 1;
-    router.push(`/club/dashboard/manage/schedule?page=${safePage}`);
+    const numericPage = Number(page);
+    const minPage = 1;
+    const max = Number.isFinite(maxPage) && maxPage > 0 ? maxPage : minPage;
+    const targetPage = Math.min(Math.max(numericPage, minPage), max);
+    router.push(`/club/dashboard/manage/schedule?page=${targetPage}`);
   };
 
+  // 자동 replace는 제거하여 페이지가 불필요하게 증가/변경되지 않도록 함
+  // 단, 현재 페이지가 범위를 벗어나면 마지막 페이지로 1회 보정
   useEffect(() => {
-    const safePage =
-      Number.isFinite(Number(currentPage)) && Number(currentPage) > 0
-        ? currentPage
-        : 1;
-    router.replace(`/club/dashboard/manage/schedule?page=${safePage}`);
-  }, [currentPage, router]);
+    const cur = Number(currentPage) || 1;
+    const max = Number.isFinite(maxPage) && maxPage > 0 ? maxPage : 1;
+    if (cur > max) {
+      router.replace(`/club/dashboard/manage/schedule?page=${max}`);
+    }
+  }, [currentPage, maxPage, router]);
 
   useEffect(() => {
     if (sessionStorage.getItem("refresh-on-back") === "true") {

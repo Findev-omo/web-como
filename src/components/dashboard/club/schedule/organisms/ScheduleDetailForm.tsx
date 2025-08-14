@@ -11,11 +11,7 @@ import Button from "@/components/common/Button";
 import { ScheduleDetailCardInitialData } from "../molecues/ScheduleDetail/ScheduleDetailCard";
 import { getAccessToken, getClubId } from "@/lib/cookies";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { format as formatDate } from "date-fns";
-import {
-  toCreateActivityPayload,
-  toUpdateActivityPayload,
-} from "@/lib/transformers/activityPayload";
+import { formatDate } from "date-fns";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import ScheduleDetailPeriod from "../molecues/ScheduleDetail/ScheduleDetailPeriod";
@@ -47,16 +43,33 @@ const ScheduleDetailForm = ({
     defaultValues:
       type !== "REGISTER"
         ? {
-            title: initialData?.title,
-            description: initialData?.description ?? "",
+            title: initialData?.title ?? "",
+            description: initialData?.detail ?? "",
             location: {
               roadAddress: initialData?.location ?? "",
               placeName: initialData?.addressDetail ?? "",
             },
             date: initialData?.date ? new Date(initialData?.date) : new Date(),
-            time: initialData?.time,
-            recruitStartDate: initialData?.recruitStartDate,
-            recruitEndDate: initialData?.recruitEndDate,
+            time:
+              initialData?.time ??
+              (() => {
+                const now = new Date();
+                const minutes = now.getMinutes();
+                const roundedMinutes = Math.round(minutes / 30) * 30;
+                now.setMinutes(roundedMinutes);
+                return now.toLocaleTimeString("ko-KR", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: false,
+                });
+              })(),
+            recruitStartDate:
+              initialData?.recruitStartDate ?? new Date().toISOString(),
+            recruitEndDate:
+              initialData?.recruitEndDate ??
+              new Date(
+                new Date().getTime() + 24 * 60 * 60 * 1000
+              ).toISOString(),
           }
         : {
             title: "",
@@ -85,17 +98,6 @@ const ScheduleDetailForm = ({
     mode: type !== "DETAIL" ? "onChange" : "onSubmit",
   });
 
-  useEffect(() => {
-    // 디버그: 이 컴포넌트가 어디서 어떤 데이터로 렌더되는지 확인
-    // 상세 데이터는 서버 컴포넌트(`app/club/dashboard/manage/schedule/[id]/page.tsx`)에서
-    // GET /v1/executive/club/{clubId}/activity/{activityId} 호출 결과를 initialData로 내려줍니다.
-    // 아래 로그는 브라우저 콘솔에서 확인 가능합니다.
-    // 주의: 페이지 재방문 시 캐시는 no-store로 꺼놓았습니다.
-    //       (getData(..., { noCache: true }))
-    //       멤버 목록은 schedule/{id}/members 에서 가져옵니다.
-    // Debug logs removed to reduce noise
-  }, [type, scheduleId, initialData, methods]);
-
   const debouncedSubmit = useCallback(
     async (data: ScheduleRegisterSchemaType) => {
       if (isSubmitting) return;
@@ -107,15 +109,6 @@ const ScheduleDetailForm = ({
           try {
             const token = await getAccessToken();
             const clubId = await getClubId();
-            const createBody = toCreateActivityPayload(
-              data,
-              Number.isFinite(Number(clubId)) ? Number(clubId) : 0
-            );
-            console.log(
-              "[ScheduleDetailForm] CREATE -> /v1/executive/club/activity",
-              createBody
-            );
-
             const response = await fetch(
               `/api/server/v1/executive/club/activity`,
               {
@@ -124,7 +117,79 @@ const ScheduleDetailForm = ({
                   "Content-Type": "application/json",
                   "Authorization": `Bearer ${token}`,
                 },
-                body: JSON.stringify(createBody),
+                body: JSON.stringify({
+                  clubId: Number(clubId),
+                  title: data.title,
+                  detail: data.description,
+                  date: formatDate(data.date, "yyyy-MM-dd"),
+                  time: data.time,
+                  location: (() => {
+                    const base = (data.location.roadAddress ?? "").toString();
+                    const detail = (data.location.placeName ?? "").toString();
+                    const normalizedBase = base.replace(/\s+/g, " ").trim();
+                    const normalizedDetail = detail.replace(/\s+/g, " ").trim();
+                    const splitOutDetail = (() => {
+                      if (!normalizedDetail) return normalizedBase;
+                      if (normalizedBase.endsWith(normalizedDetail)) {
+                        return normalizedBase
+                          .slice(
+                            0,
+                            normalizedBase.length - normalizedDetail.length
+                          )
+                          .trim();
+                      }
+                      const idx = normalizedBase.indexOf(normalizedDetail);
+                      if (idx > -1) {
+                        return (
+                          normalizedBase.slice(0, idx) +
+                          normalizedBase.slice(idx + normalizedDetail.length)
+                        ).trim();
+                      }
+                      return normalizedBase;
+                    })();
+                    const removeTrailingNonAddressWord = (
+                      addr: string
+                    ): string => {
+                      const parts = addr.split(" ");
+                      const isPureHangul = (s: string) => /^[가-힣]+$/.test(s);
+                      const hasDigits = (s: string) => /\d/.test(s);
+                      const isAddressSuffix = (s: string) =>
+                        /(동|읍|면|리|구|군|시|도|로|길|번길|대로|지하|층|호)$/.test(
+                          s
+                        );
+                      while (parts.length > 0) {
+                        const last = parts[parts.length - 1];
+                        if (
+                          last &&
+                          isPureHangul(last) &&
+                          !hasDigits(last) &&
+                          !isAddressSuffix(last)
+                        ) {
+                          parts.pop();
+                          continue;
+                        }
+                        break;
+                      }
+                      return parts.join(" ").trim();
+                    };
+                    return removeTrailingNonAddressWord(splitOutDetail);
+                  })(),
+                  addressDetail: data.location.placeName,
+                  latitude: (() => {
+                    const v = data.location.latitude;
+                    const n = Number(v);
+                    if (!isFinite(n)) return "0";
+                    const dec = Math.abs(n) > 180 ? n / 1e7 : n;
+                    return dec.toString();
+                  })(),
+                  longitude: (() => {
+                    const v = data.location.longitude;
+                    const n = Number(v);
+                    if (!isFinite(n)) return "0";
+                    const dec = Math.abs(n) > 180 ? n / 1e7 : n;
+                    return dec.toString();
+                  })(),
+                }),
               }
             );
 
@@ -133,8 +198,8 @@ const ScheduleDetailForm = ({
             }
 
             toast.success("일정이 등록되었습니다.");
-            // 등록 성공 시 뒤로가기 후 새로고침
-            await router.back();
+            // 즉시 새로고침하여 최신 데이터 반영
+            router.push(`/club/dashboard/manage/schedule?page=1`);
             router.refresh();
           } catch (error) {
             console.error("일정 처리 실패:", error);
@@ -146,21 +211,86 @@ const ScheduleDetailForm = ({
             const token = await getAccessToken();
             const clubId = await getClubId();
 
-            const patchBody = toUpdateActivityPayload(data);
-            console.log(
-              `[ScheduleDetailForm] PATCH -> ${process.env.NEXT_PUBLIC_SERVER_URL}/v1/executive/club/${clubId}/activity/${scheduleId}`,
-              patchBody
-            );
-
             const response = await fetch(
-              `${process.env.NEXT_PUBLIC_SERVER_URL}/v1/executive/club/${clubId}/activity/${scheduleId}`,
+              `/api/server/v1/executive/club/${clubId}/activity/${scheduleId}`,
               {
                 method: "PATCH",
                 headers: {
                   "Content-Type": "application/json",
                   "Authorization": `Bearer ${token}`,
                 },
-                body: JSON.stringify(patchBody),
+                body: JSON.stringify({
+                  title: data.title,
+                  detail: data.description,
+                  date: formatDate(data.date, "yyyy-MM-dd"),
+                  time: data.time,
+                  location: (() => {
+                    const base = (data.location.roadAddress ?? "").toString();
+                    const detail = (data.location.placeName ?? "").toString();
+                    const normalizedBase = base.replace(/\s+/g, " ").trim();
+                    const normalizedDetail = detail.replace(/\s+/g, " ").trim();
+                    const splitOutDetail = (() => {
+                      if (!normalizedDetail) return normalizedBase;
+                      if (normalizedBase.endsWith(normalizedDetail)) {
+                        return normalizedBase
+                          .slice(
+                            0,
+                            normalizedBase.length - normalizedDetail.length
+                          )
+                          .trim();
+                      }
+                      const idx = normalizedBase.indexOf(normalizedDetail);
+                      if (idx > -1) {
+                        return (
+                          normalizedBase.slice(0, idx) +
+                          normalizedBase.slice(idx + normalizedDetail.length)
+                        ).trim();
+                      }
+                      return normalizedBase;
+                    })();
+                    const removeTrailingNonAddressWord = (
+                      addr: string
+                    ): string => {
+                      const parts = addr.split(" ");
+                      const isPureHangul = (s: string) => /^[가-힣]+$/.test(s);
+                      const hasDigits = (s: string) => /\d/.test(s);
+                      const isAddressSuffix = (s: string) =>
+                        /(동|읍|면|리|구|군|시|도|로|길|번길|대로|지하|층|호)$/.test(
+                          s
+                        );
+                      while (parts.length > 0) {
+                        const last = parts[parts.length - 1];
+                        if (
+                          last &&
+                          isPureHangul(last) &&
+                          !hasDigits(last) &&
+                          !isAddressSuffix(last)
+                        ) {
+                          parts.pop();
+                          continue;
+                        }
+                        break;
+                      }
+                      return parts.join(" ").trim();
+                    };
+                    return removeTrailingNonAddressWord(splitOutDetail);
+                  })(),
+                  addressDetail: data.location.placeName,
+                  latitude: (() => {
+                    const v = data.location.latitude;
+                    const n = Number(v);
+                    if (!isFinite(n)) return "0";
+                    const dec = Math.abs(n) > 180 ? n / 1e7 : n;
+                    return dec.toString();
+                  })(),
+                  longitude: (() => {
+                    const v = data.location.longitude;
+                    const n = Number(v);
+                    if (!isFinite(n)) return "0";
+                    const dec = Math.abs(n) > 180 ? n / 1e7 : n;
+                    return dec.toString();
+                  })(),
+                }),
               }
             );
 
@@ -169,8 +299,8 @@ const ScheduleDetailForm = ({
               throw new Error("일정 수정에 실패했습니다.");
             }
             toast.success("일정이 수정되었습니다.");
-            // 수정 후 목록 1페이지로 이동
-            router.replace(`/club/dashboard/manage/schedule?page=1`);
+            // 즉시 새로고침하여 최신 데이터 반영
+            router.push(`/club/dashboard/manage/schedule?page=1`);
             router.refresh();
           } catch (error) {
             console.error("일정 수정 실패:", error);

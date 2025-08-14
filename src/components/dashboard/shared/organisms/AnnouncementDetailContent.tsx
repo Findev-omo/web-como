@@ -7,19 +7,23 @@ import {
   pinNotice,
   unpinNotice,
 } from "@/api/actions/club/notice";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { getNoticeDetail } from "@/api/actions/club/notice";
 import toast from "react-hot-toast";
 
+interface NoticeDetailData {
+  id: number;
+  title: string;
+  createdDate: number[];
+  viewCount: number;
+  content?: string;
+  writerName: string;
+  photos?: string[];
+  isPinned?: "Y" | "N";
+}
+
 interface NoticeDetail {
-  data?: {
-    id: number;
-    title: string;
-    createdDate: number[];
-    viewCount: number;
-    content?: string;
-    writerName: string;
-    photos?: string[];
-  };
+  data?: NoticeDetailData;
   [key: string]: any;
 }
 
@@ -31,17 +35,93 @@ export default function AnnouncementDetailContent({ isEditable }: Props) {
   const [detail, setDetail] = useState<NoticeDetail | null>(null);
   const [isPinned, setIsPinned] = useState<"Y" | "N">("N");
   const router = useRouter();
-  
+  const pathname = usePathname();
+
   useEffect(() => {
-    const stored = localStorage.getItem("noticeDetail");
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      setDetail(parsed);
-      if (parsed?.isPinned) {
-        setIsPinned(parsed.isPinned);
+    const load = async () => {
+      // URL에서 noticeId 추출 후 최신 데이터 우선 조회
+      const segments = pathname.split("/").filter(Boolean);
+      const last = segments[segments.length - 1];
+      const noticeId = Number(last);
+      if (Number.isFinite(noticeId)) {
+        try {
+          const d = await getNoticeDetail(noticeId);
+          const createdArr = Array.isArray(d.createdDate) ? d.createdDate : [];
+          const normalizedFromApi: NoticeDetail = {
+            data: {
+              id: d.id,
+              title: d.title,
+              createdDate: createdArr,
+              viewCount: d.viewCount,
+              content: d.content,
+              writerName: d.writerName,
+              photos: d.photos ?? [],
+              isPinned:
+                typeof d.isPinned === "string"
+                  ? (d.isPinned as "Y" | "N")
+                  : undefined,
+            },
+          };
+          setDetail(normalizedFromApi);
+          setIsPinned(
+            typeof d.isPinned === "string" ? (d.isPinned as "Y" | "N") : "N"
+          );
+          return;
+        } catch {}
       }
-    }
-  }, []);
+
+      // 실패 또는 noticeId 없음: localStorage fallback
+      const stored = localStorage.getItem("noticeDetail");
+      if (!stored) return;
+      try {
+        const parsed: any = JSON.parse(stored);
+        const raw = parsed?.data ?? parsed ?? {};
+
+        let createdDateArr: number[] = [];
+        const c = raw?.createdDate;
+        if (Array.isArray(c) && c.length >= 3) {
+          createdDateArr = [Number(c[0]), Number(c[1]), Number(c[2])];
+        } else if (typeof c === "string" && c) {
+          const [y, m, d] = c.split("T")[0].split("-");
+          createdDateArr = [Number(y), Number(m), Number(d)];
+        } else if (typeof c === "number") {
+          const dt = new Date(c);
+          createdDateArr = [dt.getFullYear(), dt.getMonth() + 1, dt.getDate()];
+        }
+
+        const normalized: NoticeDetail = {
+          data: {
+            id: raw?.id ?? raw?.noticeId,
+            title: raw?.title ?? "",
+            createdDate: createdDateArr,
+            viewCount: Number(raw?.viewCount ?? 0),
+            content: raw?.content ?? "",
+            writerName: raw?.writerName ?? raw?.name ?? "",
+            photos: Array.isArray(raw?.photos)
+              ? raw.photos
+              : Array.isArray(raw?.images)
+                ? raw.images
+                : [],
+            isPinned:
+              typeof raw?.isPinned === "string" ? raw.isPinned : undefined,
+          },
+        };
+        setDetail(normalized);
+        const initialPinned: "Y" | "N" =
+          typeof parsed?.isPinned === "boolean"
+            ? parsed.isPinned
+              ? "Y"
+              : "N"
+            : typeof raw?.isPinned === "string"
+              ? raw.isPinned
+              : "N";
+        setIsPinned(initialPinned);
+      } catch {
+        setDetail(null);
+      }
+    };
+    load();
+  }, [pathname]);
 
   if (!detail || !detail.data)
     return <div className="p-8">상세 정보를 불러오는 중...</div>;
@@ -50,8 +130,14 @@ export default function AnnouncementDetailContent({ isEditable }: Props) {
     detail.data;
 
   const formatDate = (dateArray: number[]) => {
-    const [year, month, day, hour, minute, second] = dateArray;
-    return `${year}-${month.toString().padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
+    if (!Array.isArray(dateArray) || dateArray.length < 3) return "";
+    const [year, month, day] = dateArray;
+    const y = Number(year) || 0;
+    const m = Number(month) || 1;
+    const d = Number(day) || 1;
+    return `${y}-${m.toString().padStart(2, "0")}-${d
+      .toString()
+      .padStart(2, "0")}`;
   };
 
   const handlePin = (noticeId: number) => {
@@ -77,6 +163,18 @@ export default function AnnouncementDetailContent({ isEditable }: Props) {
     await deleteNotice(noticeId);
     // alert("공지사항이 삭제되었습니다.");
     toast.success("공지사항이 삭제되었습니다.");
+    try {
+      // 상세 캐시 제거 및 삭제 ID 기록 (목록에서 즉시 숨김 처리)
+      localStorage.removeItem("noticeDetail");
+      const key = "deletedNoticeIds";
+      const prev = JSON.parse(sessionStorage.getItem(key) || "[]");
+      if (Array.isArray(prev)) {
+        const next = Array.from(new Set([...prev, noticeId]));
+        sessionStorage.setItem(key, JSON.stringify(next));
+      } else {
+        sessionStorage.setItem(key, JSON.stringify([noticeId]));
+      }
+    } catch {}
     router.replace("/club/dashboard/manage/announcement");
   };
 

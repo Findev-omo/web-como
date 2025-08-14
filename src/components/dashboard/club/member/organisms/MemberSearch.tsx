@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { SearchValue } from "@/lib/types/search";
 import Search from "@/components/dashboard/common/Search";
-import { getData } from "@/api/action";
+import { useMemberSearch } from "@/hooks/queries";
 
 const fieldList = [
   { name: "부서", value: "dept" },
@@ -26,6 +26,8 @@ export default function MemberSearch({ onSearch, currentPage }: Props) {
     term: "",
     // filter: "all",
   });
+  const [submittedQuery, setSubmittedQuery] = useState("");
+  const { data: userResults = [], isLoading } = useMemberSearch(submittedQuery);
 
   const handleSearch = async () => {
     console.log("=== 검색 실행 ===");
@@ -33,20 +35,16 @@ export default function MemberSearch({ onSearch, currentPage }: Props) {
     console.log("검색어:", currentSearchValue.term);
     console.log("================");
 
-    try {
-      const response = await getData(
-        `v1/executive/club/{clubId}/member/list?page=${currentPage}&search=${currentSearchValue.term}`,
-        true
-      );
+    // 유저 검색 API(/member/search) 호출: 훅 트리거
+    setSubmittedQuery(currentSearchValue.term);
 
-      if (response.data) {
-        onSearch(currentSearchValue);
-      } else {
-        console.error("검색 실패");
-      }
-    } catch (error) {
-      console.error("검색 중 오류 발생:", error);
-    }
+    // 테이블 필터링(부가 기능) 유지
+    onSearch(currentSearchValue);
+    // 검색 후 검색어 초기화
+    setCurrentSearchValue((prev) => ({
+      ...prev,
+      term: "",
+    }));
   };
 
   return (
@@ -56,7 +54,7 @@ export default function MemberSearch({ onSearch, currentPage }: Props) {
       currentValue={currentSearchValue}
       handleChange={({ term }) => {
         setCurrentSearchValue((prev) => {
-          const newValue = { ...prev, term: term || "" };
+          const newValue = { term: term || "" };
           console.log("=== 입력값 변경 ===");
           console.log("이전 값:", prev);
           console.log("새로운 값:", newValue);

@@ -1,6 +1,7 @@
 import { File } from "@/assets/icons/info";
 import Input from "@/components/common/Input";
 import Image from "next/image";
+import { formatDateArray } from "@/lib/utils";
 
 interface Photo {
   id: number;
@@ -28,15 +29,15 @@ interface ClubData {
   writerRole: string;
   writerDepartment: string;
   eventName: string;
-  activityDate: [number, number, number]; // [year, month, day]
-  activityTime: [number, number]; // [hour, minute]
+  activityDate: [number, number, number] | string; // [year, month, day] or ISO string
+  activityTime: [number, number] | string; // [hour, minute] or string
   location: string;
   locationDetail: string;
   participantCount: number;
   activityContent: string;
   note: string;
-  photos: Photo[];
-  expenses: Expense[];
+  photos?: Photo[];
+  expenses?: Expense[];
 }
 
 interface Props {
@@ -99,7 +100,9 @@ export default function ReportDetail({ data }: Props) {
               <div className="flex flex-col basis-1/4">
                 <span className=" text-xl font-[600] mb-[8px]">활동 일정</span>
                 <div className=" text-lg bg-gray-100 rounded-[6px] py-[18px] px-[20px]   ">
-                  {data.activityDate.join("-")}
+                  {Array.isArray(data.activityDate)
+                    ? formatDateArray(data.activityDate)
+                    : String(data.activityDate)}
                 </div>
               </div>
               <div className="flex flex-col basis-1/4">
@@ -107,7 +110,9 @@ export default function ReportDetail({ data }: Props) {
                   .
                 </span>
                 <div className=" text-lg bg-gray-100 rounded-[6px] py-[18px] px-[20px] ">
-                  {data.activityTime.join(":")}
+                  {Array.isArray(data.activityTime)
+                    ? data.activityTime.join(":")
+                    : String(data.activityTime)}
                 </div>
               </div>{" "}
               <div className="flex flex-col basis-1/4">
@@ -142,7 +147,7 @@ export default function ReportDetail({ data }: Props) {
         <div className="flex flex-col w-full gap-[8px] pt-[36px]">
           <span className="text-xl font-[600]">지출 증빙용 활동 사진 첨부</span>
           <div className="flex gap-[12px]">
-            {data.photos.map((photo) => {
+            {(data.photos ?? []).map((photo) => {
               return (
                 <div key={photo.id} className="w-[374px] aspect-[1/1] relative">
                   <Image
@@ -159,7 +164,7 @@ export default function ReportDetail({ data }: Props) {
       </div>
 
       {/*활동지원비 정산서 */}
-      {data.expenses.map((item, idx) => {
+      {(data.expenses ?? []).map((item, idx) => {
         return (
           <div
             key={idx}
@@ -216,7 +221,9 @@ export default function ReportDetail({ data }: Props) {
               <div className="flex flex-col basis-1/4">
                 <span className=" text-xl font-[600] mb-[8px] ">일자</span>
                 <div className=" text-lg bg-gray-100 rounded-[6px] py-[18px] px-[20px] ">
-                  {item.issuedDate.join("-")}
+                  {Array.isArray(item.issuedDate)
+                    ? item.issuedDate.join("-")
+                    : String(item.issuedDate)}
                 </div>
               </div>{" "}
             </div>

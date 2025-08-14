@@ -1,7 +1,6 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { getData } from "@/api/action";
 import type { PolicyData } from "@/api/types/club/regulation";
 import { POLICY, POLICY_TITLE } from "@/lib/message/policy";
 import { PrintButton } from "@/components/dashboard/common/DocUtil";
@@ -9,12 +8,17 @@ import Image from "next/image";
 
 export default function ClubPolicyTab({ clubId }: { clubId: string | null }) {
   const { data } = useQuery({
-    queryKey: ["club-manage", "policy"],
-    queryFn: () =>
-      getData(`v1/executive/club/${clubId}/policy`, true).then(
-        (res) => res.data as PolicyData
-      ),
+    queryKey: ["club-manage", "policy", clubId],
     enabled: !!clubId,
+    queryFn: async () => {
+      const r = await fetch(`/api/server/v1/club/${clubId}/policy`, {
+        headers: { accept: "application/json" },
+      });
+      const b = await r.json();
+      return (b?.data ?? b) as PolicyData | string;
+    },
+    staleTime: 60_000,
+    gcTime: 300_000,
   });
 
   console.log("ClubPolicyTab 실행됨");
@@ -27,24 +31,22 @@ export default function ClubPolicyTab({ clubId }: { clubId: string | null }) {
         {/* <h2 className="font-semibold text-gray-900">{"동호회 상세 규정"}</h2> */}
         <PrintButton />
       </div>
-      {(() => {
-        const imageSrc = typeof data === "string" ? data : undefined;
-        const isValidSrc =
-          !!imageSrc &&
-          (imageSrc.startsWith("/") ||
-            imageSrc.startsWith("http://") ||
-            imageSrc.startsWith("https://"));
-        return isValidSrc ? (
-          <div className="relative w-full h-64">
-            <Image
-              src={imageSrc as string}
-              alt="동호회 회칙 이미지"
-              layout="fill"
-              objectFit="contain"
-            />
-          </div>
-        ) : null;
-      })()}
+      {typeof data === "string" &&
+        (() => {
+          const src = data;
+          const isValid =
+            !!src && src !== "DEFAULT" && /^(https?:\/\/|\/)\S+/.test(src);
+          return isValid ? (
+            <div className="relative w-full h-64">
+              <Image
+                src={src}
+                alt="동호회 회칙 이미지"
+                fill
+                style={{ objectFit: "contain" }}
+              />
+            </div>
+          ) : null;
+        })()}
       {/* <p className="overflow-y-auto scrollbar-custom h-full max-h-[70dvh] body-1 font-medium text-gray-700">
         <div className="mb-4 h3 font-bold">{POLICY_TITLE}</div>
         {data && data.content}

@@ -11,6 +11,8 @@ import Input from "@/components/common/Input";
 import RadioSelect from "@/components/login/molecules/RadioSelect";
 import BrandImage from "@/assets/images/brand_image.svg";
 import LogoImage from "@/assets/logos/como_logo.svg";
+// import { SHA256 } from "crypto-js";
+// import { enc } from "crypto-js";
 
 interface UserLoginDto {
   id: string;
@@ -85,11 +87,15 @@ export default function LoginForm() {
 
     setIsLoading(true);
     try {
+      // 비밀번호 해싱 (주석처리)
+      // const hashedPassword = SHA256(formData.password).toString(enc.Hex);
+      // console.log("2. 비밀번호 해싱 완료");
+
       const response = await fetch(`/api/server/login`, {
         method: "POST",
         body: JSON.stringify({
           email: formData.id,
-          password: formData.password,
+          password: formData.password, // 원본 비밀번호 전송 (암호화 제거)
         }),
         headers: {
           "Content-Type": "application/json",
@@ -97,10 +103,13 @@ export default function LoginForm() {
       });
 
       // console.log("3. API 응답 상태:", response.status);
-      // console.log("4. API 응답 헤더:", Object.fromEntries(response.headers.entries()));
+      // console.log(
+      //   "4. API 응답 헤더:",
+      //   Object.fromEntries(response.headers.entries())
+      // );
 
-      const responseText = await response.text();
-      // console.log("5. API 응답 데이터:", responseText);
+      const responseData = await response.json();
+      // console.log("5. API 응답 데이터:", responseData);
 
       if (!response.ok) {
         // console.log("6. 로그인 실패");
@@ -108,14 +117,13 @@ export default function LoginForm() {
         return;
       }
 
-      // 헤더 이름은 대소문자 구분 없이 동작하지만, 안전하게 소문자/대문자 모두 시도
-      const accessTokenHeader =
-        response.headers.get("Authorization") ||
-        response.headers.get("authorization");
-      // console.log("7. 받은 토큰:", accessToken, refreshToken);
+      // 헤더에서 access token 확인
+      const accessTokenHeader = response.headers.get("authorization");
+      // console.log("7. 받은 토큰:", accessTokenHeader);
 
       if (!accessTokenHeader) {
-        setLoginError("로그인에 실패했습니다. 다시 시도해주세요.");
+        // console.log("8. 토큰 없음");
+        setLoginError("로그인에 실패했습니다. 다시 시도해주세요."); // 사용자에게 피드백
         return;
       }
 
@@ -129,9 +137,11 @@ export default function LoginForm() {
       // console.log("10. 저장 완료, role:", formData.role);
 
       if (formData.role === "club") {
-        replace(`${LOGIN_ENDPOINT}/club`);
+        // console.log("11. 동호회 대시보드로 이동:", `${LOGIN_ENDPOINT}/club`);
+        window.location.href = `${LOGIN_ENDPOINT}/club`;
       } else if (formData.role === "company") {
-        replace(COMPANY_DASHBOARD_ENDPOINT);
+        // console.log("11. 회사 대시보드로 이동:", COMPANY_DASHBOARD_ENDPOINT);
+        window.location.href = COMPANY_DASHBOARD_ENDPOINT;
       }
     } catch (error) {
       console.error("에러 발생:", error);

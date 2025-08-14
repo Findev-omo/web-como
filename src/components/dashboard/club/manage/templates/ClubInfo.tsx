@@ -22,8 +22,24 @@ export interface ClubSchedule {
 export default function ClubInfoTab() {
   const { data } = useQuery({
     queryKey: ["club-manage", "info"],
-    queryFn: () =>
-      getData("v2/club/web/", true).then((res) => res.data as ClubIndexData),
+    queryFn: async () => {
+      // New spec: GET v1/club/{id}
+      const res = await getData("v1/club/{clubId}", true);
+      const raw: any = res.data;
+      // Normalize fields to what UI expects
+      const normalized = {
+        companyName: raw?.companyName ?? "",
+        clubName: raw?.name ?? raw?.clubName ?? "",
+        clubCategory: raw?.clubCategory ?? raw?.category ?? "",
+        goal: raw?.goal ?? "",
+        intro: raw?.intro ?? "",
+        detail: raw?.detail ?? "",
+        location: raw?.location ?? "",
+        activityPlan: raw?.activityPlan ?? "",
+        clubImage: raw?.clubImage ?? "",
+      } as any;
+      return normalized as ClubIndexData as any;
+    },
   });
 
   const [selectedSchedule, setSelectedSchedule] = useState<ClubSchedule>();
@@ -53,7 +69,7 @@ export default function ClubInfoTab() {
           <div className="relative w-[350px] h-[342px] rounded-lg bg-gray-300">
             {data?.clubImage && (
               <Image
-                src={data.clubImage}
+                src={`${data.clubImage}${typeof window !== "undefined" && sessionStorage.getItem("club-image-bust") ? `?t=${sessionStorage.getItem("club-image-bust")}` : ""}`}
                 alt="대표 이미지"
                 fill
                 priority
@@ -92,7 +108,7 @@ export default function ClubInfoTab() {
               name="category"
               label="카테고리"
               type="text"
-              value={CATEGORY[data.category as keyof typeof CATEGORY]}
+              value={(data as any).clubCategory || (data as any).category}
             />
             <Input
               name="purpose"

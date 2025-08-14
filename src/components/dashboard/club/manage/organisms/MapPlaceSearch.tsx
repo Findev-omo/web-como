@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePlaceSearch } from "@/app/api/map/hook";
 import { useGeocode } from "@/app/api/map/hook";
 import { cn } from "@/lib/utils";
@@ -15,7 +15,6 @@ interface Props {
   isLabel?: boolean;
   handleChange?: (newLocation: {
     roadAddress: string;
-    title?: string;
     latitude?: number;
     longitude?: number;
   }) => void;
@@ -28,10 +27,6 @@ export default function MapPlaceSearch({
   handleChange,
   maxWidth = "w-3/5",
 }: Props) {
-  const handleChangeRef = useRef<typeof handleChange>();
-  useEffect(() => {
-    handleChangeRef.current = handleChange;
-  }, [handleChange]);
   const [selectedPlace, setSelectedPlace] = useState<{
     roadAddress: string;
     title?: string;
@@ -48,28 +43,30 @@ export default function MapPlaceSearch({
     }[]
   >();
   const [closeSearchResult, setCloseSearchResult] = useState<boolean>(false);
-  const [searchTerm, setSearchTerm] = useState<string>(value ?? "");
-  // 검색은 Enter로 확정된 쿼리에서만 수행
-  const [queryTerm, setQueryTerm] = useState<string | undefined>(undefined);
-  const [query, setQuery] = useState<string | undefined>(undefined); // 지오코드 쿼리
-  const { data: placeData } = usePlaceSearch(queryTerm);
+  const [searchTerm, setSearchTerm] = useState<string>();
+  const [query, setQuery] = useState<string>();
+  const { data: placeData } = usePlaceSearch(searchTerm);
   const { data: geocodeData } = useGeocode(query);
 
+  // 안정적인 콜백 참조 유지 (deps 길이 경고 방지)
+  const handleChangeRef = useRef<Props["handleChange"]>();
   useEffect(() => {
-    if (typeof value === "string") {
+    handleChangeRef.current = handleChange;
+  }, [handleChange]);
+
+  useEffect(() => {
+    if (value && value !== searchTerm) {
       setSearchTerm(value);
-    } else {
-      setSearchTerm("");
     }
-  }, [value]);
+  }, [value, searchTerm]);
 
   useEffect(() => {
     if (placeData) {
       if (placeData.items.length < 1) {
-        setQuery(queryTerm);
+        setQuery(searchTerm);
       }
     }
-  }, [placeData, queryTerm]);
+  }, [placeData, searchTerm]);
 
   useEffect(() => {
     if (placeData) {
@@ -100,21 +97,35 @@ export default function MapPlaceSearch({
     }
   }, [placeData, geocodeData]);
 
-  // 읽기 전용일 때는 선택/상태 변경을 트리거하지 않음 (무한 업데이트 방지)
-  // 필요 시 별도 표시만 수행
+  useEffect(() => {
+    if (readonly && searchResult && searchResult.length > 0) {
+      setSelectedPlace({
+        roadAddress: searchResult[0].roadAddress,
+        title: searchResult[0].title
+          ?.replaceAll("<b>", "")
+          .replaceAll("</b>", ""),
+        latitude: searchResult[0].latitude,
+        longitude: searchResult[0].longitude,
+      });
+    }
+  }, [readonly, searchResult]);
 
   useEffect(() => {
-    if (readonly) return;
-    if (selectedPlace) {
-      handleChangeRef.current?.({
-        roadAddress: selectedPlace.roadAddress,
-        title: selectedPlace.title,
-        latitude: selectedPlace.latitude,
-        longitude: selectedPlace.longitude,
-      });
+    if (!selectedPlace) return;
+
+    // 부모 통지: 장소가 바뀔 때만 수행
+    handleChangeRef.current?.({
+      roadAddress: selectedPlace.roadAddress,
+      latitude: selectedPlace.latitude,
+      longitude: selectedPlace.longitude,
+    });
+
+    // 불필요한 상태 업데이트 방지
+    if (selectedPlace.roadAddress !== searchTerm) {
       setSearchTerm(selectedPlace.roadAddress);
     }
-  }, [selectedPlace, readonly]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedPlace, searchTerm]);
 
   const handleSearchResultClick = (item: {
     roadAddress: string;
@@ -162,19 +173,6 @@ export default function MapPlaceSearch({
                 const value = e.target.value;
                 setSearchTerm(value);
                 setCloseSearchResult(false);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  const term = (searchTerm || "").trim();
-                  setQueryTerm(term || undefined);
-                  setQuery(term || undefined);
-                  setCloseSearchResult(false);
-                  if (Array.isArray(searchResult) && searchResult.length > 0) {
-                    // 현재 검색 결과가 있다면 첫 번째 항목을 선택
-                    handleSearchResultClick(searchResult[0]);
-                  }
-                }
               }}
               readOnly={readonly}
             />

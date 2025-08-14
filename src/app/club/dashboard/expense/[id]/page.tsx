@@ -31,27 +31,30 @@ const Page = ({ params }: { params: { id: string } }) => {
   useEffect(() => {
     const fetchExpense = async () => {
       if (clubId) {
-      const { data } = await getData(`v1/executive/club/${clubId}/activity-expenses/${params.id}`, true)
-      setExpense({
-        eventName: data.eventName,
-        description: data.description,
-        note: data.note,
-        location: data.location,
-        participantCount: data.participantCount,
-        amount: data.amount,
-        details: data.details,
-        file: data.file,
-      });
-      setCardInfo({
-        clubId: data.clubId,
-        clubImage: data.clubImage,
-        leadersSummary: data.leadersSummary,
-        activityPlan: data.activityPlan,
-        memberCount: data.memberCount,
-        status: data.status,
-        createdAt: data.createdAt,
-        clubName: clubName || "",
-      });
+        const { data } = await getData(
+          `v1/executive/club/${clubId}/activity-expense/${params.id}`,
+          true
+        );
+        setExpense({
+          eventName: data.eventName,
+          description: data.description,
+          note: data.note,
+          location: data.location,
+          participantCount: data.participantCount,
+          amount: data.amount,
+          details: data.details,
+          file: data.file,
+        });
+        setCardInfo({
+          clubId: data.clubId,
+          clubImage: data.clubImage,
+          leadersSummary: data.leadersSummary,
+          activityPlan: data.activityPlan,
+          memberCount: data.memberCount,
+          status: data.status,
+          createdAt: data.createdAt,
+          clubName: clubName || "",
+        });
       }
     };
     fetchExpense();
