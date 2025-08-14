@@ -23,7 +23,7 @@ export default function MemberTable({ data }: Props) {
       </div>
       <ul>
         <li className="flex py-0.5 border-y border-gray-400 bg-gray-200">
-          {["순번", "이름", "부서", "직책", "가입 일시", "상태"].map(
+          {["순번", "이름", "부서", "직급", "가입 일시", "상태"].map(
             (heading, i) => (
               <div
                 key={heading}
@@ -55,7 +55,7 @@ export default function MemberTable({ data }: Props) {
             //   }}
             // >
             <li
-              key={item.id ?? `row-${idx}`}
+              key={idx}
               className="flex py-0.5 border-b border-gray-400 bg-gray-0"
               // onClick={() => {
               //   setSelectedId(item.id);
@@ -66,12 +66,12 @@ export default function MemberTable({ data }: Props) {
                 item.id,
                 item.name,
                 item.department,
-                (item as any).clubRole ?? item.position,
+                item.position,
                 item.requestDate ?? (item as any).createdDate,
                 item.status,
               ].map((data, i) => (
                 <div
-                  key={`col-${item.id ?? idx}-${i}`}
+                  key={data}
                   className={cn(
                     "my-3 mx-6 body-1 font-bold text-gray-900",
                     i === 0 ? "w-[5%] pl-4" : "",
@@ -133,7 +133,11 @@ export default function MemberTable({ data }: Props) {
             </li>
           ))
         ) : (
-          <></>
+          <li className="py-10 border-b border-gray-400 bg-gray-0">
+            <div className="text-center body-1 font-medium text-gray-500">
+              {"일치하는 검색어가 없습니다."}
+            </div>
+          </li>
         )}
       </ul>
     </>

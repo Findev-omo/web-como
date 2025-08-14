@@ -9,7 +9,7 @@ import RadioButton from "@/components/common/RadioButton";
 import ImageInput from "@/components/common/ImageInput";
 import DropdownSelect from "@/components/common/DropdownSelect";
 import { CustomTextarea } from "@/components/common/CustomTextarea";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { format } from "path";
 import { File } from "@/assets/icons/info";
 import toast from "react-hot-toast";
@@ -50,7 +50,6 @@ export default function NewExpenseReportForm({
   clubId,
 }: Props) {
   const { replace, refresh } = useRouter();
-  const queryClient = useQueryClient();
   const [currentImagesBankAccount, setCurrentImagesBankAccount] = useState<
     File[]
   >([]);
@@ -142,14 +141,15 @@ export default function NewExpenseReportForm({
     onError: (e) => {
       console.error("Mutation error:", e);
     },
-    onSuccess: () => {
-      autoSave.clearSavedData();
-      toast.success(
-        "활동비 지급 신청서 (품의서)가 작성 및 담당 부서에게 전달되었습니다."
-      );
-      queryClient.invalidateQueries({ queryKey: [clubId, "expense"] });
-      refresh();
-      replace(`${CLUB_DASHBOARD_ENDPOINT}/expense`);
+    onSuccess: (data) => {
+      if (data.resultCode === "OK") {
+        autoSave.clearSavedData();
+        toast.success(
+          "활동비 지급 신청서 (품의서)가 작성 및 담당 부서에게 전달되었습니다."
+        );
+        refresh();
+        replace(`${CLUB_DASHBOARD_ENDPOINT}/expense`);
+      }
     },
   });
 

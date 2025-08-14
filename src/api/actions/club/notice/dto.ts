@@ -15,8 +15,9 @@ export const toClubNotice = (
       let createdAt: string;
       try {
         if (Array.isArray(notice.createdDate)) {
+          // createdDate가 배열인 경우 (예: [2024, 1, 15, 10, 30, 0])
           const [year, month, day, hour = 0, minute = 0, second = 0] =
-            notice.createdDate as unknown as number[];
+            notice.createdDate;
           const date = new Date(year, month - 1, day, hour, minute, second);
           createdAt = date.toISOString();
         } else if (typeof notice.createdDate === "string") {
@@ -41,14 +42,14 @@ export const toClubNotice = (
       }
 
       return {
-        id: (notice as any).id ?? (notice as any).noticeId,
+        id: notice.noticeId,
         title: notice.title,
-        author: (notice as any).writerName ?? (notice as any).name,
+        author: notice.name,
         createdAt,
         viewCount: notice.viewCount,
-        isPinned: (notice as any).isPinned === "Y",
+        isPinned: notice.isPinned === "Y",
       };
     }),
-    maxPage: (dto as any).totalPages ?? (dto as any).maxPage ?? 0,
+    maxPage: dto.totalPages || 0,
   };
 };

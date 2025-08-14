@@ -74,10 +74,11 @@ export default function NewAnnouncementForm() {
     if (currentImages.length > 0) {
       currentImages.forEach((image) => {
         if (image) {
-          // OpenAPI 스펙에 맞춰 필드명을 images(복수)로 사용, 여러 개 파트로 첨부
-          formData.append("images", image);
+          formData.append("image", image);
         }
       });
+    } else {
+      formData.append("image", new Blob(), "empty.jpg");
     }
 
     // FormData의 내용을 출력

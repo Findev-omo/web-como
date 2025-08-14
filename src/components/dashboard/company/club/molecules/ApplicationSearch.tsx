@@ -1,9 +1,14 @@
-"use client";
-
+import type { SearchValue } from "@/lib/types/search";
+import Search from "@/components/dashboard/common/Search";
+import { DateRange } from "@/components/dashboard/common/DateFilter";
 import { useState } from "react";
 import { getData } from "@/api/action";
-import Search, { type SearchValue } from "@/components/dashboard/common/Search";
-import type { DateRange } from "@/components/dashboard/common/DateFilter";
+
+const filterList = [
+  { name: "전체 보기", value: "all" },
+  { name: "승인대기", value: "pending" },
+  { name: "반려완료", value: "rejected" },
+];
 
 interface Props {
   onSearch: (searchValue: SearchValue) => void;
@@ -11,16 +16,12 @@ interface Props {
   currentPage: number;
 }
 
-export default function ApplicationSearch({
-  onSearch,
-  currentDateRange,
-  currentPage,
-}: Props) {
+export default function ApplicationSearch({ onSearch, currentDateRange, currentPage }: Props) {
   const [currentSearchValue, setCurrentSearchValue] = useState<SearchValue>({
     term: "",
     field: "all",
   });
-
+  
   const handleSearch = async () => {
     console.log("=== 검색 실행 ===");
     console.log("현재 페이지:", currentPage);
@@ -31,12 +32,12 @@ export default function ApplicationSearch({
 
     try {
       const response = await getData(
-        `v1/manager/club?page=1&search=${currentSearchValue.term}&filter=${currentSearchValue.field}&startDate=${currentDateRange.startDate?.toISOString().split("T")[0]}&endDate=${currentDateRange.endDate?.toISOString().split("T")[0]}`,
+        `v1/manager/club?page=1&search=${currentSearchValue.term}&filter=${currentSearchValue.field}&startDate=${currentDateRange.startDate?.toISOString().split('T')[0]}&endDate=${currentDateRange.endDate?.toISOString().split('T')[0]}`,
         true
       );
 
-      console.log(response.data);
-      if (response.resultCode === 200 && response.data) {
+      console.log(response.data)
+      if (response.data) {
         onSearch(currentSearchValue);
         // 검색 후 검색어 초기화
         setCurrentSearchValue((prev) => ({
@@ -49,18 +50,16 @@ export default function ApplicationSearch({
     } catch (error) {
       console.error("검색 중 오류 발생:", error);
     }
-  };
 
+  }
+  
   return (
     <Search
       // filterList={filterList}
       currentValue={currentSearchValue}
       handleChange={({ term, field }) => {
         setCurrentSearchValue((prev) => {
-          const newValue = {
-            term: term || "",
-            field: field !== undefined ? field : prev.field,
-          };
+          const newValue = { term: term || '', field: field !== undefined ? field : prev.field };
           console.log("=== 입력값 변경 ===");
           console.log("이전 값:", prev);
           console.log("새로운 값:", newValue);

@@ -40,6 +40,7 @@ export default function ApplicationTable({
 }: ApplicationTableProps) {
   const pathname = usePathname();
   const { push } = useRouter();
+  // const { showToast } = useToast(); // Removed as per edit hint
 
   console.log("applications", applications);
 
@@ -56,15 +57,35 @@ export default function ApplicationTable({
     }
   };
 
-  const formatAppliedDate = (dateString: string) => {
-    if (!dateString) return "";
-    try {
-      const date = new Date(dateString);
-      return formatDate(date);
-    } catch (error) {
-      console.error("Invalid date string:", dateString);
+  const formatAppliedDate = (dateArray: number[]) => {
+    if (!Array.isArray(dateArray) || dateArray.length < 6) {
+      console.error("Invalid dateArray:", dateArray); // 오류 로그 추가
       return "";
     }
+
+    const [year, month, day, hour, minute] = dateArray; // second는 기본값으로 처리
+    const second = dateArray.length === 6 ? dateArray[5] : 0; // second가 없으면 0으로 설정
+
+    // 각 값이 유효한지 확인
+    if (
+      isNaN(year) ||
+      isNaN(month) ||
+      isNaN(day) ||
+      isNaN(hour) ||
+      isNaN(minute) ||
+      isNaN(second)
+    ) {
+      console.error("Invalid date values:", {
+        year,
+        month,
+        day,
+        hour,
+        minute,
+        second,
+      });
+      return "";
+    }
+    return formatDate(new Date(year, month - 1, day, hour, minute, second));
   };
 
   const handleApprove = async (clubId: number, applicantId: number) => {
@@ -88,6 +109,7 @@ export default function ApplicationTable({
 
       const data = await response.json();
       if (data.resultCode === "OK") {
+        // alert("신청이 성공적으로 승인되었습니다."); // 알림 추가
         toast.success("신청이 성공적으로 승인되었습니다.");
         window.location.reload(); // 페이지 새로고침
       }
@@ -99,6 +121,7 @@ export default function ApplicationTable({
   const handleRevert = () => {
     // TODO: api 연동
     toast.success("반려 철회되었습니다.");
+    // showToast("반려 철회되었습니다.", "success");
   };
 
   return (
@@ -138,7 +161,7 @@ export default function ApplicationTable({
               application.department,
               application.clubName,
               application.clubSummary,
-              formatAppliedDate(application.appliedDate),
+              formatAppliedDate(application.appliedDate as unknown as number[]),
               getStatus(application.status),
             ].map((data, i) => (
               <div
@@ -193,6 +216,12 @@ export default function ApplicationTable({
                 ) : data === "active" ? (
                   "활동중"
                 ) : data === "reject" ? (
+                  // <button
+                  //   className="py-1 px-4 rounded border border-point-red body-1 font-medium text-point-red bg-gray-0"
+                  //   onClick={() => openModal("revert-rejection")}
+                  // >
+                  //   {"반려 취소"}
+                  // </button>
                   <span className="text-point-red body-1 font-medium">
                     {"반려됨"}
                   </span>
@@ -215,6 +244,7 @@ export default function ApplicationTable({
                           clubId: application.clubId,
                           clubName: application.clubName,
                         });
+                        // handleReject(application.clubId);
                       }}
                       content={"반려"}
                     />
