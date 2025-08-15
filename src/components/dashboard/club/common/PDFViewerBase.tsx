@@ -15,7 +15,6 @@ import { cn } from "@/lib/utils";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
-
 const options = {
   cMapUrl: "/cmaps/",
   cMapPacked: true,
@@ -26,7 +25,7 @@ interface Props {
   file?: string | File | null;
 }
 
-export default function PDFViewerBase({ file = "../../sample.pdf" }: Props) {
+export default function PDFViewerBase({ file = "/sample.pdf" }: Props) {
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [totalPages, setTotalPages] = useState<number>(0);

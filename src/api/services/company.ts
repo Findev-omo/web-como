@@ -1,5 +1,9 @@
 import { api } from "../client";
 import type { PaginatedResponse } from "../types/common";
+import type {
+  ClubBasicInfoResponse,
+  ClubRegistrationResponse,
+} from "../types/company/club";
 
 // 타입 정의
 export interface CompanyExpenseEntry {
@@ -74,6 +78,17 @@ export interface UpdateEmployeeData {
 
 // Company API 서비스
 export const companyService = {
+  // 동호회 관리
+  clubs: {
+    getBasicInfo: (clubId: number) =>
+      api.get<ClubBasicInfoResponse>(`/v1/manager/club/${clubId}`),
+
+    getRegistration: (clubId: number) =>
+      api.get<ClubRegistrationResponse>(
+        `/v1/manager/club/${clubId}/registration`
+      ),
+  },
+
   // 지출 관리
   expenses: {
     getList: (page: number, startDate: string, endDate: string) =>

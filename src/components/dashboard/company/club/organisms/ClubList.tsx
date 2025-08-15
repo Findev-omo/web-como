@@ -35,8 +35,8 @@ export default function ClubList(props: Props) {
     error,
   } = useClubs(currentPage, currentDateRange, searchValue);
 
-  const clubs = clubData?.manageClubList || [];
-  const maxPage = clubData?.maxPage || 1;
+  const clubs = clubData?.list || [];
+  const maxPage = clubData?.totalPages || 1;
 
   const handleDateRangeChange = (dateRange: DateRange) => {
     setCurrentPage(1);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { openModal } from "@/lib/utils";
 import BackButton from "@/components/dashboard/common/BackButton";
@@ -9,7 +9,7 @@ import dynamic from "next/dynamic";
 import Skeleton from "@/components/common/Skeleton";
 import RejectApplicationModal from "@/components/dashboard/company/club/modals/RejectApplicationModal";
 import RevertRejectionModal from "@/components/dashboard/company/club/modals/RevertRejectionModal";
-import { getData } from "@/api/action";
+import { companyService } from "@/api/services/company";
 import Image from "next/image";
 import type {
   ClubRegistrationResponse,
@@ -24,14 +24,77 @@ const PDFViewer = dynamic(
 export default function ApplicationDetailPage() {
   const params = useParams();
   const clubId = params.id as string;
-  const [registrationData, setRegistrationData] = useState<
-    ClubRegistrationResponse["data"] | null
-  >(null);
-  const [basicInfoData, setBasicInfoData] = useState<
-    ClubBasicInfoResponse["data"] | null
-  >(null);
+  const [registrationData, setRegistrationData] =
+    useState<ClubRegistrationResponse | null>(null);
+  const [basicInfoData, setBasicInfoData] =
+    useState<ClubBasicInfoResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const status = useSearchParams().get("status");
+
+  const fetchData = useCallback(async () => {
+    try {
+      console.log("현재 clubId:", clubId);
+      console.log("clubId 타입:", typeof clubId);
+      console.log("parseInt(clubId):", parseInt(clubId));
+      console.log("서버 URL:", process.env.NEXT_PUBLIC_SERVER_URL);
+      console.log("현재 URL:", window.location.href);
+
+      // API 호출을 개별적으로 처리하여 에러 추적
+      try {
+        console.log("기본 정보 API 호출 시작...");
+        console.log("API 엔드포인트:", `/v1/manager/club/${parseInt(clubId)}`);
+        const basicInfoResponse = await companyService.clubs.getBasicInfo(
+          parseInt(clubId)
+        );
+        console.log("기본 정보 API 응답:", basicInfoResponse);
+        setBasicInfoData(basicInfoResponse);
+      } catch (basicInfoError) {
+        console.error("기본 정보 API 오류:", basicInfoError);
+        setError(
+          `기본 정보 조회 실패: ${basicInfoError instanceof Error ? basicInfoError.message : "알 수 없는 오류"}`
+        );
+      }
+
+      try {
+        console.log("신청서 API 호출 시작...");
+        console.log(
+          "API 엔드포인트:",
+          `/v1/manager/club/${parseInt(clubId)}/registration`
+        );
+        const registrationResponse = await companyService.clubs.getRegistration(
+          parseInt(clubId)
+        );
+        console.log("신청서 API 응답:", registrationResponse);
+        setRegistrationData(registrationResponse);
+      } catch (registrationError) {
+        console.error("신청서 API 오류:", registrationError);
+        // 신청서 API 오류는 전체 페이지를 막지 않고 경고만 표시
+        console.warn(
+          "신청서 정보를 불러올 수 없습니다. 기본 정보만 표시됩니다."
+        );
+        // 에러 상태를 설정하지 않고 기본 정보만 표시하도록 함
+
+        // 백엔드 개발자를 위한 상세 에러 정보
+        if (registrationError instanceof Error) {
+          console.error("신청서 API 상세 에러:", {
+            message: registrationError.message,
+            code: (registrationError as any).code,
+            originalError: (registrationError as any).originalError,
+          });
+        }
+      }
+    } catch (err) {
+      console.error("동호회 정보 로딩 오류:", err);
+      if (err instanceof Error) {
+        console.error("에러 메시지:", err.message);
+        console.error("에러 코드:", (err as any).code);
+        console.error("원본 에러:", (err as any).originalError);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [clubId]);
 
   const categoryMapping = {
     ART_CULTURE: "문화/예술",
@@ -77,54 +140,10 @@ export default function ApplicationDetailPage() {
   };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // 두 API를 병렬로 호출
-        const [basicInfoResponse, registrationResponse] = await Promise.all([
-          getData(
-            `v1/manager/club/${clubId}`
-          ) as unknown as ClubBasicInfoResponse,
-          getData(
-            `v1/manager/club/${clubId}/registration`
-          ) as unknown as ClubRegistrationResponse,
-        ]);
-
-        console.log("basicInfoResponse", basicInfoResponse);
-        console.log("registrationResponse", registrationResponse);
-
-        // 기본 정보 처리
-        if (basicInfoResponse.resultCode === 200 && basicInfoResponse.data) {
-          setBasicInfoData(basicInfoResponse.data);
-        } else {
-          console.error(
-            "기본 정보 API 응답 오류:",
-            basicInfoResponse.resultMessage
-          );
-        }
-
-        // 신청서 정보 처리
-        if (
-          registrationResponse.resultCode === 200 &&
-          registrationResponse.data
-        ) {
-          setRegistrationData(registrationResponse.data);
-        } else {
-          console.error(
-            "신청서 API 응답 오류:",
-            registrationResponse.resultMessage
-          );
-        }
-      } catch (err) {
-        console.error("동호회 정보 로딩 오류:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     if (clubId) {
       fetchData();
     }
-  }, [clubId]);
+  }, [clubId, fetchData]);
 
   // 로딩 중일 때 처리
   if (loading) {
@@ -134,6 +153,28 @@ export default function ApplicationDetailPage() {
         <div className="text-lg" suppressHydrationWarning>
           로딩 중...
         </div>
+      </div>
+    );
+  }
+
+  // 에러가 있을 때 처리
+  if (error) {
+    return (
+      <div className="space-y-3 p-8 rounded-xl bg-gray-0">
+        <BackButton />
+        <div className="text-lg text-red-600" suppressHydrationWarning>
+          {error}
+        </div>
+        <button
+          onClick={() => {
+            setError(null);
+            setLoading(true);
+            fetchData();
+          }}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          다시 시도
+        </button>
       </div>
     );
   }

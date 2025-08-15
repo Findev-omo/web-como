@@ -13,7 +13,11 @@ const fetchClubs = async ({ queryKey }: { queryKey: any }) => {
   const [_key, page, dateRange, search] = queryKey;
   const startDate = formatDateToString(dateRange.startDate);
   const endDate = formatDateToString(dateRange.endDate);
-  const url = `v1/manager/club/manage-list?page=${page}&search=${search.term}&filter=${search.field}&startDate=${startDate}&endDate=${endDate}`;
+
+  // OpenAPI 스펙에 맞게 페이지를 0부터 시작하도록 수정
+  const pageParam = Math.max(0, page - 1);
+
+  const url = `v1/manager/club?page=${pageParam}&search=${search.term}&filter=${search.field}&startDate=${startDate}&endDate=${endDate}`;
   return api.get(url);
 };
 

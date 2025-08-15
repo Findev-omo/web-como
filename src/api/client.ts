@@ -25,6 +25,16 @@ const createApiClient = (): AxiosInstance => {
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
+
+      // 디버깅을 위한 로깅
+      console.log("API 요청:", {
+        method: config.method,
+        url: config.url,
+        baseURL: config.baseURL,
+        headers: config.headers,
+        data: config.data,
+      });
+
       return config;
     },
     (error) => {
@@ -44,13 +54,38 @@ const createApiClient = (): AxiosInstance => {
       return response;
     },
     (error: AxiosError) => {
+      // 디버깅을 위한 에러 로깅
+      console.error("API 에러 상세 정보:", {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        config: {
+          method: error.config?.method,
+          url: error.config?.url,
+          baseURL: error.config?.baseURL,
+          headers: error.config?.headers,
+        },
+        message: error.message,
+      });
+
       // 네트워크 에러나 기타 axios 에러 처리
       if (error.response?.status === 401) {
         throw new ApiError("인증이 필요합니다.", "UNAUTHORIZED");
       }
+
+      // 서버 에러 응답 처리
+      if (error.response?.data) {
+        const errorData = error.response.data as any;
+        const message =
+          errorData.resultMessage || errorData.message || error.message;
+        const code = errorData.resultCode || String(error.response.status);
+        throw new ApiError(message, code, error);
+      }
+
       throw new ApiError(
         error.message || "요청 처리 중 오류가 발생했습니다.",
-        "NETWORK_ERROR"
+        "NETWORK_ERROR",
+        error
       );
     }
   );
