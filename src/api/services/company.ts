@@ -51,6 +51,27 @@ export interface CompanyReportDetail extends CompanyReport {
   // ... 상세 정보 필드들
 }
 
+// 직원 관련 타입
+export interface Employee {
+  id: number;
+  memberId: string;
+  name: string;
+  email: string;
+  department: string;
+  position: string;
+  joinDate: string;
+  status: "ACTIVE" | "INACTIVE";
+  role: "MEMBER" | "EXECUTIVE" | "MANAGER" | "ADMIN";
+}
+
+export interface UpdateEmployeeData {
+  name: string;
+  department: string;
+  position: string;
+  email: string;
+  role: "MEMBER" | "EXECUTIVE" | "MANAGER" | "ADMIN";
+}
+
 // Company API 서비스
 export const companyService = {
   // 지출 관리
@@ -119,5 +140,20 @@ export const companyService = {
       }>(
         `/v1/manager/reports/summary?startDate=${startDate}&endDate=${endDate}`
       ),
+  },
+
+  // 직원 관리
+  employees: {
+    getList: (page: number) =>
+      api.get<PaginatedResponse<Employee>>(`/v1/manager/member?page=${page}`),
+
+    getDetail: (memberId: string) =>
+      api.get<Employee>(`/v1/manager/member/${memberId}`),
+
+    update: (memberId: string, data: UpdateEmployeeData) =>
+      api.patch<Employee>(`/v1/manager/member/${memberId}`, data),
+
+    delete: (memberId: string) =>
+      api.delete<void>(`/v1/manager/member/${memberId}`),
   },
 };

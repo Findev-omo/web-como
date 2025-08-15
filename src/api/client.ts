@@ -36,7 +36,9 @@ const createApiClient = (): AxiosInstance => {
   client.interceptors.response.use(
     (response) => {
       const data = response.data as ApiResponse;
-      if (data.resultCode !== "OK") {
+      // 성공 코드: "OK", "200", 200 등
+      const resultCode = String(data.resultCode);
+      if (resultCode !== "OK" && resultCode !== "200") {
         throw new ApiError(data.resultMessage, data.resultCode);
       }
       return response;

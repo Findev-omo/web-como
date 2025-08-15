@@ -4,6 +4,8 @@ import {
   type CompanyExpense,
   type CompanyReport,
   type CompanyExpenseEntry,
+  type Employee,
+  type UpdateEmployeeData,
 } from "@/api/services/company";
 import type { DateRange } from "@/components/dashboard/common/DateFilter";
 import { formatDate } from "@/lib/format";
@@ -26,6 +28,12 @@ export const companyKeys = {
     [...companyKeys.reports(), "detail", id] as const,
   reportsSummary: (dateRange: DateRange) =>
     [...companyKeys.reports(), "summary", dateRange] as const,
+
+  employees: () => [...companyKeys.all, "employees"] as const,
+  employeesList: (page: number) =>
+    [...companyKeys.employees(), "list", page] as const,
+  employeeDetail: (memberId: string) =>
+    [...companyKeys.employees(), "detail", memberId] as const,
 };
 
 // Expenses Hooks
@@ -186,6 +194,66 @@ export const useRejectReport = () => {
       queryClient.invalidateQueries({ queryKey: companyKeys.reports() });
       queryClient.invalidateQueries({
         queryKey: companyKeys.reportDetail(reportId),
+      });
+    },
+  });
+};
+
+// Employees Hooks
+export const useCompanyEmployees = (
+  currentPage: number,
+  initialData?: { list: Employee[]; maxPage: number }
+) => {
+  return useQuery({
+    queryKey: companyKeys.employeesList(currentPage),
+    queryFn: () => companyService.employees.getList(currentPage),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    placeholderData: (previousData) => previousData,
+    ...(initialData && { initialData }),
+  });
+};
+
+export const useCompanyEmployeeDetail = (
+  memberId: string,
+  options?: { enabled?: boolean }
+) => {
+  return useQuery({
+    queryKey: companyKeys.employeeDetail(memberId),
+    queryFn: () => companyService.employees.getDetail(memberId),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    enabled: options?.enabled ?? !!memberId,
+  });
+};
+
+// Employee Mutations
+export const useDeleteEmployee = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: companyService.employees.delete,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: companyKeys.employees() });
+    },
+  });
+};
+
+export const useUpdateEmployee = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      memberId,
+      data,
+    }: {
+      memberId: string;
+      data: UpdateEmployeeData;
+    }) => companyService.employees.update(memberId, data),
+    onSuccess: (_, { memberId }) => {
+      queryClient.invalidateQueries({ queryKey: companyKeys.employees() });
+      queryClient.invalidateQueries({
+        queryKey: companyKeys.employeeDetail(memberId),
       });
     },
   });
