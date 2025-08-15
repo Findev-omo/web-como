@@ -26,6 +26,7 @@ export default function ApplicationList(props: Props) {
   const [searchValue, setSearchValue] = useState<SearchValue>({
     term: props.currentSearchTerm,
     field: props.currentSearchFilter,
+    filter: "all", // 기본값을 "전체 보기"로 설정
   });
 
   const {

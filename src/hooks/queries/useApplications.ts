@@ -18,8 +18,10 @@ const fetchApplications = async ({ queryKey }: { queryKey: any }) => {
   // OpenAPI 스펙에 맞게 페이지를 0부터 시작하도록 수정
   const pageParam = Math.max(0, page - 1);
 
-  const url = `v1/manager/club?page=${pageParam}&search=${search.term}&startDate=${startDate}&endDate=${endDate}`;
-  const response = (await getData(url)) as ClubApplicationListResponse;
+  const url = `v1/manager/club?page=${pageParam}&search=${search.term}&filter=${search.filter || "all"}&startDate=${startDate}&endDate=${endDate}`;
+  const response = (await getData(
+    url
+  )) as unknown as ClubApplicationListResponse;
 
   // OpenAPI 스펙에 맞게 응답 코드 체크 수정
   if (response.resultCode !== 200) {

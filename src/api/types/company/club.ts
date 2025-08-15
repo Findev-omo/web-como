@@ -18,3 +18,14 @@ export interface ClubApplicationListResponse {
   resultCode: number;
   resultMessage?: string;
 }
+
+export interface ClubStatusCountResponse {
+  data: {
+    approvedCount: number;
+    pendingCount: number;
+    rejectedCount: number;
+    newClubCount: number;
+  };
+  resultCode: number;
+  resultMessage?: string;
+}

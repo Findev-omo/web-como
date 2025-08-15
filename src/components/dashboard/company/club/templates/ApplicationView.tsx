@@ -8,7 +8,7 @@ import ApplicationList from "@/components/dashboard/company/club/organisms/Appli
 export default function ApplicationView() {
   const [currentSearchValue, setCurrentSearchValue] = useState<SearchValue>({
     term: "",
-    filter: "all",
+    filter: "all", // 기본값을 "전체 보기"로 설정
   });
   const [searchTerm, setSearchTerm] = useState<string>("");
 

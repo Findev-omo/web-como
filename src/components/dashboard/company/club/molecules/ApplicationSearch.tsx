@@ -8,6 +8,7 @@ import type { ClubApplicationListResponse } from "@/api/types/company/club";
 const filterList = [
   { name: "전체 보기", value: "all" },
   { name: "승인대기", value: "pending" },
+  { name: "승인완료", value: "approved" },
   { name: "반려완료", value: "rejected" },
 ];
 
@@ -25,13 +26,14 @@ export default function ApplicationSearch({
   const [currentSearchValue, setCurrentSearchValue] = useState<SearchValue>({
     term: "",
     field: "all",
+    filter: "all", // 기본값을 "전체 보기"로 설정
   });
 
   const handleSearch = async () => {
     console.log("=== 검색 실행 ===");
     console.log("현재 페이지:", currentPage);
     console.log("검색어:", currentSearchValue.term);
-    console.log("필터 값:", currentSearchValue.field);
+    console.log("필터 값:", currentSearchValue.filter);
     console.log("날짜 범위:", currentDateRange);
     console.log("================");
 
@@ -40,9 +42,9 @@ export default function ApplicationSearch({
       const pageParam = Math.max(0, currentPage - 1);
 
       const response = (await getData(
-        `v1/manager/club?page=${pageParam}&search=${currentSearchValue.term}&startDate=${currentDateRange.startDate?.toISOString().split("T")[0]}&endDate=${currentDateRange.endDate?.toISOString().split("T")[0]}`,
+        `v1/manager/club?page=${pageParam}&search=${currentSearchValue.term}&filter=${currentSearchValue.filter}&startDate=${currentDateRange.startDate?.toISOString().split("T")[0]}&endDate=${currentDateRange.endDate?.toISOString().split("T")[0]}`,
         true
-      )) as ClubApplicationListResponse;
+      )) as unknown as ClubApplicationListResponse;
 
       console.log(response.data);
       // OpenAPI 스펙에 맞게 응답 코드 체크 수정
@@ -63,13 +65,14 @@ export default function ApplicationSearch({
 
   return (
     <Search
-      // filterList={filterList}
+      filterList={filterList}
       currentValue={currentSearchValue}
-      handleChange={({ term, field }) => {
+      handleChange={({ term, field, filter }) => {
         setCurrentSearchValue((prev) => {
           const newValue = {
             term: term || "",
             field: field !== undefined ? field : prev.field,
+            filter: filter !== undefined ? filter : prev.filter,
           };
           console.log("=== 입력값 변경 ===");
           console.log("이전 값:", prev);

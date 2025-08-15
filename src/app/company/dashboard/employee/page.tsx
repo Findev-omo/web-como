@@ -8,6 +8,7 @@ import Skeleton from "@/components/common/Skeleton";
 import useQueryHook from "@/hooks/useQuery";
 import type { IResponse } from "@/api/types";
 import type { Employee } from "@/api/types/company/employee";
+import type { ClubStatusCountResponse } from "@/api/types/company/club";
 
 const AddNewEmployeeModal = dynamic(
   () =>
@@ -58,14 +59,9 @@ export default function Page() {
     )}&endDate=${formatDateToString(initialDateRange.endDate)}`
   );
 
-  const { data: pendingCountData } = useQueryHook<IResponse<number>>(
-    ["pendingCount"],
-    "v1/manager/club/pending-count"
-  );
-
-  const { data: approvedCountData } = useQueryHook<IResponse<number>>(
-    ["approvedCount"],
-    "v1/manager/club/approved-count"
+  const { data: statusCountData } = useQueryHook<ClubStatusCountResponse>(
+    ["clubStatusCount"],
+    "v1/manager/club/status-count"
   );
 
   return (
@@ -73,8 +69,8 @@ export default function Page() {
       <EmployeeTitle />
       <div className="flex gap-3">
         <ClubFigures
-          pendingCount={pendingCountData?.data ?? 0}
-          approvedCount={approvedCountData?.data ?? 0}
+          pendingCount={statusCountData?.data?.pendingCount ?? 0}
+          approvedCount={statusCountData?.data?.approvedCount ?? 0}
         />
       </div>
       <EmployeeView initialEmployees={employeeData?.data?.list ?? []} />
