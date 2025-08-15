@@ -18,7 +18,7 @@ export default async function Page({
     ? new Date(searchParams.endDate as string)
     : startOfToday();
 
-  const summaryPromise = getSummary();
+  const summaryPromise = getSummary(formatDate(startDate), formatDate(endDate));
   const reportsPromise = getReports(
     currentPage,
     formatDate(startDate),

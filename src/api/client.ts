@@ -49,7 +49,16 @@ const createApiClient = (): AxiosInstance => {
       // 성공 코드: "OK", "200", 200 등
       const resultCode = String(data.resultCode);
       if (resultCode !== "OK" && resultCode !== "200") {
-        throw new ApiError(data.resultMessage, data.resultCode);
+        console.error("API 응답 에러:", {
+          resultCode: data.resultCode,
+          resultMessage: data.resultMessage,
+          data: data.data,
+          url: response.config.url,
+        });
+        throw new ApiError(
+          data.resultMessage || "시스템 에러 입니다.",
+          data.resultCode
+        );
       }
       return response;
     },
@@ -76,6 +85,11 @@ const createApiClient = (): AxiosInstance => {
       // 서버 에러 응답 처리
       if (error.response?.data) {
         const errorData = error.response.data as any;
+        console.error("서버 에러 응답 상세:", {
+          errorData,
+          status: error.response.status,
+          url: error.config?.url,
+        });
         const message =
           errorData.resultMessage || errorData.message || error.message;
         const code = errorData.resultCode || String(error.response.status);

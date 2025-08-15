@@ -173,7 +173,7 @@ export default function ExpenseTable({
               {entry.eventName}
             </div>
             <div className="flex-[100] my-3 body-1 font-medium text-center text-gray-800">
-              {entry.applicantName}
+              {entry.writerName}
             </div>
             <div className="flex-[220] my-3 body-1 font-medium text-center text-gray-800">
               {entry.department}

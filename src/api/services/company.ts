@@ -9,7 +9,7 @@ import type {
 export interface CompanyExpenseEntry {
   id: number;
   clubName: string;
-  applicantName: string;
+  writerName: string;
   department: string;
   eventName: string;
   createdDate: number[];
@@ -114,15 +114,13 @@ export const companyService = {
         `/v1/manager/activity-expenses/${expenseId}/rejection-reason`
       ),
 
-    getSummary: (startDate: string, endDate: string) =>
+    getSummary: () =>
       api.get<{
-        totalAmount: number;
-        approvedAmount: number;
-        pendingAmount: number;
-        rejectedAmount: number;
-      }>(
-        `/v1/manager/activity-expenses/summary?startDate=${startDate}&endDate=${endDate}`
-      ),
+        totalCount: number;
+        approvedCount: number;
+        pendingCount: number;
+        rejectedCount: number;
+      }>(`/v1/manager/activity-expense/summary`),
   },
 
   // 보고서 관리
