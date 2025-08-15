@@ -11,6 +11,10 @@ import RejectApplicationModal from "@/components/dashboard/company/club/modals/R
 import RevertRejectionModal from "@/components/dashboard/company/club/modals/RevertRejectionModal";
 import { getData } from "@/api/action";
 import Image from "next/image";
+import type {
+  ClubRegistrationResponse,
+  ClubBasicInfoResponse,
+} from "@/api/types/company/club";
 
 const PDFViewer = dynamic(
   () => import("@/components/dashboard/club/common/PDFViewer"),
@@ -20,8 +24,13 @@ const PDFViewer = dynamic(
 export default function ApplicationDetailPage() {
   const params = useParams();
   const clubId = params.id as string;
-  const [registrationData, setRegistrationData] = useState(null);
-  const [loading, setLoading] = useState(true); // 로딩 상태 변수 추가
+  const [registrationData, setRegistrationData] = useState<
+    ClubRegistrationResponse["data"] | null
+  >(null);
+  const [basicInfoData, setBasicInfoData] = useState<
+    ClubBasicInfoResponse["data"] | null
+  >(null);
+  const [loading, setLoading] = useState(true);
   const status = useSearchParams().get("status");
 
   const categoryMapping = {
@@ -36,6 +45,7 @@ export default function ApplicationDetailPage() {
 
   const keyMapping = {
     name: "동호회명",
+    clubName: "동호회명",
     intro: "동호회 한줄 소개",
     location: "활동 지역",
     activityPlan: "활동 일정",
@@ -45,48 +55,99 @@ export default function ApplicationDetailPage() {
     headName: "운영장 이름",
     headPosition: "운영장 직책",
     headDepartment: "운영장 부서",
-    deputyName: "부운영장 이름",
-    deputyPosition: "부운영장 직책",
-    deputyDepartment: "부운영장 부서",
+    subHeadName: "부운영장 이름",
+    subHeadPosition: "부운영장 직책",
+    subHeadDepartment: "부운영장 부서",
     affairsName: "총무 이름",
     affairsPosition: "총무 직책",
     affairsDepartment: "총무 부서",
+    clubCategory: "카테고리",
     category: "카테고리",
-    maxMember: "최대 인원",
-    currentMember: "최소 인원",
-    duesPerMonth: "월회비",
+    maxMemberCount: "최대 인원",
+    minMemberCount: "최소 인원",
+    duesPerYear: "연회비",
     detail: "주요 운영 계획",
     calculationBasis: "산출 기초",
     businessItem: "사업 항목 및 내용",
     bank: "동호회 회칙",
     signature: "서명 이미지",
+    createdAt: "신청일",
+    currentMember: "현재 인원",
+    companyName: "회사명",
   };
 
-  //빌드 트리거
-
   useEffect(() => {
-    const fetchRegistrationData = async () => {
+    const fetchData = async () => {
       try {
-        const response = await getData(
-          `v1/manager/club/${clubId}/registration`
-        ); // API 호출
-        console.log("response", response);
-        if (response.resultCode === "OK") {
-          setRegistrationData(response.data);
+        // 두 API를 병렬로 호출
+        const [basicInfoResponse, registrationResponse] = await Promise.all([
+          getData(
+            `v1/manager/club/${clubId}`
+          ) as unknown as ClubBasicInfoResponse,
+          getData(
+            `v1/manager/club/${clubId}/registration`
+          ) as unknown as ClubRegistrationResponse,
+        ]);
+
+        console.log("basicInfoResponse", basicInfoResponse);
+        console.log("registrationResponse", registrationResponse);
+
+        // 기본 정보 처리
+        if (basicInfoResponse.resultCode === 200 && basicInfoResponse.data) {
+          setBasicInfoData(basicInfoResponse.data);
+        } else {
+          console.error(
+            "기본 정보 API 응답 오류:",
+            basicInfoResponse.resultMessage
+          );
+        }
+
+        // 신청서 정보 처리
+        if (
+          registrationResponse.resultCode === 200 &&
+          registrationResponse.data
+        ) {
+          setRegistrationData(registrationResponse.data);
+        } else {
+          console.error(
+            "신청서 API 응답 오류:",
+            registrationResponse.resultMessage
+          );
         }
       } catch (err) {
-        console.error("동호회 개설 신청서 로딩 오류:", err);
+        console.error("동호회 정보 로딩 오류:", err);
       } finally {
-        setLoading(false); // 로딩 상태 업데이트
+        setLoading(false);
       }
     };
 
-    fetchRegistrationData();
+    if (clubId) {
+      fetchData();
+    }
   }, [clubId]);
 
   // 로딩 중일 때 처리
   if (loading) {
-    return <div className="text-lg">로딩 중...</div>; // 로딩 메시지 또는 스피너 표시
+    return (
+      <div className="space-y-3 p-8 rounded-xl bg-gray-0">
+        <BackButton />
+        <div className="text-lg" suppressHydrationWarning>
+          로딩 중...
+        </div>
+      </div>
+    );
+  }
+
+  // 데이터가 없을 때 처리
+  if (!basicInfoData && !registrationData) {
+    return (
+      <div className="space-y-3 p-8 rounded-xl bg-gray-0">
+        <BackButton />
+        <div className="text-lg" suppressHydrationWarning>
+          동호회 정보를 찾을 수 없습니다.
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -94,35 +155,14 @@ export default function ApplicationDetailPage() {
       <BackButton />
       <div className="space-y-3 p-8 rounded-xl bg-gray-0">
         <div className="flex items-center justify-between">
-          <h2 className="h3 font-semibold text-gray-900">{"작성한 신청서"}</h2>
-          {/* {status === "new" ? (
-            <div className="flex gap-2">
-              <button className="py-1 px-4 rounded body-1 font-medium text-gray-50 bg-point-blue">
-                {"승인"}
-              </button>
-              <button
-                className="py-1 px-4 rounded body-1 font-medium text-gray-50 bg-gray-600"
-                onClick={() => openModal("reject-application")}
-              >
-                {"반려"}
-              </button>
-            </div>
-          ) : (
-            status === "reject" && (
-              <button
-                className="py-1 px-4 rounded border border-point-red body-1 font-medium text-point-red bg-gray-0"
-                onClick={() => openModal("revert-rejection")}
-              >
-                {"반려 취소"}
-              </button>
-            )
-          )} */}
+          <h2 className="h3 font-semibold text-gray-900">{"동호회 정보"}</h2>
         </div>
-        <PDFViewer file="../../../../../sample.pdf" />
 
-        <div style={{ padding: "20px" }}>
-          <div>
-            {registrationData ? (
+        {/* 기본 정보 섹션 */}
+        {basicInfoData && (
+          <div className="mb-8">
+            <h3 className="h4 font-semibold text-gray-900 mb-4">기본 정보</h3>
+            <div style={{ padding: "20px" }}>
               <div
                 style={{
                   display: "flex",
@@ -130,20 +170,8 @@ export default function ApplicationDetailPage() {
                   gap: "15px",
                 }}
               >
-                {Object.entries(registrationData)
-                  .filter(
-                    ([key]) =>
-                      ![
-                        "id",
-                        "longitude",
-                        "latitude",
-                        "headId",
-                        "deputyId",
-                        "affairsId",
-                        "rule",
-                        "thumbnail",
-                      ].includes(key)
-                  ) // 제외할 키 목록
+                {Object.entries(basicInfoData)
+                  .filter(([key]) => !["id"].includes(key))
                   .map(([key, value]) => (
                     <div
                       key={key}
@@ -157,10 +185,9 @@ export default function ApplicationDetailPage() {
                         {keyMapping[key as keyof typeof keyMapping] || key} :
                       </strong>
 
-                      {/* 빈 값 처리: null, undefined, 빈 문자열 */}
                       {value === null ||
                       value === undefined ||
-                      value === "" ? null : typeof value === "string" && // 이미지 여부 먼저 확인
+                      value === "" ? null : typeof value === "string" &&
                         (value.startsWith("http") ||
                           value.startsWith("https")) ? (
                         <Image
@@ -176,8 +203,10 @@ export default function ApplicationDetailPage() {
                           }}
                         />
                       ) : (
-                        // 카테고리일 경우 한글로 변환하여 출력
-                        <span style={{ fontSize: "16px" }}>
+                        <span
+                          style={{ fontSize: "16px" }}
+                          suppressHydrationWarning
+                        >
                           {key === "category" &&
                           typeof value === "string" &&
                           value in categoryMapping
@@ -190,11 +219,89 @@ export default function ApplicationDetailPage() {
                     </div>
                   ))}
               </div>
-            ) : (
-              <p>작성된 신청서가 없습니다.</p>
-            )}
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* 신청서 정보 섹션 */}
+        {registrationData && (
+          <div>
+            <h3 className="h4 font-semibold text-gray-900 mb-4">신청서 정보</h3>
+            <PDFViewer file="../../../../../sample.pdf" />
+
+            <div style={{ padding: "20px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "15px",
+                }}
+              >
+                {Object.entries(registrationData)
+                  .filter(
+                    ([key]) =>
+                      ![
+                        "id",
+                        "longitude",
+                        "latitude",
+                        "headId",
+                        "subHeadId",
+                        "affairsId",
+                        "rule",
+                        "thumbnail",
+                        "isJoined",
+                      ].includes(key)
+                  )
+                  .map(([key, value]) => (
+                    <div
+                      key={key}
+                      style={{
+                        padding: "10px",
+                        border: "1px solid #ccc",
+                        backgroundColor: "#f9f9f9",
+                      }}
+                    >
+                      <strong style={{ fontSize: "18px" }}>
+                        {keyMapping[key as keyof typeof keyMapping] || key} :
+                      </strong>
+
+                      {value === null ||
+                      value === undefined ||
+                      value === "" ? null : typeof value === "string" &&
+                        (value.startsWith("http") ||
+                          value.startsWith("https")) ? (
+                        <Image
+                          src={value}
+                          alt={key}
+                          width={500}
+                          height={500}
+                          unoptimized
+                          style={{
+                            maxWidth: "50%",
+                            height: "auto",
+                            marginTop: "5px",
+                          }}
+                        />
+                      ) : (
+                        <span
+                          style={{ fontSize: "16px" }}
+                          suppressHydrationWarning
+                        >
+                          {key === "clubCategory" &&
+                          typeof value === "string" &&
+                          value in categoryMapping
+                            ? categoryMapping[
+                                value as keyof typeof categoryMapping
+                              ]
+                            : String(value)}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       <div className="mt-0">
         <RejectApplicationModal />

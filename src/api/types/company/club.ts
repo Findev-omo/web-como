@@ -29,3 +29,53 @@ export interface ClubStatusCountResponse {
   resultCode: number;
   resultMessage?: string;
 }
+
+export interface ClubBasicInfoResponse {
+  data: {
+    clubImage: string;
+    companyName: string;
+    clubName: string;
+    category: string;
+    goal: string;
+    intro: string;
+    detail: string;
+    activityPlan: string;
+    location: string;
+  };
+  resultCode: number;
+  resultMessage?: string;
+}
+
+export interface ClubRegistrationResponse {
+  data: {
+    id: number;
+    name: string;
+    intro: string;
+    createdAt: string;
+    longitude: string;
+    latitude: string;
+    location: string;
+    activityPlan: string;
+    goal: string;
+    headId: number;
+    headName: string;
+    headDepartment: string;
+    subHeadId: number;
+    subHeadName: string;
+    subHeadDepartment: string;
+    affairsId: number;
+    affairsName: string;
+    affairsDepartment: string;
+    clubCategory: string;
+    maxMemberCount: number;
+    minMemberCount: number;
+    duesPerYear: number;
+    detail: string;
+    clubImage: string;
+    bankbookImage: string;
+    isJoined: boolean;
+    currentMember: number;
+  };
+  resultCode: number;
+  resultMessage?: string;
+}
