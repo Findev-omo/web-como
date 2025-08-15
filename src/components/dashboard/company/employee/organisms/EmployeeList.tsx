@@ -13,19 +13,21 @@ import EmployeeTable from "@/components/dashboard/company/employee/molecules/Emp
 import EmployeeSearch from "@/components/dashboard/company/employee/molecules/EmployeeSearch";
 import type { SearchValue } from "@/lib/types/search";
 
+import type { Employee } from "@/api/types/company/employee";
+
 export default function EmployeeList({
   initialEmployees,
 }: {
-  initialEmployees: any;
+  initialEmployees: Employee[];
 }) {
   const [currentDateRange, setCurrentDateRange] = useState<DateRange>({
     startDate: subYears(startOfToday(), 1), // 1년 전 날짜
     endDate: startOfToday(),
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const [maxPage, setMaxPage] = useState(initialEmployees?.maxPage ?? 1);
-  const [employees, setEmployees] = useState(
-    initialEmployees?.memberList ?? []
+  const [maxPage, setMaxPage] = useState(initialEmployees?.totalPages ?? 1);
+  const [employees, setEmployees] = useState<Employee[]>(
+    initialEmployees ?? []
   );
   const [currentSearchValue, setCurrentSearchValue] = useState<SearchValue>({
     term: "",
@@ -50,9 +52,9 @@ export default function EmployeeList({
         true
       );
 
-      if (res.resultCode === "OK" && res.data) {
-        setEmployees(res.data.memberList);
-        setMaxPage(res.data.maxPage);
+      if (res.resultCode === 200 && res.data) {
+        setEmployees(res.data.list);
+        setMaxPage(res.data.totalPages);
       }
     } catch (error) {
       console.error("직원 목록 로딩 오류:", error);

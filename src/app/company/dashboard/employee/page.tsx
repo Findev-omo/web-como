@@ -50,7 +50,7 @@ export default function Page() {
   };
 
   const { data: employeeData } = useQueryHook<
-    IResponse<{ employees: Employee[] }>
+    IResponse<{ totalPages: number; currentPage: number; list: Employee[] }>
   >(
     ["employees", initialDateRange.startDate, initialDateRange.endDate],
     `v1/manager/member/list?page=1&search=&filter=all&startDate=${formatDateToString(
@@ -77,7 +77,7 @@ export default function Page() {
           approvedCount={approvedCountData?.data ?? 0}
         />
       </div>
-      <EmployeeView initialEmployees={employeeData?.data?.employees} />
+      <EmployeeView initialEmployees={employeeData?.data?.list ?? []} />
       <div className="m-0">
         <AddNewEmployeeModal />
         <ApprovalSuccessModal />
