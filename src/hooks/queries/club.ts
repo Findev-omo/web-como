@@ -14,7 +14,7 @@ export const clubKeys = {
 export const useClubNotices = (
   page: number = 1,
   search: string = "",
-  initialData?: { list: ClubNotice[]; maxPage: number }
+  initialData?: { list: ClubNotice[]; totalPages: number }
 ) => {
   return useQuery({
     queryKey: clubKeys.noticesList(page, search),

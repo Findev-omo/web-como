@@ -25,7 +25,7 @@ export default function EmployeeList({
     endDate: startOfToday(),
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const [maxPage, setMaxPage] = useState(initialEmployees?.totalPages ?? 1);
+  const [maxPage, setMaxPage] = useState(1);
   const [employees, setEmployees] = useState<Employee[]>(
     initialEmployees ?? []
   );
@@ -52,7 +52,7 @@ export default function EmployeeList({
         true
       );
 
-      if (res.resultCode === 200 && res.data) {
+      if (res.resultCode === "200" && res.data) {
         setEmployees(res.data.list);
         setMaxPage(res.data.totalPages);
       }

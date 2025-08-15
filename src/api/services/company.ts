@@ -12,7 +12,7 @@ export interface CompanyExpenseEntry {
   writerName: string;
   department: string;
   eventName: string;
-  createdDate: number[];
+  createdDate: string; // ISO 8601 형식의 문자열 (예: '2025-06-18T16:42:05')
   status: "PENDING" | "APPROVED" | "REJECTED";
 }
 
@@ -92,9 +92,14 @@ export const companyService = {
   // 지출 관리
   expenses: {
     getList: (page: number, startDate: string, endDate: string) =>
-      api.get<PaginatedResponse<CompanyExpenseEntry>>(
-        `/v1/manager/activity-expenses?page=${page}&startDate=${startDate}&endDate=${endDate}`
-      ),
+      api
+        .get<
+          PaginatedResponse<CompanyExpenseEntry>
+        >(`/v1/manager/activity-expenses?page=${page}&startDate=${startDate}&endDate=${endDate}`)
+        .then((response) => ({
+          ...response,
+          maxPage: response.totalPages, // 하위 호환성을 위해 maxPage 추가
+        })),
 
     getDetail: (expenseId: number) =>
       api.get<CompanyExpenseDetail>(

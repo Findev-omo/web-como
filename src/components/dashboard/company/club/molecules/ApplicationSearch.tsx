@@ -48,7 +48,7 @@ export default function ApplicationSearch({
 
       console.log(response.data);
       // OpenAPI 스펙에 맞게 응답 코드 체크 수정
-      if (response.resultCode === 200 && response.data) {
+      if (response.resultCode === "200" && response.data) {
         onSearch(currentSearchValue);
         // 검색 후 검색어 초기화
         setCurrentSearchValue((prev) => ({

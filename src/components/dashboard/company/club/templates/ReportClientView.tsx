@@ -38,7 +38,7 @@ export default function ReportClientView({
     error,
   } = useCompanyReports(initialCurrentPage, currentDateRange, {
     list: initialReports,
-    maxPage: initialMaxPage,
+    totalPages: initialMaxPage,
   });
 
   const updateUrl = (page: number, dateRange: DateRange) => {
@@ -63,7 +63,7 @@ export default function ReportClientView({
   };
 
   const reports = reportsData?.list || [];
-  const maxPage = reportsData?.maxPage || 1;
+  const maxPage = reportsData?.totalPages || 1;
 
   return (
     <div className="space-y-4 p-8 rounded-2xl bg-gray-0">

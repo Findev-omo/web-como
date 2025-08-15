@@ -20,9 +20,17 @@ const tableHeadings = {
   rejectReason: "반려사유",
 };
 
-const formatDateFromArray = (dateArray: number[]) => {
-  const [year, month, day] = dateArray;
-  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+const formatDateFromString = (dateString: string) => {
+  try {
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  } catch (error) {
+    console.error("날짜 파싱 에러:", error);
+    return dateString; // 파싱 실패 시 원본 문자열 반환
+  }
 };
 
 export default function ExpenseTable({
@@ -179,7 +187,7 @@ export default function ExpenseTable({
               {entry.department}
             </div>
             <div className="flex-[160] my-3 body-1 font-medium text-center text-gray-800">
-              {formatDateFromArray(entry.createdDate)}
+              {formatDateFromString(entry.createdDate)}
             </div>
             <div
               className={cn(

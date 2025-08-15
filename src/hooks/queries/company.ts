@@ -79,7 +79,7 @@ export const useCompanyExpensesSummary = (currentDateRange: DateRange) => {
 
   return useQuery({
     queryKey: companyKeys.expensesSummary(currentDateRange),
-    queryFn: () => companyService.expenses.getSummary(startDate, endDate),
+    queryFn: () => companyService.expenses.getSummary(),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
@@ -124,7 +124,7 @@ export const useRejectExpense = () => {
 export const useCompanyReports = (
   currentPage: number,
   currentDateRange: DateRange,
-  initialData?: { list: CompanyReport[]; maxPage: number }
+  initialData?: { list: CompanyReport[]; totalPages: number }
 ) => {
   const startDate = currentDateRange.startDate
     ? formatDate(currentDateRange.startDate)
@@ -202,7 +202,7 @@ export const useRejectReport = () => {
 // Employees Hooks
 export const useCompanyEmployees = (
   currentPage: number,
-  initialData?: { list: Employee[]; maxPage: number }
+  initialData?: { list: Employee[]; totalPages: number }
 ) => {
   return useQuery({
     queryKey: companyKeys.employeesList(currentPage),

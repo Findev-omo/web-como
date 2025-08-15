@@ -24,7 +24,7 @@ const fetchApplications = async ({ queryKey }: { queryKey: any }) => {
   )) as unknown as ClubApplicationListResponse;
 
   // OpenAPI 스펙에 맞게 응답 코드 체크 수정
-  if (response.resultCode !== 200) {
+  if (response.resultCode !== "200") {
     throw new Error(
       `동호회 신청 목록을 불러오는데 실패했습니다: ${response.resultMessage}`
     );
