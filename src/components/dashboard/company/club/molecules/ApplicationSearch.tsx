@@ -3,6 +3,7 @@ import Search from "@/components/dashboard/common/Search";
 import { DateRange } from "@/components/dashboard/common/DateFilter";
 import { useState } from "react";
 import { getData } from "@/api/action";
+import type { ClubApplicationListResponse } from "@/api/types/company/club";
 
 const filterList = [
   { name: "전체 보기", value: "all" },
@@ -16,12 +17,16 @@ interface Props {
   currentPage: number;
 }
 
-export default function ApplicationSearch({ onSearch, currentDateRange, currentPage }: Props) {
+export default function ApplicationSearch({
+  onSearch,
+  currentDateRange,
+  currentPage,
+}: Props) {
   const [currentSearchValue, setCurrentSearchValue] = useState<SearchValue>({
     term: "",
     field: "all",
   });
-  
+
   const handleSearch = async () => {
     console.log("=== 검색 실행 ===");
     console.log("현재 페이지:", currentPage);
@@ -31,13 +36,17 @@ export default function ApplicationSearch({ onSearch, currentDateRange, currentP
     console.log("================");
 
     try {
-      const response = await getData(
-        `v1/manager/club?page=1&search=${currentSearchValue.term}&filter=${currentSearchValue.field}&startDate=${currentDateRange.startDate?.toISOString().split('T')[0]}&endDate=${currentDateRange.endDate?.toISOString().split('T')[0]}`,
-        true
-      );
+      // OpenAPI 스펙에 맞게 페이지를 0부터 시작하도록 수정
+      const pageParam = Math.max(0, currentPage - 1);
 
-      console.log(response.data)
-      if (response.data) {
+      const response = (await getData(
+        `v1/manager/club?page=${pageParam}&search=${currentSearchValue.term}&startDate=${currentDateRange.startDate?.toISOString().split("T")[0]}&endDate=${currentDateRange.endDate?.toISOString().split("T")[0]}`,
+        true
+      )) as ClubApplicationListResponse;
+
+      console.log(response.data);
+      // OpenAPI 스펙에 맞게 응답 코드 체크 수정
+      if (response.resultCode === 200 && response.data) {
         onSearch(currentSearchValue);
         // 검색 후 검색어 초기화
         setCurrentSearchValue((prev) => ({
@@ -50,16 +59,18 @@ export default function ApplicationSearch({ onSearch, currentDateRange, currentP
     } catch (error) {
       console.error("검색 중 오류 발생:", error);
     }
+  };
 
-  }
-  
   return (
     <Search
       // filterList={filterList}
       currentValue={currentSearchValue}
       handleChange={({ term, field }) => {
         setCurrentSearchValue((prev) => {
-          const newValue = { term: term || '', field: field !== undefined ? field : prev.field };
+          const newValue = {
+            term: term || "",
+            field: field !== undefined ? field : prev.field,
+          };
           console.log("=== 입력값 변경 ===");
           console.log("이전 값:", prev);
           console.log("새로운 값:", newValue);
