@@ -1,3 +1,4 @@
+// @deprecated - useCompanyReportRejectionReason hook을 사용하세요
 import { companyService } from "@/api/services/company";
 
 export const getReportRejectionReason = async (reportId: number) => {

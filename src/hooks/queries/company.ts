@@ -26,6 +26,8 @@ export const companyKeys = {
     [...companyKeys.reports(), "list", page, dateRange] as const,
   reportDetail: (id: number) =>
     [...companyKeys.reports(), "detail", id] as const,
+  reportRejectionReason: (id: number) =>
+    [...companyKeys.reports(), "rejection-reason", id] as const,
   reportsSummary: (dateRange: DateRange) =>
     [...companyKeys.reports(), "summary", dateRange] as const,
 
@@ -182,6 +184,21 @@ export const useCompanyReportDetail = (reportId: number) => {
   });
 };
 
+export const useCompanyReportRejectionReason = (reportId: number) => {
+  return useQuery({
+    queryKey: companyKeys.reportRejectionReason(reportId),
+    queryFn: () => {
+      console.log("useCompanyReportRejectionReason 호출:", { reportId });
+      return companyService.reports.getRejectionReason(reportId);
+    },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    enabled: !!reportId,
+    retry: 2,
+    retryDelay: 1000,
+  });
+};
+
 export const useCompanyReportsSummary = (currentDateRange: DateRange) => {
   const startDate = currentDateRange.startDate
     ? formatDate(currentDateRange.startDate)
@@ -217,13 +234,25 @@ export const useRejectReport = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ reportId, reason }: { reportId: number; reason: string }) =>
-      companyService.reports.reject(reportId, reason),
-    onSuccess: (_, { reportId }) => {
+    mutationFn: ({
+      reportId,
+      reason,
+    }: {
+      reportId: number;
+      reason: string;
+    }) => {
+      console.log("useRejectReport mutationFn 호출:", { reportId, reason });
+      return companyService.reports.reject(reportId, reason);
+    },
+    onSuccess: (data, { reportId }) => {
+      console.log("useRejectReport onSuccess:", { data, reportId });
       queryClient.invalidateQueries({ queryKey: companyKeys.reports() });
       queryClient.invalidateQueries({
         queryKey: companyKeys.reportDetail(reportId),
       });
+    },
+    onError: (error) => {
+      console.error("useRejectReport onError:", error);
     },
   });
 };

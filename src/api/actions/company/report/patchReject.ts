@@ -1,3 +1,4 @@
+// @deprecated - useRejectReport hook을 사용하세요
 import { companyService } from "@/api/services/company";
 
 export const patchReject = async (reportId: number, reason: string) => {
