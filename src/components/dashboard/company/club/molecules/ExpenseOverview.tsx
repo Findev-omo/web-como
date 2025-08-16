@@ -16,6 +16,11 @@ export default function ExpenseOverview({
   stats,
   ...props
 }: ExpenseOverviewProps) {
+  console.log("활동지원비 신청 현황 stats:", stats);
+  console.log("승인 대기:", stats.pending);
+  console.log("승인 완료:", stats.approved);
+  console.log("반려 완료:", stats.rejected);
+
   return (
     <div
       className="flex flex-col gap-6 h-fit p-8 rounded-xl bg-gray-800 select-none"

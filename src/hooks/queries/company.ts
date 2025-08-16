@@ -152,10 +152,20 @@ export const useCompanyReports = (
     ? formatDate(currentDateRange.endDate)
     : "";
 
+  console.log("useCompanyReports 호출:", {
+    currentPage,
+    currentDateRange,
+    startDate,
+    endDate,
+    initialData,
+  });
+
   return useQuery({
     queryKey: companyKeys.reportsList(currentPage, currentDateRange),
-    queryFn: () =>
-      companyService.reports.getList(currentPage, startDate, endDate),
+    queryFn: () => {
+      console.log("useCompanyReports queryFn 호출");
+      return companyService.reports.getList(currentPage, startDate, endDate);
+    },
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     placeholderData: (previousData) => previousData,

@@ -16,6 +16,7 @@ const expenseCategory = {
 };
 
 export default function ReportDetail({ data }: Props) {
+  console.log("ReportDetail 전체 데이터:", data);
   return (
     <div className="w-full">
       {/* 1페이지: 활동 사진 첨부까지 */}
@@ -65,7 +66,20 @@ export default function ReportDetail({ data }: Props) {
                   .
                 </span>
                 <div className=" text-lg bg-gray-100 rounded-[6px] py-[18px] px-[20px] ">
-                  {data.activityTime.join(":")}
+                  {(() => {
+                    console.log(
+                      "activityTime:",
+                      data.activityTime,
+                      typeof data.activityTime
+                    );
+                    if (Array.isArray(data.activityTime)) {
+                      return data.activityTime.join(":");
+                    } else if (typeof data.activityTime === "string") {
+                      return data.activityTime;
+                    } else {
+                      return String(data.activityTime || "");
+                    }
+                  })()}
                 </div>
               </div>{" "}
               <div className="flex flex-col basis-1/4">

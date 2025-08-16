@@ -14,6 +14,7 @@ interface Props {
 }
 
 export default function ReportTable({ reports }: Props) {
+  console.log("ReportTable reports:", reports);
   const pathname = usePathname();
   const { push } = useRouter();
   const [selectedReport, setSelectedReport] = useState<CompanyReport | null>(
@@ -26,7 +27,7 @@ export default function ReportTable({ reports }: Props) {
   const handlePrint = useReactToPrint({
     content: () => contentRef.current,
     contentRef: contentRef,
-    documentTitle: selectedReport?.title || "활동보고서",
+    documentTitle: selectedReport?.eventName || "활동보고서",
     pageStyle: `
       @page {
         size: A4;
@@ -99,11 +100,11 @@ export default function ReportTable({ reports }: Props) {
             </div>
             {/* 작성 일자 */}
             <div className="flex-1 min-w-[100px] my-3 mx-6 body-1 font-medium text-center text-gray-800">
-              {formatDate(new Date(report.submitDate))}
+              {formatDate(new Date())}
             </div>
             {/* 동호회명 */}
             <div className="flex-[2] min-w-[180px] my-3 mx-6 body-1 font-medium text-center text-gray-800">
-              {report.clubName}
+              동호회명
             </div>
             {/* 활동명 */}
             <div
@@ -112,11 +113,11 @@ export default function ReportTable({ reports }: Props) {
                 push(`${pathname}/${report.id}?status=${report.status}`)
               }
             >
-              {report.title}
+              {report.eventName}
             </div>
             {/* 활동일 */}
             <div className="flex-1 min-w-[100px] my-3 mx-6 body-1 font-medium text-center text-gray-800">
-              {/* This needs to be implemented */}
+              {formatDate(new Date(report.activityDate))}
             </div>
             {/* 확인 상태 */}
             <div

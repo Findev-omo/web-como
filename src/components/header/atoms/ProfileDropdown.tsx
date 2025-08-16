@@ -22,17 +22,17 @@ export default function ProfileDropdown({ profileImage }: Props) {
   } = useAuthStore();
 
   useEffect(() => {
+    // 프로필이 이미 로드되어 있고, 로딩 중이 아니면 API 호출하지 않음
+    if (isProfileLoaded && profile && !isProfileLoading) {
+      return;
+    }
+
+    // 이미 로딩 중이면 중복 호출 방지
+    if (isProfileLoading) {
+      return;
+    }
+
     const loadProfileData = async () => {
-      // 프로필이 이미 로드되어 있고, 로딩 중이 아니면 API 호출하지 않음
-      if (isProfileLoaded && profile && !isProfileLoading) {
-        return;
-      }
-
-      // 이미 로딩 중이면 중복 호출 방지
-      if (isProfileLoading) {
-        return;
-      }
-
       setProfileLoading(true);
       try {
         const role = await getRole();
@@ -65,21 +65,18 @@ export default function ProfileDropdown({ profileImage }: Props) {
     };
 
     loadProfileData();
-  }, [
-    profile,
-    isProfileLoading,
-    isProfileLoaded,
-    setProfile,
-    setProfileLoading,
-  ]);
+  }, []); // 빈 의존성 배열로 컴포넌트 마운트 시에만 실행
 
-  console.log("현재 프로필 상태:", {
-    profile: profile,
-    profileImage: profile?.profileImage,
-    propProfileImage: profileImage,
-    isProfileLoaded,
-    isProfileLoading,
-  });
+  // 개발 환경에서만 로그 출력
+  if (process.env.NODE_ENV === "development") {
+    console.log("현재 프로필 상태:", {
+      profile: profile,
+      profileImage: profile?.profileImage,
+      propProfileImage: profileImage,
+      isProfileLoaded,
+      isProfileLoading,
+    });
+  }
 
   return (
     <>

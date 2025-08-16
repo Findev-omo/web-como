@@ -116,16 +116,42 @@ export default function ClubMemberTable({ clubMembers }: ClubMemberTableProps) {
     }
   };
 
-  const formatAppliedDate = (dateString: string) => {
-    if (!dateString) {
-      console.error("Invalid dateString:", dateString);
+  const formatAppliedDate = (dateInput: string | number[]) => {
+    if (!dateInput) {
+      console.error("Invalid dateInput:", dateInput);
       return "";
     }
 
     try {
-      const date = new Date(dateString);
+      let date: Date;
+
+      if (Array.isArray(dateInput)) {
+        // number[] 형식: [YYYY, MM, DD, HH, mm, ss, ms]
+        const [
+          year,
+          month,
+          day,
+          hour = 0,
+          minute = 0,
+          second = 0,
+          millisecond = 0,
+        ] = dateInput;
+        date = new Date(
+          year,
+          month - 1,
+          day,
+          hour,
+          minute,
+          second,
+          millisecond
+        );
+      } else {
+        // string 형식
+        date = new Date(dateInput);
+      }
+
       if (isNaN(date.getTime())) {
-        console.error("Invalid date:", dateString);
+        console.error("Invalid date:", dateInput);
         return "";
       }
       return formatDate(date);
@@ -170,7 +196,7 @@ export default function ClubMemberTable({ clubMembers }: ClubMemberTableProps) {
               member.name,
               member.department,
               member.profileMessage || "-",
-              formatAppliedDate(member.createdDate as unknown as number[]),
+              formatAppliedDate(member.createdDate),
               getStatus(member.status),
             ].map((data, i) => (
               <div
@@ -196,7 +222,7 @@ export default function ClubMemberTable({ clubMembers }: ClubMemberTableProps) {
                 {i === 0
                   ? idx + 1
                   : i === 4
-                    ? formatAppliedDate(data)
+                    ? data
                     : i === 5
                       ? data === "leave"
                         ? "탈퇴"

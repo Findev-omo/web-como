@@ -44,16 +44,27 @@ export interface CompanyExpenseDetail extends CompanyExpense {
 
 export interface CompanyReport {
   id: number;
-  title: string;
-  clubName: string;
-  submitDate: string;
-  status: string;
+  eventName: string; // 활동명
+  activityDate: string; // 활동일
+  status: string; // 확인 상태
   // ... 필요한 필드들 추가
 }
 
 export interface CompanyReportDetail extends CompanyReport {
   content: string;
   attachments: string[];
+  activityTime: string[] | string;
+  location: string;
+  locationDetail: string;
+  activityContent: string;
+  note: string;
+  photos: Array<{ id: number; url: string }>;
+  expenses: Array<{
+    category: string;
+    supportAmount: number;
+    usedAmount: number;
+    remainingAmount: number;
+  }>;
   // ... 상세 정보 필드들
 }
 
@@ -165,23 +176,26 @@ export const companyService = {
 
   // 보고서 관리
   reports: {
-    getList: (page: number, startDate: string, endDate: string) =>
-      api.get<PaginatedResponse<CompanyReport>>(
-        `/v1/manager/reports?page=${page}&startDate=${startDate}&endDate=${endDate}`
-      ),
+    getList: (page: number, startDate: string, endDate: string) => {
+      // OpenAPI 스펙에 따라 페이지를 0부터 시작하도록 수정
+      const pageParam = Math.max(0, page - 1);
+      return api.get<PaginatedResponse<CompanyReport>>(
+        `/v1/manager/club/report?page=${pageParam}&startDate=${startDate}&endDate=${endDate}`
+      );
+    },
 
     getDetail: (reportId: number) =>
-      api.get<CompanyReportDetail>(`/v1/manager/reports/${reportId}`),
+      api.get<CompanyReportDetail>(`/v1/manager/club/report/${reportId}`),
 
     approve: (reportId: number) =>
-      api.patch<void>(`/v1/manager/reports/${reportId}/approve`),
+      api.patch<void>(`/v1/manager/club/report/${reportId}/approve`),
 
     reject: (reportId: number, reason: string) =>
-      api.patch<void>(`/v1/manager/reports/${reportId}/reject`, { reason }),
+      api.patch<void>(`/v1/manager/club/report/${reportId}/reject`, { reason }),
 
     getRejectionReason: (reportId: number) =>
       api.get<{ reason: string }>(
-        `/v1/manager/reports/${reportId}/rejection-reason`
+        `/v1/manager/club/report/${reportId}/rejection-reason`
       ),
 
     getSummary: (startDate: string, endDate: string) =>
@@ -191,7 +205,7 @@ export const companyService = {
         pendingCount: number;
         rejectedCount: number;
       }>(
-        `/v1/manager/reports/summary?startDate=${startDate}&endDate=${endDate}`
+        `/v1/manager/club/report/summary?startDate=${startDate}&endDate=${endDate}`
       ),
   },
 

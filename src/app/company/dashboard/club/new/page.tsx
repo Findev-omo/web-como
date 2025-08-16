@@ -8,7 +8,7 @@ import type { ClubStatusCountResponse } from "@/api/types/company/club";
 
 export default async function NewApplicationPage() {
   const statusResponse = (await getData(
-    "v1/manager/club/status-count",
+    "v1/manager/activity-expense/summary",
     true
   )) as unknown as ClubStatusCountResponse;
 

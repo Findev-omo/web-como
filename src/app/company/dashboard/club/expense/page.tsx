@@ -32,11 +32,15 @@ export default async function Page({
       expensePromise,
     ]);
 
+    console.log("활동지원비 페이지 - summary:", summary);
+
     const stats = {
       pending: summary.pendingCount || 0,
       approved: summary.approvedCount || 0,
       rejected: summary.rejectedCount || 0,
     };
+
+    console.log("활동지원비 페이지 - stats:", stats);
 
     return (
       <>
