@@ -72,3 +72,20 @@ export interface ClubRegistrationResponse {
   currentMember: number;
   companyName?: string; // optional로 변경
 }
+
+export interface ClubMember {
+  id: number;
+  name: string;
+  department: string;
+  position: string;
+  profileMessage: string;
+  requestDate: string;
+  status: string;
+  createdDate: number[];
+}
+
+export interface ClubMemberListResponse {
+  totalPages: number;
+  currentPage: number;
+  list: ClubMember[];
+}

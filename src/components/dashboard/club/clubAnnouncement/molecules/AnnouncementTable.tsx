@@ -146,7 +146,7 @@ function AnnouncementTable({ currentPage }: { currentPage: number }) {
           </div>
         ))}
       </li>
-      {currentNotices.map((notice, idx) => {
+      {currentNotices?.map((notice, idx) => {
         // 각 공지사항마다 별도의 클릭 핸들러 생성 (클로저 문제 해결)
         const handleCurrentNoticeClick = () => {
           handleTitleClick(notice.id);

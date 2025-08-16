@@ -3,6 +3,7 @@ import type { PaginatedResponse } from "../types/common";
 import type {
   ClubBasicInfoResponse,
   ClubRegistrationResponse,
+  ClubMemberListResponse,
 } from "../types/company/club";
 
 // 타입 정의
@@ -87,6 +88,14 @@ export const companyService = {
       api.get<ClubRegistrationResponse>(
         `/v1/manager/club/${clubId}/registration`
       ),
+
+    getMembers: (clubId: number, page: number, search: string = "", filter: string = "") =>
+      api.get<ClubMemberListResponse>(
+        `/v1/manager/club/${clubId}/member?page=${page}&search=${search}&filter=${filter}`
+      ),
+
+    getMembersExcel: (clubId: number) =>
+      api.get(`/v1/manager/club/${clubId}/members/excel`),
   },
 
   // 지출 관리
@@ -126,6 +135,21 @@ export const companyService = {
         pendingCount: number;
         rejectedCount: number;
       }>(`/v1/manager/activity-expense/summary`),
+  },
+
+  // 공지사항 관리
+  notices: {
+    getList: (page: number, search: string = "") =>
+      api.get<
+        PaginatedResponse<{
+          id: number;
+          createdDate: string;
+          title: string;
+          writerName: string;
+          viewCount: number;
+          isPinned: string;
+        }>
+      >(`/v1/manager/club/notices?page=${page}&search=${search}`),
   },
 
   // 보고서 관리

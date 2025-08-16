@@ -34,6 +34,9 @@ export const companyKeys = {
     [...companyKeys.employees(), "list", page] as const,
   employeeDetail: (memberId: string) =>
     [...companyKeys.employees(), "detail", memberId] as const,
+  notices: () => [...companyKeys.all, "notices"] as const,
+  noticesList: (page: number, searchTerm: string) =>
+    [...companyKeys.notices(), "list", page, searchTerm] as const,
 };
 
 // Expenses Hooks
@@ -82,6 +85,22 @@ export const useCompanyExpensesSummary = (currentDateRange: DateRange) => {
     queryFn: () => companyService.expenses.getSummary(),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
+  });
+};
+
+// 공지사항 Hooks
+export const useCompanyNotices = (
+  currentPage: number,
+  searchTerm: string = "",
+  initialData?: { list: any[]; totalPages: number }
+) => {
+  return useQuery({
+    queryKey: companyKeys.noticesList(currentPage, searchTerm),
+    queryFn: () => companyService.notices.getList(currentPage, searchTerm),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    placeholderData: (previousData) => previousData,
+    ...(initialData && { initialData }),
   });
 };
 

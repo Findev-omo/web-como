@@ -104,31 +104,35 @@ interface ClubMemberTableProps {
 
 export default function ClubMemberTable({ clubMembers }: ClubMemberTableProps) {
   console.log("클럽 멤버 정보:", clubMembers);
-  
+
   const getStatus = (status: string): MemberStatus => {
     switch (status) {
-      case 'APPROVED':
-        return 'active';
-      case 'SIGNOUT': return 'leave';
-      default: return "";
+      case "APPROVED":
+        return "active";
+      case "SIGNOUT":
+        return "leave";
+      default:
+        return "";
     }
   };
 
-  const formatAppliedDate = (dateArray: number[]) => {
-    if (!Array.isArray(dateArray) || dateArray.length < 5) {
-      console.error("Invalid dateArray:", dateArray); // 오류 로그 추가
-      return '';
+  const formatAppliedDate = (dateString: string) => {
+    if (!dateString) {
+      console.error("Invalid dateString:", dateString);
+      return "";
     }
 
-    const [year, month, day, hour, minute] = dateArray; // second는 기본값으로 처리
-    const second = dateArray.length === 6 ? dateArray[5] : 0; // second가 없으면 0으로 설정
-  
-    // 각 값이 유효한지 확인
-    if (isNaN(year) || isNaN(month) || isNaN(day) || isNaN(hour) || isNaN(minute) || isNaN(second)) {
-      console.error("Invalid date values:", { year, month, day, hour, minute, second });
-      return '';
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        console.error("Invalid date:", dateString);
+        return "";
+      }
+      return formatDate(date);
+    } catch (error) {
+      console.error("Date parsing error:", error);
+      return "";
     }
-    return formatDate(new Date(year, month - 1, day, hour, minute, second));
   };
 
   return (
@@ -154,51 +158,56 @@ export default function ClubMemberTable({ clubMembers }: ClubMemberTableProps) {
           </div>
         ))}
       </li>
-      {clubMembers && clubMembers.length > 0 && clubMembers.map((member, idx) => (
-        <li key={member.id} className="flex border-b border-gray-400 bg-gray-0">
-          {[
-            member.id,
-            member.name,
-            member.department,
-            member.profileMessage,
-            formatAppliedDate(member.createdDate as unknown as number[]),
-            getStatus(member.status),
-          ].map((data, i) => (
-            <div
-              key={i}
-              className={cn(
-                "my-3 mx-6 body-1 font-medium underline-offset-2 underline decoration-transparent line-clamp-1 transition duration-300",
-                i === 0 ? "w-8" : "flex-1",
-                [1, 4].includes(i)
-                  ? "max-w-24"
-                  : i === 2
-                    ? "max-w-40"
+      {clubMembers &&
+        clubMembers.length > 0 &&
+        clubMembers.map((member, idx) => (
+          <li
+            key={member.id}
+            className="flex border-b border-gray-400 bg-gray-0"
+          >
+            {[
+              member.id,
+              member.name,
+              member.department,
+              member.profileMessage || "-",
+              formatAppliedDate(member.createdDate as unknown as number[]),
+              getStatus(member.status),
+            ].map((data, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "my-3 mx-6 body-1 font-medium underline-offset-2 underline decoration-transparent line-clamp-1 transition duration-300",
+                  i === 0 ? "w-8" : "flex-1",
+                  [1, 4].includes(i)
+                    ? "max-w-24"
+                    : i === 2
+                      ? "max-w-40"
+                      : i === 5
+                        ? "max-w-48"
+                        : "",
+                  i === 3 ? "" : "text-center",
+                  data === "leave"
+                    ? "text-gray-500"
+                    : data === "active"
+                      ? "text-point-blue"
+                      : "text-gray-800"
+                )}
+              >
+                {i === 0
+                  ? idx + 1
+                  : i === 4
+                    ? formatAppliedDate(data)
                     : i === 5
-                      ? "max-w-48"
-                      : "",
-                i === 3 ? "" : "text-center",
-                data === "leave"
-                  ? "text-gray-500"
-                  : data === "active"
-                    ? "text-point-blue"
-                    : "text-gray-800"
-              )}
-            >
-              {i === 0
-                ? idx + 1
-                : i === 4
-                  ? formatDate(new Date(data))
-                  : i === 5
-                    ? data === "leave"
-                      ? "탈퇴"
-                      : data === "active"
-                        ? "활동중"
-                        : "-"
-                    : data}
-            </div>
-          ))}
-        </li>
-      ))}
+                      ? data === "leave"
+                        ? "탈퇴"
+                        : data === "active"
+                          ? "활동중"
+                          : "-"
+                      : data}
+              </div>
+            ))}
+          </li>
+        ))}
     </ul>
   );
 }
