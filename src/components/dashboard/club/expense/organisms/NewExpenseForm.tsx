@@ -53,6 +53,7 @@ export default function NewExpenseReportForm({
   const [currentImagesBankAccount, setCurrentImagesBankAccount] = useState<
     File[]
   >([]);
+  const [hasSavedData, setHasSavedData] = useState(false);
 
   const [isChecked, setIsChecked] = useState(false);
   const methods = useForm<ExpenseFormData>({
@@ -74,6 +75,16 @@ export default function NewExpenseReportForm({
     storageKey: "result-expense-form",
     autoRestore: false,
   });
+
+  // 컴포넌트 마운트 시 저장된 데이터가 있는지 확인
+  useEffect(() => {
+    const checkSavedData = async () => {
+      const hasData = await autoSave.hasSavedData();
+      setHasSavedData(hasData);
+    };
+
+    checkSavedData();
+  }, [autoSave]);
 
   // 수동으로 유효성 체크
   const isFormValid =
@@ -320,6 +331,7 @@ export default function NewExpenseReportForm({
             }
           }}
           clearSavedData={autoSave.clearSavedData}
+          hasSavedData={hasSavedData}
         />
       </form>
     </FormProvider>

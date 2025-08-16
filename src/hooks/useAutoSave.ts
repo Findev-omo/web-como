@@ -42,15 +42,23 @@ export const useAutoSave = <T extends Record<string, any>>({
             return { __type: "Date", value: obj.toISOString() };
           }
 
+          // File 객체는 저장하지 않음
+          if (obj instanceof File) {
+            return null;
+          }
+
           if (Array.isArray(obj)) {
-            return obj.map(serializeData);
+            return obj.map(serializeData).filter((item) => item !== null);
           }
 
           if (typeof obj === "object") {
             const serialized: any = {};
             for (const key in obj) {
               if (obj.hasOwnProperty(key)) {
-                serialized[key] = serializeData(obj[key]);
+                const serializedValue = serializeData(obj[key]);
+                if (serializedValue !== null) {
+                  serialized[key] = serializedValue;
+                }
               }
             }
             return serialized;
@@ -138,6 +146,20 @@ export const useAutoSave = <T extends Record<string, any>>({
     }
   }, [getStorageKey]);
 
+  // 저장된 데이터가 있는지 확인
+  const hasSavedData = useCallback(async (): Promise<boolean> => {
+    if (!enabled) return false;
+
+    try {
+      const storageKey = await getStorageKey();
+      const savedData = sessionStorage.getItem(storageKey);
+      return !!savedData;
+    } catch (error) {
+      console.error("Check saved data failed:", error);
+      return false;
+    }
+  }, [enabled, getStorageKey]);
+
   // 폼 값 변경 감지 및 자동 저장
   useEffect(() => {
     if (!enabled) return;
@@ -180,6 +202,11 @@ export const useAutoSave = <T extends Record<string, any>>({
 
         // 복원된 데이터를 마지막 저장 데이터로 설정
         lastSavedRef.current = JSON.stringify(savedData);
+
+        // 폼 검증 트리거
+        setTimeout(() => {
+          form.trigger();
+        }, 100);
       }
     };
 
@@ -190,5 +217,6 @@ export const useAutoSave = <T extends Record<string, any>>({
     saveData,
     restoreData,
     clearSavedData,
+    hasSavedData,
   };
 };

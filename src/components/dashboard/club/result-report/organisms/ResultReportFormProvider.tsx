@@ -29,6 +29,7 @@ function formatDateToString(date: Date | string) {
 const ResultReportFormProvider = () => {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasSavedData, setHasSavedData] = useState(false);
 
   const methods = useForm<ResultReportSchemaType>({
     resolver: zodResolver(ResultReportSchema),
@@ -43,7 +44,7 @@ const ResultReportFormProvider = () => {
         participantCount: 0,
         activityContent: "",
         note: "",
-        expenses: [
+        receipts: [
           {
             category: "",
             supportAmount: "",
@@ -51,14 +52,14 @@ const ResultReportFormProvider = () => {
             remainingAmount: "",
             usageDetail: "",
             submittedBy: "",
-            issuedDate: new Date(),
+            issuedDate: "",
             vendor: "",
             amount: "",
             description: "",
           },
         ],
       },
-      photos: [],
+      images: [],
       receipts: [],
     },
   });
@@ -75,6 +76,16 @@ const ResultReportFormProvider = () => {
     autoRestore: false,
   });
 
+  // 컴포넌트 마운트 시 저장된 데이터가 있는지 확인
+  useEffect(() => {
+    const checkSavedData = async () => {
+      const hasData = await autoSave.hasSavedData();
+      setHasSavedData(hasData);
+    };
+
+    checkSavedData();
+  }, [autoSave]);
+
   const debouncedSubmit = useCallback(
     async (data: ResultReportSchemaType) => {
       if (isSubmitting) return;
@@ -90,14 +101,14 @@ const ResultReportFormProvider = () => {
             activityDate: data.data.activityDate
               ? formatDateToString(data.data.activityDate)
               : "",
-            expenses: data.data.expenses.map((expense) => ({
-              ...expense,
-              supportAmount: Number(expense.supportAmount),
-              usedAmount: Number(expense.usedAmount),
-              remainingAmount: Number(expense.remainingAmount),
-              amount: Number(expense.amount),
-              issuedDate: expense.issuedDate
-                ? formatDateToString(expense.issuedDate)
+            receipts: data.data.receipts.map((receipt) => ({
+              ...receipt,
+              supportAmount: Number(receipt.supportAmount),
+              usedAmount: Number(receipt.usedAmount),
+              remainingAmount: Number(receipt.remainingAmount),
+              amount: Number(receipt.amount),
+              issuedDate: receipt.issuedDate
+                ? formatDateToString(new Date(receipt.issuedDate))
                 : "",
             })),
           },
@@ -111,8 +122,8 @@ const ResultReportFormProvider = () => {
           })
         );
 
-        (data.photos || []).forEach((file: File) => {
-          formData.append("photos", file);
+        (data.images || []).forEach((file: File) => {
+          formData.append("images", file);
         });
         (data.receipts || []).forEach((file: File) => {
           formData.append("receipts", file);
@@ -172,12 +183,22 @@ const ResultReportFormProvider = () => {
           if (savedData) {
             Object.keys(savedData).forEach((key) => {
               if (savedData[key] !== undefined) {
-                methods.setValue(key as any, savedData[key]);
+                // images와 receipts는 File 객체이므로 복원하지 않고 빈 배열로 설정
+                if (key === "images" || key === "receipts") {
+                  methods.setValue(key as any, []);
+                } else {
+                  methods.setValue(key as any, savedData[key]);
+                }
               }
             });
+            // 폼 검증 트리거 (지연을 두어 DOM 업데이트 후 실행)
+            setTimeout(() => {
+              methods.trigger();
+            }, 100);
           }
         }}
         clearSavedData={autoSave.clearSavedData}
+        hasSavedData={hasSavedData}
       />
     </FormProvider>
   );

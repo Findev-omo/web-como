@@ -149,6 +149,21 @@ export const ExpenseSchema = z.object({
   description: z.string().min(1, { message: "설명을 입력해주세요." }),
 });
 
+// API 스펙에 맞는 Receipt 스키마
+export const ReceiptSchema = z.object({
+  category: z.string().min(1, { message: "카테고리를 입력해주세요." }),
+  supportAmount: z.string().min(1, { message: "지원금액을 입력해주세요." }),
+  usedAmount: z.string().min(1, { message: "사용금액을 입력해주세요." }),
+  remainingAmount: z.string().min(1, { message: "잔액을 입력해주세요." }),
+  usageDetail: z.string().min(1, { message: "사용내역을 입력해주세요." }),
+  submittedBy: z.string().min(1, { message: "제출자를 입력해주세요." }),
+  issuedDate: z.string().min(1, { message: "발행일을 입력해주세요." }),
+  vendor: z.string().min(1, { message: "거래처를 입력해주세요." }),
+  amount: z.string().min(1, { message: "금액을 입력해주세요." }),
+  description: z.string().min(1, { message: "설명을 입력해주세요." }),
+  file: z.string().optional(),
+});
+
 export const ActivityFormSchema = z.object({
   eventName: z.string().min(1, { message: "행사명을 입력해주세요." }),
   activityDate: z.date(), // ISO date string
@@ -158,13 +173,12 @@ export const ActivityFormSchema = z.object({
   participantCount: z.number().min(1, { message: "참가자 수를 입력해주세요." }),
   activityContent: z.string().min(1, { message: "행사 내용을 입력해주세요." }),
   note: z.string().optional(),
-  // photos: z.array(z.string()).optional(),
-  expenses: z.array(ExpenseSchema),
+  receipts: z.array(ReceiptSchema),
 });
 
 export const ResultReportSchema = z.object({
   data: ActivityFormSchema,
-  photos: z
+  images: z
     .array(z.any())
     .min(1, { message: "사진을 최소 1개 이상 첨부해주세요." }),
   receipts: z
