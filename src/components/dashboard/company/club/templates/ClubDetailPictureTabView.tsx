@@ -16,19 +16,8 @@ export default function ClubDetailPictureTabView() {
   });
 
   if (!data) return;
-  console.log(data);
-  console.log("data.data", data.data);
 
   const pictureData = data.data as ClubBoards[];
-
-  console.log("pictureData", pictureData);
-  console.log("pictureData 타입:", typeof pictureData);
-  console.log("pictureData가 배열인가?", Array.isArray(pictureData));
-  console.log(
-    "pictureData 길이:",
-    Array.isArray(pictureData) ? pictureData.length : "배열이 아님"
-  );
-  console.log("pictureData 내용:", JSON.stringify(pictureData, null, 2));
 
   return (
     <>

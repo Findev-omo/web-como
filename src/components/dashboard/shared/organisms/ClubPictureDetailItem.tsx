@@ -11,11 +11,7 @@ interface Props {
 }
 
 export default function ClubPictureDetailItem({ item, readonly }: Props) {
-  console.log("ClubPictureItem 실행됨");
-  console.log("ClubPictureItem 에서 item", item);
-
   const handleDeleteClick = () => {
-    console.log("삭제 버튼이 클릭되었습니다:", item.id); // 클릭 추적
     openModal("delete-picture", { activityId: item.id });
   };
 
