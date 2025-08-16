@@ -89,3 +89,19 @@ export interface ClubMemberListResponse {
   currentPage: number;
   list: ClubMember[];
 }
+
+export interface ClubBoards {
+  id: number;
+  writerNickname: string;
+  writerDepartment: string;
+  writerProfileImage: string | null;
+  content: string;
+  date: string;
+  photos: string[];
+}
+
+export interface ClubBoardsResponse {
+  data: ClubBoards[];
+  resultCode: number;
+  resultMessage?: string;
+}

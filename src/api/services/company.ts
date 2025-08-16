@@ -4,6 +4,7 @@ import type {
   ClubBasicInfoResponse,
   ClubRegistrationResponse,
   ClubMemberListResponse,
+  ClubBoardsResponse,
 } from "../types/company/club";
 
 // 타입 정의
@@ -89,13 +90,23 @@ export const companyService = {
         `/v1/manager/club/${clubId}/registration`
       ),
 
-    getMembers: (clubId: number, page: number, search: string = "", filter: string = "") =>
+    getMembers: (
+      clubId: number,
+      page: number,
+      search: string = "",
+      filter: string = ""
+    ) =>
       api.get<ClubMemberListResponse>(
         `/v1/manager/club/${clubId}/member?page=${page}&search=${search}&filter=${filter}`
       ),
 
     getMembersExcel: (clubId: number) =>
       api.get(`/v1/manager/club/${clubId}/members/excel`),
+
+    getBoards: (clubId: number, page: number = 1) =>
+      api.get<ClubBoardsResponse>(
+        `/v1/manager/club/${clubId}/boards?page=${page}`
+      ),
   },
 
   // 지출 관리
