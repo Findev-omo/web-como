@@ -26,16 +26,23 @@ export default function EmployeeList({
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [maxPage, setMaxPage] = useState(1);
-  const [employees, setEmployees] = useState<Employee[]>(
-    initialEmployees ?? []
-  );
+  const [employees, setEmployees] = useState<Employee[]>([]);
 
-  console.log("Initial employees:", initialEmployees);
-  console.log("Current employees state:", employees);
+  // 초기 데이터 설정
+  useEffect(() => {
+    if (initialEmployees && initialEmployees.length > 0) {
+      setEmployees(initialEmployees);
+    }
+  }, [initialEmployees]);
+
   const [currentSearchValue, setCurrentSearchValue] = useState<SearchValue>({
     term: "",
     field: "all",
   });
+
+  console.log("Initial employees:", initialEmployees);
+  console.log("Current employees state:", employees);
+  console.log("Current search value:", currentSearchValue);
 
   const formatDateToString = (date: Date | undefined) => {
     if (!date) return "";
@@ -45,35 +52,55 @@ export default function EmployeeList({
 
   const loadEmployees = async () => {
     try {
-      const res = await getData(
-        `v1/manager/member/list?page=${currentPage}&search=${
-          currentSearchValue.term
-        }&filter=${currentSearchValue.field}&startDate=${formatDateToString(
-          currentDateRange.startDate
-        )}&endDate=${formatDateToString(currentDateRange.endDate)}`,
-        true
-      );
+      const url = `v1/manager/member/list?page=${currentPage}&search=${
+        currentSearchValue.term
+      }&filter=${currentSearchValue.field}&startDate=${formatDateToString(
+        currentDateRange.startDate
+      )}&endDate=${formatDateToString(currentDateRange.endDate)}`;
 
-      if (res.resultCode === "200" && res.data) {
+      console.log("API 호출 URL:", url);
+      console.log("검색 조건:", {
+        page: currentPage,
+        search: currentSearchValue.term,
+        filter: currentSearchValue.field,
+        startDate: formatDateToString(currentDateRange.startDate),
+        endDate: formatDateToString(currentDateRange.endDate),
+      });
+
+      const res = await getData(url, true);
+
+      if (String(res.resultCode) === "200" && res.data) {
         console.log("Employee list loaded:", res.data);
+        console.log("API 응답 전체:", res);
         setEmployees(res.data.list);
         setMaxPage(res.data.totalPages);
+      } else {
+        console.log("API 응답 에러:", res);
       }
     } catch (error) {
       console.error("직원 목록 로딩 오류:", error);
     }
   };
 
-  // 초기 데이터 설정
+  // 검색, 날짜, 페이지 변경 시 API 호출
   useEffect(() => {
-    if (initialEmployees && initialEmployees.length > 0) {
-      setEmployees(initialEmployees);
+    // 검색이나 필터가 변경된 경우에만 API 호출
+    if (currentSearchValue.term !== "" || currentSearchValue.field !== "all") {
+      loadEmployees();
     }
-  }, [initialEmployees]);
+  }, [currentSearchValue]);
 
+  // 날짜 변경 시 API 호출
   useEffect(() => {
     loadEmployees();
-  }, [currentPage, currentDateRange, currentSearchValue]);
+  }, [currentDateRange]);
+
+  // 페이지 변경 시 API 호출
+  useEffect(() => {
+    if (currentPage !== 1) {
+      loadEmployees();
+    }
+  }, [currentPage]);
 
   const handleDateRangeChange = (dateRange: DateRange) => {
     setCurrentDateRange(dateRange);

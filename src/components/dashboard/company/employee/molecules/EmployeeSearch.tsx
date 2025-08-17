@@ -7,7 +7,8 @@ import Search from "@/components/dashboard/common/Search";
 const fieldList = [
   { name: "전체", value: "all" },
   { name: "이름", value: "name" },
-  { name: "직급", value: "rank" },
+  { name: "부서", value: "department" },
+  { name: "직급", value: "position" },
 ];
 
 interface Props {
