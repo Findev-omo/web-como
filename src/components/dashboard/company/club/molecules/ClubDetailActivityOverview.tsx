@@ -1,7 +1,21 @@
+"use client";
+
+import useClubDetailStore from "@/lib/store/clubDetailStore";
+
 export default function ClubDetailActivityOverview() {
+  const { clubDetail } = useClubDetailStore();
+
+  if (!clubDetail) {
+    return (
+      <div className="flex flex-col gap-6 h-fit p-8 rounded-xl bg-gray-800 select-none">
+        <h2 className="h1 font-bold text-gray-0">로딩 중...</h2>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6 h-fit p-8 rounded-xl bg-gray-800 select-none">
-      <h2 className="h1 font-bold text-gray-0">{"동호회명"}</h2>
+      <h2 className="h1 font-bold text-gray-0">{clubDetail.clubName}</h2>
       <div className="flex gap-8 truncate">
         <div className="flex-1 flex flex-col gap-4 py-3 px-2">
           <h4 className="font-medium text-gray-400">{"남은 동호회비"}</h4>

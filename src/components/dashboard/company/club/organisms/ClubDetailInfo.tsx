@@ -4,12 +4,9 @@ import Image from "next/image";
 import { openModal } from "@/lib/utils";
 import Avatar from "@/components/common/Avatar";
 import Input from "@/components/common/Input";
-import { useState, useEffect } from "react";
-import { getData } from "@/api/action";
+import useClubDetailStore from "@/lib/store/clubDetailStore";
 
-interface Props {
-  clubId: string;
-}
+interface Props {}
 
 interface ClubDetailInfoDTO {
   clubId: number; // 클럽 ID
@@ -41,28 +38,26 @@ const categoryMapping = {
   ETC: "기타",
 };
 
-export default function ClubDetailInfo({ clubId }: Props) {
-  const [clubDetailInfo, setClubDetailInfo] =
-    useState<ClubDetailInfoDTO | null>(null);
+export default function ClubDetailInfo() {
+  const { clubDetail, isLoading } = useClubDetailStore();
   const image = null;
 
-  useEffect(() => {
-    const fetchClubDetailInfo = async () => {
-      const res = await getData(`v1/manager/club/${clubId}`, true);
-      setClubDetailInfo(res.data);
-      console.log("clubDetailInfo", res.data);
-    };
-    fetchClubDetailInfo();
-  }, [clubId]);
+  if (isLoading) {
+    return <div>로딩 중...</div>;
+  }
+
+  if (!clubDetail) {
+    return <div>클럽 정보를 찾을 수 없습니다.</div>;
+  }
 
   return (
     <>
       <div className="flex gap-3">
         <div className="space-y-3 py-8 px-5 rounded-xl bg-gray-0">
           <div className="relative w-80 h-80 rounded-lg bg-gray-300 object-cover">
-            {clubDetailInfo?.clubImage && (
+            {clubDetail.clubImage && (
               <Image
-                src={clubDetailInfo.clubImage}
+                src={clubDetail.clubImage}
                 alt="동호회 이미지"
                 fill
                 sizes="25vw"
@@ -70,10 +65,10 @@ export default function ClubDetailInfo({ clubId }: Props) {
             )}
           </div>
           <div className="flex items-center w-80 h-[60px] p-3 rounded-md h4 font-medium text-gray-900 bg-gray-100">
-            <span className="truncate">{clubDetailInfo?.clubName}</span>
+            <span className="truncate">{clubDetail.clubName}</span>
           </div>
           <div className="flex items-center w-80 min-h-24 p-3 rounded-md h4 font-medium text-gray-900 bg-gray-100">
-            <p className="break-keep line-clamp-3">{clubDetailInfo?.intro}</p>
+            <p className="break-keep line-clamp-3">{clubDetail.intro}</p>
           </div>
         </div>
         <div className="flex-1 space-y-6 p-8 rounded-xl bg-gray-0">
@@ -92,7 +87,7 @@ export default function ClubDetailInfo({ clubId }: Props) {
             label="카테고리"
             value={
               categoryMapping[
-                clubDetailInfo?.category as keyof typeof categoryMapping
+                clubDetail.category as keyof typeof categoryMapping
               ]
             }
           />
@@ -100,19 +95,19 @@ export default function ClubDetailInfo({ clubId }: Props) {
             readOnly
             name="purpose"
             label="설립 목적"
-            value={clubDetailInfo?.goal}
+            value={clubDetail.goal}
           />
           <Input
             readOnly
             name="schedule"
             label="활동 일정"
-            value={clubDetailInfo?.activityPlan}
+            value={clubDetail.activityPlan}
           />
           <Input
             readOnly
             name="location"
             label="위치"
-            value={clubDetailInfo?.location}
+            value={clubDetail.location}
           />
         </div>
       </div>
@@ -123,10 +118,10 @@ export default function ClubDetailInfo({ clubId }: Props) {
             <Avatar size="w-14 h-14" />
             <div className="space-y-1">
               <div className="h4 font-bold text-gray-900">
-                {clubDetailInfo?.headName}
+                {clubDetail.headName}
               </div>
               <div className="caption-1 font-medium text-gray-500">
-                {clubDetailInfo?.headDepartment}
+                {clubDetail.headDepartment}
               </div>
             </div>
           </div>
@@ -139,10 +134,10 @@ export default function ClubDetailInfo({ clubId }: Props) {
             <Avatar size="w-14 h-14" />
             <div className="space-y-1">
               <div className="h4 font-bold text-gray-900">
-                {clubDetailInfo?.deputyName}
+                {clubDetail.deputyName}
               </div>
               <div className="caption-1 font-medium text-gray-500">
-                {clubDetailInfo?.deputyDepartment}
+                {clubDetail.deputyDepartment}
               </div>
             </div>
           </div>
@@ -153,10 +148,10 @@ export default function ClubDetailInfo({ clubId }: Props) {
             <Avatar size="w-14 h-14" />
             <div className="space-y-1">
               <div className="h4 font-bold text-gray-900">
-                {clubDetailInfo?.affairsName}
+                {clubDetail.affairsName}
               </div>
               <div className="caption-1 font-medium text-gray-500">
-                {clubDetailInfo?.affairsDepartment}
+                {clubDetail.affairsDepartment}
               </div>
             </div>
           </div>

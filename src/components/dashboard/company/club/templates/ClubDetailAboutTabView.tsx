@@ -16,7 +16,7 @@ export default function ClubDetailAboutTabView() {
 
   return (
     <div className="flex flex-col gap-8">
-      <ClubDetailInfo clubId={clubId} />
+      <ClubDetailInfo />
       <ClubMemberList clubId={clubId} />
     </div>
   );

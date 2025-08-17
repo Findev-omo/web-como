@@ -6,6 +6,8 @@ import {
   useRouter,
   useSearchParams,
 } from "next/navigation";
+import { useEffect } from "react";
+import { getData } from "@/api/action";
 import BackButton from "@/components/dashboard/common/BackButton";
 import ClubDetailMenuTabs from "@/components/dashboard/company/club/molecules/ClubDetailMenuTabs";
 import ClubDetailAboutTabView from "@/components/dashboard/company/club/templates/ClubDetailAboutTabView";
@@ -17,6 +19,7 @@ import ForceDisbandClubFormModal from "@/components/dashboard/company/club/modal
 import CancelForceDisbandModal from "@/components/dashboard/company/club/modals/CancelForceDisbandModal";
 import ViewReportModal from "@/components/dashboard/company/club/modals/ViewReportModal";
 import ClubNoticeView from "@/components/dashboard/company/club/templates/ClubNoticeView";
+import useClubDetailStore from "@/lib/store/clubDetailStore";
 
 export type ClubDetailMenu =
   | "about"
@@ -71,6 +74,29 @@ export default function Page() {
   const attendanceId = useSearchParams().get("id");
   const params = useParams();
   const clubId = params.id as string;
+
+  const { setClubDetail, setLoading } = useClubDetailStore();
+
+  // 클럽 상세 정보를 가져와서 스토어에 저장
+  useEffect(() => {
+    const fetchClubDetail = async () => {
+      if (!clubId) return;
+
+      setLoading(true);
+      try {
+        const response = await getData(`v1/manager/club/${clubId}`, false);
+        if (response.resultCode === 200 && response.data) {
+          setClubDetail(response.data);
+        }
+      } catch (error) {
+        console.error("클럽 상세 정보 로딩 오류:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchClubDetail();
+  }, [clubId, setClubDetail, setLoading]);
 
   const handleTabChange = (value: ClubDetailMenu) => {
     push(`${pathname}?tab=${value}`);
