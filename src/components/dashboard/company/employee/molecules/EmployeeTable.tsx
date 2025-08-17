@@ -6,7 +6,7 @@ import ApplicationDetailModal from "@/components/dashboard/company/employee/moda
 import EditEmployeeInfoModal from "@/components/dashboard/company/employee/modals/EditEmployeeInfoModal";
 import DeleteEmployeeModal from "@/components/dashboard/company/employee/modals/DeleteEmployeeModal";
 import DeleteReasonModal from "../modals/DeleteReasonModal";
-import type { Employee } from "@/api/types/company/employee";
+import type { Employee } from "@/api/services/company";
 
 const tableHeadings = [
   "순번",
@@ -84,7 +84,7 @@ export default function EmployeeTable({ employees }: EmployeeTableProps) {
                 employee.name,
                 employee.department,
                 employee.position,
-                employee.createAt,
+                employee.joinDate,
                 employee.status,
               ].map((data, i) => (
                 <div

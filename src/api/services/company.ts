@@ -211,8 +211,16 @@ export const companyService = {
 
   // 직원 관리
   employees: {
-    getList: (page: number) =>
-      api.get<PaginatedResponse<Employee>>(`/v1/manager/member?page=${page}`),
+    getList: (
+      page: number,
+      search: string = "",
+      filter: string = "all",
+      startDate: string = "",
+      endDate: string = ""
+    ) =>
+      api.get<PaginatedResponse<Employee>>(
+        `/v1/manager/member/list?page=${page}&search=${search}&filter=${filter}&startDate=${startDate}&endDate=${endDate}`
+      ),
 
     getDetail: (memberId: string) =>
       api.get<Employee>(`/v1/manager/member/${memberId}`),

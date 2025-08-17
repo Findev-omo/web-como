@@ -7,13 +7,14 @@ import Input, { InputLabel } from "@/components/common/Input";
 import Button from "@/components/common/Button";
 import Checkbox from "@/components/common/Checkbox";
 import { Close } from "@/assets/icons/action";
-import { useUpdateEmployee } from "@/hooks/queries/company";
-import { getData } from "@/api/action";
+import {
+  useUpdateEmployee,
+  useCompanyEmployeeDetail,
+} from "@/hooks/queries/company";
 import toast from "react-hot-toast";
 
 export default function EditEmployeeInfoModal() {
   const [modalParams, setModalParams] = useState<any>(null);
-  const [memberData, setMemberData] = useState<any>(null);
   const [formData, setFormData] = useState({
     name: "",
     department: "",
@@ -25,6 +26,12 @@ export default function EditEmployeeInfoModal() {
   >("MEMBER");
 
   const updateEmployeeMutation = useUpdateEmployee();
+
+  // react-query를 사용하여 직원 정보 가져오기
+  const { data: memberData, isLoading } = useCompanyEmployeeDetail(
+    modalParams?.memberId || "",
+    { enabled: !!modalParams?.memberId }
+  );
 
   useEffect(() => {
     const modal = document.getElementById("employee-edit");
@@ -52,26 +59,7 @@ export default function EditEmployeeInfoModal() {
     }
   }, []);
 
-  useEffect(() => {
-    const loadMemberData = async () => {
-      if (!modalParams?.memberId) return;
-
-      try {
-        const res = await getData(
-          `v1/manager/member/${modalParams.memberId}`,
-          true
-        );
-        setMemberData(res.data);
-        setRole(res.data.role || "MEMBER");
-      } catch (error) {
-        console.error("직원 정보 로딩 오류:", error);
-        toast.error("직원 정보를 불러오는데 실패했습니다.");
-      }
-    };
-
-    loadMemberData();
-  }, [modalParams]);
-
+  // 직원 데이터가 로드되면 폼 데이터 설정
   useEffect(() => {
     if (memberData) {
       setFormData({
@@ -80,6 +68,7 @@ export default function EditEmployeeInfoModal() {
         position: memberData.position || "",
         email: memberData.email || "",
       });
+      setRole(memberData.role || "MEMBER");
     }
   }, [memberData]);
 
@@ -124,7 +113,7 @@ export default function EditEmployeeInfoModal() {
     }
   };
 
-  if (!memberData) {
+  if (isLoading || !memberData) {
     return (
       <div id="employee-edit" className="hidden modal">
         <Backdrop />

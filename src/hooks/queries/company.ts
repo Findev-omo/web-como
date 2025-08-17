@@ -32,8 +32,20 @@ export const companyKeys = {
     [...companyKeys.reports(), "summary", dateRange] as const,
 
   employees: () => [...companyKeys.all, "employees"] as const,
-  employeesList: (page: number) =>
-    [...companyKeys.employees(), "list", page] as const,
+  employeesList: (
+    page: number,
+    search: string,
+    filter: string,
+    dateRange: DateRange
+  ) =>
+    [
+      ...companyKeys.employees(),
+      "list",
+      page,
+      search,
+      filter,
+      dateRange,
+    ] as const,
   employeeDetail: (memberId: string) =>
     [...companyKeys.employees(), "detail", memberId] as const,
   notices: () => [...companyKeys.all, "notices"] as const,
@@ -264,11 +276,24 @@ export const useRejectReport = () => {
 // Employees Hooks
 export const useCompanyEmployees = (
   currentPage: number,
+  search: string = "",
+  filter: string = "all",
+  dateRange: DateRange = { startDate: undefined, endDate: undefined },
   initialData?: { list: Employee[]; totalPages: number }
 ) => {
+  const startDate = dateRange.startDate ? formatDate(dateRange.startDate) : "";
+  const endDate = dateRange.endDate ? formatDate(dateRange.endDate) : "";
+
   return useQuery({
-    queryKey: companyKeys.employeesList(currentPage),
-    queryFn: () => companyService.employees.getList(currentPage),
+    queryKey: companyKeys.employeesList(currentPage, search, filter, dateRange),
+    queryFn: () =>
+      companyService.employees.getList(
+        currentPage,
+        search,
+        filter,
+        startDate,
+        endDate
+      ),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     placeholderData: (previousData) => previousData,

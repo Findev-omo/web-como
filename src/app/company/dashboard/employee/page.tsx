@@ -5,9 +5,9 @@ import ClubFigures from "@/components/dashboard/company/main/molecules/ClubFigur
 import { startOfToday, subMonths } from "date-fns";
 import dynamic from "next/dynamic";
 import Skeleton from "@/components/common/Skeleton";
+import { useCompanyEmployees } from "@/hooks/queries/company";
 import useQueryHook from "@/hooks/useQuery";
-import type { IResponse } from "@/api/types";
-import type { Employee } from "@/api/types/company/employee";
+import type { Employee } from "@/api/services/company";
 import type { ClubStatusCountResponse } from "@/api/types/company/club";
 
 const AddNewEmployeeModal = dynamic(
@@ -36,12 +36,6 @@ const EmployeeView = dynamic(
 );
 
 export default function Page() {
-  const formatDateToString = (date: Date | undefined) => {
-    if (!date) return "";
-    const koreaDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
-    return koreaDate.toISOString().split("T")[0];
-  };
-
   const today = startOfToday();
   const oneMonthAgo = subMonths(today, 1);
 
@@ -50,13 +44,12 @@ export default function Page() {
     endDate: today,
   };
 
-  const { data: employeeData } = useQueryHook<
-    IResponse<{ totalPages: number; currentPage: number; list: Employee[] }>
-  >(
-    ["employees", initialDateRange.startDate, initialDateRange.endDate],
-    `v1/manager/member/list?page=1&search=&filter=all&startDate=${formatDateToString(
-      initialDateRange.startDate
-    )}&endDate=${formatDateToString(initialDateRange.endDate)}`
+  // react-query를 사용하여 직원 목록 가져오기
+  const { data: employeeData, isLoading } = useCompanyEmployees(
+    1,
+    "",
+    "all",
+    initialDateRange
   );
 
   console.log("Employee data:", employeeData);
@@ -65,6 +58,21 @@ export default function Page() {
     ["clubStatusCount"],
     "v1/manager/club/status-count"
   );
+
+  if (isLoading) {
+    return (
+      <>
+        <EmployeeTitle />
+        <div className="flex gap-3">
+          <ClubFigures
+            pendingCount={statusCountData?.data?.pendingCount ?? 0}
+            approvedCount={statusCountData?.data?.approvedCount ?? 0}
+          />
+        </div>
+        <Skeleton className="w-full h-[700px]" />
+      </>
+    );
+  }
 
   return (
     <>
@@ -75,7 +83,7 @@ export default function Page() {
           approvedCount={statusCountData?.data?.approvedCount ?? 0}
         />
       </div>
-      <EmployeeView initialEmployees={employeeData?.data?.list || []} />
+      <EmployeeView initialEmployees={employeeData?.list || []} />
       <div className="m-0">
         <AddNewEmployeeModal />
         <ApprovalSuccessModal />
