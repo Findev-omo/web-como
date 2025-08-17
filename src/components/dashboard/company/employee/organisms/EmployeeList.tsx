@@ -54,6 +54,7 @@ export default function EmployeeList({
   };
 
   const handleSearch = (searchValue: SearchValue) => {
+    console.log("검색 실행:", searchValue);
     setCurrentSearchValue(searchValue);
     setCurrentPage(1);
   };
@@ -67,7 +68,36 @@ export default function EmployeeList({
     );
   }
 
-  const employees = employeeData?.list || [];
+  // 클라이언트 측 필터링 (임시 해결책)
+  const filteredEmployees =
+    employeeData?.list?.filter((employee) => {
+      if (!currentSearchValue.term) return true;
+
+      const searchTerm = currentSearchValue.term.toLowerCase();
+      const name = employee.name?.toLowerCase() || "";
+      const department = employee.department?.toLowerCase() || "";
+      const position = employee.position?.toLowerCase() || "";
+      const email = employee.email?.toLowerCase() || "";
+
+      switch (currentSearchValue.field) {
+        case "name":
+          return name.includes(searchTerm);
+        case "department":
+          return department.includes(searchTerm);
+        case "position":
+          return position.includes(searchTerm);
+        case "all":
+        default:
+          return (
+            name.includes(searchTerm) ||
+            department.includes(searchTerm) ||
+            position.includes(searchTerm) ||
+            email.includes(searchTerm)
+          );
+      }
+    }) || [];
+
+  const employees = filteredEmployees;
   const maxPage = employeeData?.totalPages || 1;
 
   return (
