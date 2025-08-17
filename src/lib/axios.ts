@@ -22,7 +22,9 @@ apiClient.interceptors.request.use(
       };
 
       const token = getCookie("accessToken");
+      const role = getCookie("role");
       console.log("토큰 확인:", token ? "토큰 있음" : "토큰 없음");
+      console.log("사용자 역할:", role || "역할 정보 없음");
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
         console.log("Authorization 헤더 설정됨");

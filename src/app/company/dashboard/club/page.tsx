@@ -5,7 +5,7 @@ import ApplicantProfileModal from "@/components/dashboard/company/club/modals/Ap
 import DisbandInfoModal from "@/components/dashboard/company/club/modals/DisbandInfoModal";
 
 export default async function Page() {
-  const statusCounts = await getData("v1/manager/club/status-counts", true);
+  const statusCounts = await getData("v1/manager/club/status-count", false);
 
   const stats = {
     dissolutionPending: 0,

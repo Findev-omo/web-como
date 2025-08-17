@@ -145,14 +145,63 @@ interface ClubResponse {
 }
 
 // 가입된 동호회 조회 훅
-export const useMyClubs = () => {
+export const useMyClubs = (memberId?: string) => {
   return useQuery<ClubResponse>({
-    queryKey: ["myClubs"],
+    queryKey: ["myClubs", memberId],
     queryFn: async () => {
-      // 현재 로그인한 사용자가 가입한 동호회 조회
-      const response = await apiClient.get("/v1/club/my");
-      return response.data;
+      if (memberId) {
+        // 특정 임직원의 동호회 조회 (관리자용)
+        try {
+          console.log(`API 호출 시도: /v1/manager/member/${memberId}/clubs`);
+          const response = await apiClient.get(
+            `/v1/manager/member/${memberId}/clubs`
+          );
+          console.log("API 호출 성공:", response.data);
+          return response.data;
+        } catch (error) {
+          console.error("v1/manager/member/{id}/clubs API 에러:", error);
+          console.error("에러 상세:", error.response?.data);
+
+          // 대체 API 시도
+          try {
+            console.log(`대체 API 호출: /v1/manager/member/${memberId}`);
+            const response = await apiClient.get(
+              `/v1/manager/member/${memberId}`
+            );
+            console.log("대체 API 응답:", response.data);
+
+            // joinedClub 정보가 있으면 사용
+            if (response.data.data?.joinedClub) {
+              const clubs = Array.isArray(response.data.data.joinedClub)
+                ? response.data.data.joinedClub
+                : [response.data.data.joinedClub];
+              console.log("추출된 동호회 목록:", clubs);
+              return {
+                data: clubs,
+                resultCode: response.data.resultCode,
+                resultMessage: response.data.resultMessage,
+              };
+            }
+
+            console.log("joinedClub이 null이므로 빈 배열 반환");
+            return {
+              data: [],
+              resultCode: "200",
+              resultMessage: "가입한 동호회가 없습니다.",
+            };
+          } catch (fallbackError) {
+            console.error("대체 API도 실패:", fallbackError);
+            console.error("대체 API 에러 상세:", fallbackError.response?.data);
+            throw error; // 원래 에러를 다시 던짐
+          }
+        }
+      } else {
+        // 현재 로그인한 사용자의 동호회 조회 (일반 사용자용)
+        const response = await apiClient.get("/v1/club/my");
+        return response.data;
+      }
     },
+    enabled: true, // 항상 실행
     staleTime: 5 * 60 * 1000, // 5분
     gcTime: 10 * 60 * 1000, // 10분
   });

@@ -4,7 +4,19 @@ import { useMyClubs } from "@/hooks/queries/club";
 export default function JoinedClub({ memberId }: { memberId: string }) {
   console.log("memberId", memberId);
 
-  const { data, isLoading, error } = useMyClubs();
+  // 현재 사용자의 역할 확인
+  const getCookie = (name: string) => {
+    if (typeof window === "undefined") return null;
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(";").shift();
+    return null;
+  };
+
+  const role = getCookie("role");
+  console.log("현재 사용자 역할:", role);
+
+  const { data, isLoading, error } = useMyClubs(memberId);
 
   // 로딩 상태
   if (isLoading) {
@@ -26,8 +38,9 @@ export default function JoinedClub({ memberId }: { memberId: string }) {
       <div className="space-y-6 p-8 rounded-xl bg-gray-0">
         <h3 className="h2 font-bold text-gray-900">{"가입한 동호회"}</h3>
         <div className="text-center py-8">
-          <p className="text-red-500">
-            동호회 정보를 불러오는 중 오류가 발생했습니다.
+          <p className="text-lg text-gray-500">가입 중인 동호회가 없습니다.</p>
+          <p className="text-sm text-gray-400 mt-2">
+            (API 오류로 인해 임시 표시)
           </p>
         </div>
       </div>

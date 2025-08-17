@@ -56,7 +56,7 @@ export default function Page() {
 
   const { data: statusCountData } = useQueryHook<ClubStatusCountResponse>(
     ["clubStatusCount"],
-    "v1/manager/club/status-counts"
+    "v1/manager/club/status-count"
   );
 
   if (isLoading) {
