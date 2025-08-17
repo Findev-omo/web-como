@@ -53,7 +53,9 @@ const Page = ({ params }: { params: { id: string } }) => {
         activityPlan: data.activityPlan,
         memberCount: data.memberCount,
         status: data.status as ExpenseApplicationStatus,
-        createdAt: data.createdAt,
+        createdAt: Array.isArray(data.createdAt)
+          ? data.createdAt.join("-") // number[]를 string으로 변환
+          : data.createdAt,
         clubName: data.clubName,
       });
       setStatus(data.status);

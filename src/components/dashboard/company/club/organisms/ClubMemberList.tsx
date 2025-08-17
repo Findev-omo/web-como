@@ -9,7 +9,7 @@ import DocUtilButtons, {
 } from "@/components/dashboard/common/DocUtil";
 import ClubMemberTable from "@/components/dashboard/company/club/molecules/ClubMemberTable";
 import Pagination from "@/components/dashboard/common/Pagination";
-import { getData } from "@/api/action";
+import { companyService } from "@/api/services/company";
 import { useQuery } from "@tanstack/react-query";
 import { Copy, Document, Edit, Print } from "@/assets/icons/util";
 
@@ -36,21 +36,26 @@ export default function ClubMemberList({ clubId }: Props) {
   const [currentOrder, setCurrentOrder] = useState<string>("date-acs");
   const [currentPage, setCurrentPage] = useState(1);
   const [maxPage, setMaxPage] = useState(1);
-  const [clubMembers, setClubMembers] = useState([]);
+  const [clubMembers, setClubMembers] = useState<any[]>([]);
 
   const loadClubMemberList = async (
     searchValue: SearchValue = { term: "", field: "" }
   ) => {
     try {
-      const res = await getData(
-        `v1/manager/club/${clubId}/member?page=${currentPage}&search=${searchValue.term}&filter=${searchValue.field}`,
-        true
+      const res = await companyService.clubs.getMembers(
+        parseInt(clubId),
+        currentPage - 1, // 0-based 페이지네이션으로 변경
+        searchValue.term,
+        searchValue.field
       );
-      console.log(res.data);
-      if (res.resultCode === "OK" && res.data) {
-        setClubMembers(res.data.memberList);
-        setMaxPage(res.data.maxPage);
-        console.log("clubMembers", res.data.memberList);
+      console.log("API 응답:", res);
+      // API 응답이 직접 데이터를 반환하는 형태
+      if (res && res.list) {
+        setClubMembers(res.list || []);
+        setMaxPage(res.totalPages || 1);
+        console.log("clubMembers", res.list);
+      } else {
+        console.error("API 응답 에러:", res);
       }
     } catch (error) {
       console.error("동호회원 목록 로딩 오류:", error);
@@ -92,20 +97,23 @@ export default function ClubMemberList({ clubId }: Props) {
     console.log("================");
 
     try {
-      const response = await getData(
-        `v1/manager/club/${clubId}/member?page=${currentPage}&search=${currentSearchValue.term}&filter=${currentSearchValue.field}`,
-        true
+      const response = await companyService.clubs.getMembers(
+        parseInt(clubId),
+        currentPage - 1, // 0-based 페이지네이션으로 변경
+        currentSearchValue.term,
+        currentSearchValue.field
       );
 
-      if (response.data) {
-        loadClubMemberList(currentSearchValue);
+      if (response && response.list) {
+        setClubMembers(response.list || []);
+        setMaxPage(response.totalPages || 1);
         // 검색 후 검색어 초기화
         setCurrentSearchValue((prev) => ({
           ...prev,
           term: "",
         }));
       } else {
-        console.error("검색 실패");
+        console.error("검색 실패:", response);
       }
     } catch (error) {
       console.error("검색 중 오류 발생:", error);
@@ -114,7 +122,7 @@ export default function ClubMemberList({ clubId }: Props) {
 
   const { refetch: getExcelData } = useQuery({
     queryKey: [clubId],
-    queryFn: () => getData(`v1/manager/club/${clubId}/members/excel`, false),
+    queryFn: () => companyService.clubs.getMembersExcel(parseInt(clubId)),
     enabled: false,
   });
 

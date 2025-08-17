@@ -1,14 +1,20 @@
 import { api } from "../client";
 import type { PaginatedResponse } from "../types/common";
+import type {
+  ClubBasicInfoResponse,
+  ClubRegistrationResponse,
+  ClubMemberListResponse,
+  ClubBoardsResponse,
+} from "../types/company/club";
 
 // 타입 정의
 export interface CompanyExpenseEntry {
   id: number;
   clubName: string;
-  applicantName: string;
+  writerName: string;
   department: string;
   eventName: string;
-  createdDate: number[];
+  createdDate: string; // ISO 8601 형식의 문자열 (예: '2025-06-18T16:42:05')
   status: "PENDING" | "APPROVED" | "REJECTED";
 }
 
@@ -38,27 +44,93 @@ export interface CompanyExpenseDetail extends CompanyExpense {
 
 export interface CompanyReport {
   id: number;
-  title: string;
-  clubName: string;
-  submitDate: string;
-  status: string;
+  eventName: string; // 활동명
+  activityDate: string; // 활동일
+  status: string; // 확인 상태
   // ... 필요한 필드들 추가
 }
 
 export interface CompanyReportDetail extends CompanyReport {
   content: string;
   attachments: string[];
+  activityTime: string[] | string;
+  location: string;
+  locationDetail: string;
+  activityContent: string;
+  note: string;
+  photos: Array<{ id: number; url: string }>;
+  expenses: Array<{
+    category: string;
+    supportAmount: number;
+    usedAmount: number;
+    remainingAmount: number;
+  }>;
   // ... 상세 정보 필드들
+}
+
+// 직원 관련 타입
+export interface Employee {
+  id: number;
+  memberId: string;
+  name: string;
+  email: string;
+  department: string;
+  position: string;
+  joinDate: string;
+  status: "ACTIVE" | "INACTIVE";
+  role: "MEMBER" | "EXECUTIVE" | "MANAGER" | "ADMIN";
+}
+
+export interface UpdateEmployeeData {
+  name: string;
+  department: string;
+  position: string;
+  email: string;
+  role: "MEMBER" | "EXECUTIVE" | "MANAGER" | "ADMIN";
 }
 
 // Company API 서비스
 export const companyService = {
+  // 동호회 관리
+  clubs: {
+    getBasicInfo: (clubId: number) =>
+      api.get<ClubBasicInfoResponse>(`/v1/manager/club/${clubId}`),
+
+    getRegistration: (clubId: number) =>
+      api.get<ClubRegistrationResponse>(
+        `/v1/manager/club/${clubId}/registration`
+      ),
+
+    getMembers: (
+      clubId: number,
+      page: number,
+      search: string = "",
+      filter: string = ""
+    ) =>
+      api.get<ClubMemberListResponse>(
+        `/v1/manager/club/${clubId}/member?page=${page}&search=${search}&filter=${filter}`
+      ),
+
+    getMembersExcel: (clubId: number) =>
+      api.get(`/v1/manager/club/${clubId}/members/excel`),
+
+    getBoards: (clubId: number, page: number = 1) =>
+      api.get<ClubBoardsResponse>(
+        `/v1/manager/club/${clubId}/boards?page=${page}`
+      ),
+  },
+
   // 지출 관리
   expenses: {
     getList: (page: number, startDate: string, endDate: string) =>
-      api.get<PaginatedResponse<CompanyExpenseEntry>>(
-        `/v1/manager/activity-expenses?page=${page}&startDate=${startDate}&endDate=${endDate}`
-      ),
+      api
+        .get<
+          PaginatedResponse<CompanyExpenseEntry>
+        >(`/v1/manager/activity-expenses?page=${page}&startDate=${startDate}&endDate=${endDate}`)
+        .then((response) => ({
+          ...response,
+          maxPage: response.totalPages, // 하위 호환성을 위해 maxPage 추가
+        })),
 
     getDetail: (expenseId: number) =>
       api.get<CompanyExpenseDetail>(
@@ -78,36 +150,52 @@ export const companyService = {
         `/v1/manager/activity-expenses/${expenseId}/rejection-reason`
       ),
 
-    getSummary: (startDate: string, endDate: string) =>
+    getSummary: () =>
       api.get<{
-        totalAmount: number;
-        approvedAmount: number;
-        pendingAmount: number;
-        rejectedAmount: number;
-      }>(
-        `/v1/manager/activity-expenses/summary?startDate=${startDate}&endDate=${endDate}`
-      ),
+        totalCount: number;
+        approvedCount: number;
+        pendingCount: number;
+        rejectedCount: number;
+      }>(`/v1/manager/activity-expense/summary`),
+  },
+
+  // 공지사항 관리
+  notices: {
+    getList: (page: number, search: string = "") =>
+      api.get<
+        PaginatedResponse<{
+          id: number;
+          createdDate: string;
+          title: string;
+          writerName: string;
+          viewCount: number;
+          isPinned: string;
+        }>
+      >(`/v1/manager/club/notices?page=${page}&search=${search}`),
   },
 
   // 보고서 관리
   reports: {
-    getList: (page: number, startDate: string, endDate: string) =>
-      api.get<PaginatedResponse<CompanyReport>>(
-        `/v1/manager/reports?page=${page}&startDate=${startDate}&endDate=${endDate}`
-      ),
+    getList: (page: number, startDate: string, endDate: string) => {
+      // OpenAPI 스펙에 따라 페이지를 0부터 시작하도록 수정
+      const pageParam = Math.max(0, page - 1);
+      return api.get<PaginatedResponse<CompanyReport>>(
+        `/v1/manager/club/report?page=${pageParam}&startDate=${startDate}&endDate=${endDate}`
+      );
+    },
 
     getDetail: (reportId: number) =>
-      api.get<CompanyReportDetail>(`/v1/manager/reports/${reportId}`),
+      api.get<CompanyReportDetail>(`/v1/manager/club/report/${reportId}`),
 
     approve: (reportId: number) =>
-      api.patch<void>(`/v1/manager/reports/${reportId}/approve`),
+      api.patch<void>(`/v1/manager/club/report/${reportId}/approve`),
 
     reject: (reportId: number, reason: string) =>
-      api.patch<void>(`/v1/manager/reports/${reportId}/reject`, { reason }),
+      api.patch<void>(`/v1/manager/club/report/${reportId}/reject`, { reason }),
 
     getRejectionReason: (reportId: number) =>
       api.get<{ reason: string }>(
-        `/v1/manager/reports/${reportId}/rejection-reason`
+        `/v1/manager/club/report/${reportId}/rejection-reason`
       ),
 
     getSummary: (startDate: string, endDate: string) =>
@@ -117,7 +205,22 @@ export const companyService = {
         pendingCount: number;
         rejectedCount: number;
       }>(
-        `/v1/manager/reports/summary?startDate=${startDate}&endDate=${endDate}`
+        `/v1/manager/club/report/summary?startDate=${startDate}&endDate=${endDate}`
       ),
+  },
+
+  // 직원 관리
+  employees: {
+    getList: (page: number) =>
+      api.get<PaginatedResponse<Employee>>(`/v1/manager/member?page=${page}`),
+
+    getDetail: (memberId: string) =>
+      api.get<Employee>(`/v1/manager/member/${memberId}`),
+
+    update: (memberId: string, data: UpdateEmployeeData) =>
+      api.patch<Employee>(`/v1/manager/member/${memberId}`, data),
+
+    delete: (memberId: string) =>
+      api.delete<void>(`/v1/manager/member/${memberId}`),
   },
 };

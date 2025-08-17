@@ -4,18 +4,18 @@ import ApplicationView from "@/components/dashboard/company/club/templates/Appli
 import ApplicantProfileModal from "@/components/dashboard/company/club/modals/ApplicantProfileModal";
 import RejectApplicationModal from "@/components/dashboard/company/club/modals/RejectApplicationModal";
 import RevertRejectionModal from "@/components/dashboard/company/club/modals/RevertRejectionModal";
+import type { ClubStatusCountResponse } from "@/api/types/company/club";
 
 export default async function NewApplicationPage() {
-  const [pending, approved, rejected] = await Promise.all([
-    getData("v1/manager/club/pending-count", true),
-    getData("v1/manager/club/approved-count", true),
-    getData("v1/manager/club/rejected-count", true),
-  ]);
+  const statusResponse = (await getData(
+    "v1/manager/activity-expense/summary",
+    true
+  )) as unknown as ClubStatusCountResponse;
 
   const stats = {
-    pending: pending.data || 0,
-    approved: approved.data || 0,
-    rejected: rejected.data || 0,
+    pending: statusResponse.data?.pendingCount || 0,
+    approved: statusResponse.data?.approvedCount || 0,
+    rejected: statusResponse.data?.rejectedCount || 0,
   };
 
   return (

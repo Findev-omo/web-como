@@ -18,33 +18,46 @@ export default async function Page({
     ? new Date(searchParams.endDate as string)
     : startOfToday();
 
-  const summaryPromise = getSummary();
+  console.log("보고서 페이지 - 파라미터:", {
+    currentPage,
+    startDate: formatDate(startDate),
+    endDate: formatDate(endDate),
+  });
+
+  const summaryPromise = getSummary(formatDate(startDate), formatDate(endDate));
   const reportsPromise = getReports(
     currentPage,
     formatDate(startDate),
     formatDate(endDate)
   );
 
-  const [summary, reportsData] = await Promise.all([
-    summaryPromise,
-    reportsPromise,
-  ]);
+  try {
+    const [summary, reportsData] = await Promise.all([
+      summaryPromise,
+      reportsPromise,
+    ]);
 
-  const stats = {
-    pendingCount: summary.pendingCount,
-    approvedCount: summary.approvedCount,
-    rejectedCount: summary.rejectedCount,
-  };
+    console.log("보고서 페이지 - API 응답:", { summary, reportsData });
 
-  return (
-    <>
-      <ReportOverview stats={stats} />
-      <ReportClientView
-        reports={reportsData.list}
-        currentPage={currentPage}
-        maxPage={reportsData.maxPage}
-        initialDateRange={{ startDate, endDate }}
-      />
-    </>
-  );
+    const stats = {
+      pendingCount: summary.pendingCount,
+      approvedCount: summary.approvedCount,
+      rejectedCount: summary.rejectedCount,
+    };
+
+    return (
+      <>
+        <ReportOverview stats={stats} />
+        <ReportClientView
+          reports={reportsData.list}
+          currentPage={currentPage}
+          maxPage={reportsData.maxPage}
+          initialDateRange={{ startDate, endDate }}
+        />
+      </>
+    );
+  } catch (error) {
+    console.error("보고서 페이지 에러:", error);
+    throw error;
+  }
 }

@@ -9,7 +9,7 @@ export default function EmployeeTitle() {
       <h2 className="h1 font-bold text-brand-orange">{"회원 관리"}</h2>
       <div className="flex items-end justify-between">
         <p className="h4 font-medium text-gray-900">
-          {`C'omo에 가입된 임직원들을 조회하고 관리합니다.\n새로운 임직원 있다면 추가하기 버튼을 통해 프로그램 사용 권한을 부여하세요.`}
+          {`C'omo에 가입된 임직원들을 조회하고 관리합니다.\n새로운 임직원이 있다면 추가하기 버튼을 통해 프로그램 사용 권한을 부여하세요.`}
         </p>
         {/* <button
           className="flex items-center gap-[3px] py-1 pl-3 pr-2.5 rounded body-1 font-medium text-gray-50 bg-gray-900"

@@ -9,8 +9,8 @@ import { CustomLabel } from "@/components/common/CustomLabel";
 import DropdownSelect from "@/components/common/DropdownSelect";
 import RHFTextInput from "@/components/common/RHF/RHFTextInput";
 import { ResultReportSchemaType } from "@/lib/types/schema";
-import ImageInput from "../atom/image-input";
-import { cn } from "@/lib/utils";
+import { useRef, useState } from "react";
+import { File } from "@/assets/icons/action";
 
 const DatePicker = dynamic(() => import("@/components/common/DatePicker"), {
   ssr: false,
@@ -29,8 +29,23 @@ const ResultReportAccountsForm = () => {
   const methods = useFormContext<ResultReportSchemaType>();
   const { fields, append, remove } = useFieldArray({
     control: methods.control,
-    name: "data.expenses",
+    name: "data.receipts",
   });
+
+  // 영수증 파일 업로드 관련
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [fileName, setFileName] = useState<string>("");
+
+  const handleReceiptFileClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleReceiptFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    setFileName(e.target.files[0].name);
+    const currentReceipts = methods.watch("receipts") || [];
+    methods.setValue("receipts", [...currentReceipts, e.target.files[0]]);
+  };
 
   // 에러 메시지 가져오기
   const getErrorMessage = (fieldPath: string) => {
@@ -70,141 +85,182 @@ const ResultReportAccountsForm = () => {
           <div className="flex gap-3 w-full h-[60px]">
             <div className="w-1/4 flex flex-col gap-2 h-full">
               <CustomLabel
-                htmlFor={`data.expenses.${idx}.category`}
+                htmlFor={`data.receipts.${idx}.category`}
                 labelText={"과목"}
                 required={true}
               />
               <DropdownSelect
                 required
-                id={`data-expenses-${idx}-category`}
+                id={`data-receipts-${idx}-category`}
                 width="w-[223.5px]"
                 height="h-[47px]"
                 placeholder="종류 선택"
                 options={[...expenseType]}
                 currentValue={
-                  methods.watch(`data.expenses.${idx}.category`) || ""
+                  methods.watch(`data.receipts.${idx}.category`) || ""
                 }
                 handleChange={(val) =>
-                  methods.setValue(`data.expenses.${idx}.category`, val)
+                  methods.setValue(`data.receipts.${idx}.category`, val)
                 }
               />
             </div>
             <div className="w-1/4 h-full relative">
               <RHFTextInput
-                name={`data.expenses.${idx}.supportAmount`}
-                id={`data.expenses.${idx}.supportAmount`}
+                name={`data.receipts.${idx}.supportAmount`}
+                id={`data.receipts.${idx}.supportAmount`}
                 labelText="지원액"
                 placeholder="지원액을 작성해주세요"
                 inputStyle="pr-9 flex-1"
                 required
                 type="number"
-                inputMode="numeric"
               />
-              {getErrorMessage(`data.expenses[${idx}].supportAmount`) && (
-                <div className="absolute text-base font-medium text-point-red mt-1">
-                  {getErrorMessage(`data.expenses[${idx}].supportAmount`)}
-                </div>
+              {getErrorMessage(`data.receipts[${idx}].supportAmount`) && (
+                <span className="text-red-500 text-sm">
+                  {getErrorMessage(`data.receipts[${idx}].supportAmount`)}
+                </span>
               )}
             </div>
-            <div className="w-1/4">
+            <div className="w-1/4 h-full relative">
               <RHFTextInput
-                name={`data.expenses.${idx}.usedAmount`}
-                id={`data.expenses.${idx}.usedAmount`}
-                labelText="집행액"
-                placeholder="집행액을 작성해주세요"
+                name={`data.receipts.${idx}.usedAmount`}
+                id={`data.receipts.${idx}.usedAmount`}
+                labelText="사용액"
+                placeholder="사용액을 작성해주세요"
                 inputStyle="pr-9 flex-1"
                 required
                 type="number"
-                inputMode="numeric"
               />
             </div>
-            <div className="w-1/4 h-full">
+            <div className="w-1/4 h-full relative">
               <RHFTextInput
-                name={`data.expenses.${idx}.remainingAmount`}
-                id={`data.expenses.${idx}.remainingAmount`}
+                name={`data.receipts.${idx}.remainingAmount`}
+                id={`data.receipts.${idx}.remainingAmount`}
                 labelText="잔액"
                 placeholder="잔액을 작성해주세요"
                 inputStyle="pr-9 flex-1"
                 required
                 type="number"
-                inputMode="numeric"
               />
             </div>
           </div>
-          <RHFTextInput
-            name={`data.expenses.${idx}.usageDetail`}
-            id={`data.expenses.${idx}.usageDetail`}
-            labelText="주요 활동 내용"
-            required
-            maxLength={1000}
-            rows={6}
-          />
-          <header className="flex items-center justify-between">
-            <h2 className="h1 font-bold text-black">활동 지원비 영수증</h2>
-          </header>
-          <div className="flex flex-col gap-6 max-w-[350px]">
-            <RHFTextInput
-              name={`data.expenses.${idx}.submittedBy`}
-              id={`data.expenses.${idx}.submittedBy`}
-              labelText="담당자"
-              required
-            />
-            <div className="flex flex-col gap-2">
-              <CustomLabel
-                htmlFor={`data.expenses.${idx}.issuedDate`}
-                labelText={"일자"}
-                required={true}
-              />
-              <DatePicker
-                id={`data-expenses-${idx}-issuedDate`}
-                size="h-[60px]"
-                textStyle="h4 font-medium text-gray-900"
-                currentDate={methods.watch(`data.expenses.${idx}.issuedDate`)}
-                handleDateChange={(newDate) => {
-                  methods.setValue(`data.expenses.${idx}.issuedDate`, newDate!);
-                }}
-              />
-            </div>
-          </div>
-          <div className="flex gap-3 w-full">
-            <div className="w-1/3">
+          <div className="flex gap-3 w-full h-[60px]">
+            <div className="w-1/2 h-full relative">
               <RHFTextInput
-                name={`data.expenses.${idx}.vendor`}
-                id={`data.expenses.${idx}.vendor`}
-                labelText="사용처"
-                placeholder="사용처를 작성해주세요"
+                name={`data.receipts.${idx}.usageDetail`}
+                id={`data.receipts.${idx}.usageDetail`}
+                labelText="사용내역"
+                placeholder="사용내역을 작성해주세요"
+                inputStyle="pr-9 flex-1"
                 required
               />
             </div>
-            <div className="w-1/3">
+            <div className="w-1/2 h-full relative">
               <RHFTextInput
-                name={`data.expenses.${idx}.amount`}
-                id={`data.expenses.${idx}.amount`}
+                name={`data.receipts.${idx}.submittedBy`}
+                id={`data.receipts.${idx}.submittedBy`}
+                labelText="제출자"
+                placeholder="제출자를 작성해주세요"
+                inputStyle="pr-9 flex-1"
+                required
+              />
+            </div>
+          </div>
+          <div className="flex gap-3 w-full h-[60px]">
+            <div className="w-1/4 h-full relative">
+              <CustomLabel
+                htmlFor={`data.receipts.${idx}.issuedDate`}
+                labelText={"발행일"}
+                required={true}
+              />
+              <DatePicker
+                id={`data-receipts-${idx}-issuedDate`}
+                currentDate={
+                  methods.watch(`data.receipts.${idx}.issuedDate`)
+                    ? new Date(methods.watch(`data.receipts.${idx}.issuedDate`))
+                    : undefined
+                }
+                handleDateChange={(newDate) => {
+                  if (newDate) {
+                    methods.setValue(
+                      `data.receipts.${idx}.issuedDate`,
+                      newDate.toISOString().split("T")[0]
+                    );
+                  }
+                }}
+              />
+            </div>
+            <div className="w-1/4 h-full relative">
+              <RHFTextInput
+                name={`data.receipts.${idx}.vendor`}
+                id={`data.receipts.${idx}.vendor`}
+                labelText="거래처"
+                placeholder="거래처를 작성해주세요"
+                inputStyle="pr-9 flex-1"
+                required
+              />
+            </div>
+            <div className="w-1/4 h-full relative">
+              <RHFTextInput
+                name={`data.receipts.${idx}.amount`}
+                id={`data.receipts.${idx}.amount`}
                 labelText="금액"
                 placeholder="금액을 작성해주세요"
+                inputStyle="pr-9 flex-1"
                 required
                 type="number"
               />
             </div>
-            <div className="w-1/3">
-              <ImageInput idx={idx} />
+            <div className="w-1/4 h-full relative">
+              <RHFTextInput
+                name={`data.receipts.${idx}.description`}
+                id={`data.receipts.${idx}.description`}
+                labelText="설명"
+                placeholder="설명을 작성해주세요"
+                inputStyle="pr-9 flex-1"
+                required
+              />
             </div>
           </div>
-          <RHFTextInput
-            name={`data.expenses.${idx}.description`}
-            id={`data.expenses.${idx}.description`}
-            labelText="내용"
-            placeholder="내용을 작성해주세요"
-            maxLength={100}
-            required
-          />
         </Card>
       ))}
-      {/* <Card className="mt-3 border p-4 mb-4 rounded w-full"> */}
 
-      <button
+      {/* 영수증 파일 업로드 */}
+      <Card className="mt-3 border p-4 mb-4 rounded w-full">
+        <header className="flex items-center justify-between">
+          <h2 className="h1 font-bold text-black">영수증 파일</h2>
+        </header>
+        <div className="relative w-full cursor-pointer flex flex-col gap-2">
+          <CustomLabel
+            htmlFor="receiptFile"
+            labelText="영수증 파일 첨부"
+            required={true}
+          />
+          <div className="relative w-full h-[48px]">
+            <input
+              type="text"
+              value={fileName}
+              placeholder="영수증 파일을 첨부해주세요"
+              readOnly
+              onClick={handleReceiptFileClick}
+              className="w-full bg-gray-100 h-full rounded-[6px] px-5 py-6 text-[18px] text-gray-400 font-bold outline-none cursor-pointer"
+            />
+            <input
+              type="file"
+              accept="image/*,.pdf"
+              ref={fileInputRef}
+              className="hidden"
+              onChange={handleReceiptFileChange}
+            />
+            <div className="absolute right-4 top-1/2 -translate-y-1/2">
+              <File className="text-gray-400" />
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      <Button
         type="button"
-        className="!bg-orange-50 !text-orange-500 !border-none flex items-center justify-center w-full h-[60px] rounded-md border transition duration-200"
+        content="정산서 추가"
         onClick={() =>
           append({
             category: "",
@@ -213,21 +269,13 @@ const ResultReportAccountsForm = () => {
             remainingAmount: "",
             usageDetail: "",
             submittedBy: "",
-            issuedDate: new Date(),
+            issuedDate: "",
             vendor: "",
             amount: "",
             description: "",
           })
         }
-        disabled={fields.length >= 5}
-      >
-        <span
-          className={cn("h3 font-bold transition duration-200 text-orange-500")}
-        >
-          + 정산서 추가하기
-        </span>
-      </button>
-      {/* </Card> */}
+      />
     </section>
   );
 };

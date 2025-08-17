@@ -3,10 +3,10 @@ export type ExpenseApplicationStatus = "PENDING" | "APPROVED" | "REJECTED";
 export interface ExpenseApplicationEntry {
   id: number;
   clubName: string;
-  applicantName: string;
+  writerName: string;
   department: string;
   eventName: string;
-  createdDate: number[];
+  createdDate: string; // ISO 8601 형식의 문자열 (예: '2025-06-18T16:42:05')
   status: ExpenseApplicationStatus;
 }
 
@@ -28,7 +28,7 @@ export type CardInfo = {
   activityPlan: string;
   memberCount: number;
   status: ExpenseApplicationStatus;
-  createdAt: number[];
+  createdAt: string; // ISO 8601 형식의 문자열
   clubName: string;
 };
 

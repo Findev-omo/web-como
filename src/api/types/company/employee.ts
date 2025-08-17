@@ -1,11 +1,17 @@
-export type EmployeeStatus = "Y" | "N";
+export type EmployeeStatus = "ACTIVE" | "INACTIVE";
 
 export interface Employee {
-  memberId: number;
-  memberName: string;
+  id: number;
+  name: string;
+  nickname: string;
+  companyName: string | null;
+  profileMessage: string | null;
+  profileImage: string | null;
   department: string;
   position: string;
-  clubName: string;
-  joinDate: string;
-  memberStatus: EmployeeStatus;
+  status: EmployeeStatus;
+  createAt: string;
+  email: string | null;
+  role: string | null;
+  joinedClub: string | null;
 }

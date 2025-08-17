@@ -66,7 +66,7 @@ export default function ForceDisbandClubFormModal() {
 
   return (
     <div id="force-disband" className="hidden modal">
-      <Backdrop />
+      <Backdrop modalId="force-disband" />
       <form
         className="fixed bottom-1/2 right-1/2 translate-y-1/2 translate-x-1/2 z-40 space-y-8 w-full max-w-[594px] p-8 rounded-xl bg-gray-0 shadow"
         onSubmit={handleSubmit}

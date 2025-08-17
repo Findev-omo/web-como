@@ -1,5 +1,5 @@
 import { getData } from "@/api/action";
-import { ClubWebActivityInfoDTO, ClubWebActivityPictureInfoDTO } from "@/api/types/club/activity";
+import { ClubBoards } from "@/api/types/company/club";
 import ClubTitle from "@/components/dashboard/shared/molecules/ClubTitle";
 import ClubPictureDetailItem from "@/components/dashboard/shared/organisms/ClubPictureDetailItem";
 import ClubPictureItem from "@/components/dashboard/shared/organisms/ClubPictureItem";
@@ -12,23 +12,20 @@ export default function ClubDetailPictureTabView() {
 
   const { data } = useQuery({
     queryKey: [clubId],
-    queryFn: () => getData(`v1/manager/club/${clubId}/activity-feed`, false),
+    queryFn: () => getData(`v1/manager/club/${clubId}/boards`, false),
   });
 
   if (!data) return;
-  console.log(data);
-  console.log("data.data", data.data);
 
-  const pictureData = data.data as ClubWebActivityInfoDTO[];
-
-  console.log("pictureData", pictureData);
+  const pictureData = data.data as ClubBoards[];
 
   return (
     <>
       {/* <ClubTitle /> */}
-      {pictureData?.map((picture: ClubWebActivityInfoDTO) => (
-        <ClubPictureDetailItem key={picture.id} item={picture} readonly />
-      ))}
+      {Array.isArray(pictureData) &&
+        pictureData?.map((picture: ClubBoards) => (
+          <ClubPictureDetailItem key={picture.id} item={picture} readonly />
+        ))}
     </>
   );
 }

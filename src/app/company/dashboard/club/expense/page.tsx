@@ -26,27 +26,36 @@ export default async function Page({
     formatDate(endDate)
   );
 
-  const [summary, expenseData] = await Promise.all([
-    summaryPromise,
-    expensePromise,
-  ]);
+  try {
+    const [summary, expenseData] = await Promise.all([
+      summaryPromise,
+      expensePromise,
+    ]);
 
-  const stats = {
-    pending: summary.pendingCount || 0,
-    approved: summary.approvedCount || 0,
-    rejected: summary.rejectedCount || 0,
-  };
+    console.log("활동지원비 페이지 - summary:", summary);
 
-  return (
-    <>
-      <ExpenseOverview stats={stats} />
-      <ClubExpenseClientView
-        expenseList={expenseData.list}
-        currentPage={currentPage}
-        maxPage={expenseData.maxPage}
-        initialDateRange={{ startDate, endDate }}
-      />
-      {/* <ExpenseRejectDetailModal /> */}
-    </>
-  );
+    const stats = {
+      pending: summary.pendingCount || 0,
+      approved: summary.approvedCount || 0,
+      rejected: summary.rejectedCount || 0,
+    };
+
+    console.log("활동지원비 페이지 - stats:", stats);
+
+    return (
+      <>
+        <ExpenseOverview stats={stats} />
+        <ClubExpenseClientView
+          expenseList={expenseData.list}
+          currentPage={currentPage}
+          maxPage={expenseData.maxPage}
+          initialDateRange={{ startDate, endDate }}
+        />
+        {/* <ExpenseRejectDetailModal /> */}
+      </>
+    );
+  } catch (error) {
+    console.error("지출 관리 페이지 에러:", error);
+    throw error;
+  }
 }

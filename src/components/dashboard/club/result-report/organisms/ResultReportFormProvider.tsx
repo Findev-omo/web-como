@@ -12,13 +12,18 @@ import { z } from "zod";
 import toast from "react-hot-toast";
 import { useAutoSave } from "@/hooks/useAutoSave";
 import { AutoSaveRestoreAlert } from "../molecules/AutoSaveRestoreAlert";
-import { ResultReportSchema, ResultReportSchemaType } from "@/lib/types/schema";
+import {
+  ResultReportSchema,
+  ResultReportSchemaType,
+  ClubReportCreateRequest,
+} from "@/lib/types/schema";
 import { getAccessToken, getClubId } from "@/lib/cookies";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import ResultReportAccountsForm from "./ResultReportAccounts";
 import ResultReportForm from "./ResultReportForm";
 import ResultReportSubmitCard from "./ResultReportSubmitCard";
+import { createClubReport } from "@/api/actions/club/report";
 
 function formatDateToString(date: Date | string) {
   if (typeof date === "string") return date;
@@ -29,6 +34,7 @@ function formatDateToString(date: Date | string) {
 const ResultReportFormProvider = () => {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasSavedData, setHasSavedData] = useState(false);
 
   const methods = useForm<ResultReportSchemaType>({
     resolver: zodResolver(ResultReportSchema),
@@ -43,7 +49,7 @@ const ResultReportFormProvider = () => {
         participantCount: 0,
         activityContent: "",
         note: "",
-        expenses: [
+        receipts: [
           {
             category: "",
             supportAmount: "",
@@ -51,14 +57,14 @@ const ResultReportFormProvider = () => {
             remainingAmount: "",
             usageDetail: "",
             submittedBy: "",
-            issuedDate: new Date(),
+            issuedDate: "",
             vendor: "",
             amount: "",
             description: "",
           },
         ],
       },
-      photos: [],
+      images: [],
       receipts: [],
     },
   });
@@ -75,6 +81,16 @@ const ResultReportFormProvider = () => {
     autoRestore: false,
   });
 
+  // 컴포넌트 마운트 시 저장된 데이터가 있는지 확인
+  useEffect(() => {
+    const checkSavedData = async () => {
+      const hasData = await autoSave.hasSavedData();
+      setHasSavedData(hasData);
+    };
+
+    checkSavedData();
+  }, [autoSave]);
+
   const debouncedSubmit = useCallback(
     async (data: ResultReportSchemaType) => {
       if (isSubmitting) return;
@@ -83,64 +99,53 @@ const ResultReportFormProvider = () => {
       try {
         setIsSubmitting(true);
 
-        const submitData = {
-          ...data,
-          data: {
-            ...data.data,
-            activityDate: data.data.activityDate
-              ? formatDateToString(data.data.activityDate)
+        // 폼 데이터를 API DTO로 변환
+        const reportData: ClubReportCreateRequest = {
+          eventName: data.data.eventName,
+          activityDate: data.data.activityDate
+            ? formatDateToString(data.data.activityDate)
+            : "",
+          activityTime: data.data.activityTime,
+          location: data.data.location,
+          locationDetail: data.data.locationDetail,
+          participantCount: data.data.participantCount,
+          activityContent: data.data.activityContent,
+          note: data.data.note || "",
+          receipts: data.data.receipts.map((receipt) => ({
+            category: receipt.category,
+            supportAmount: Number(receipt.supportAmount),
+            usedAmount: Number(receipt.usedAmount),
+            remainingAmount: Number(receipt.remainingAmount),
+            usageDetail: receipt.usageDetail,
+            submittedBy: receipt.submittedBy,
+            issuedDate: receipt.issuedDate
+              ? formatDateToString(new Date(receipt.issuedDate))
               : "",
-            expenses: data.data.expenses.map((expense) => ({
-              ...expense,
-              supportAmount: Number(expense.supportAmount),
-              usedAmount: Number(expense.usedAmount),
-              remainingAmount: Number(expense.remainingAmount),
-              amount: Number(expense.amount),
-              issuedDate: expense.issuedDate
-                ? formatDateToString(expense.issuedDate)
-                : "",
-            })),
-          },
+            vendor: receipt.vendor,
+            amount: Number(receipt.amount),
+            description: receipt.description,
+          })),
         };
 
-        const formData = new FormData();
-        formData.append(
-          "data",
-          new Blob([JSON.stringify(submitData.data)], {
-            type: "application/json",
-          })
+        // 디버깅을 위한 로그
+        console.log("Submit Data:", reportData);
+        console.log("Images count:", data.images?.length || 0);
+        console.log("Receipts count:", data.receipts?.length || 0);
+
+        // API 호출
+        await createClubReport(
+          reportData,
+          data.images || [],
+          data.receipts || []
         );
 
-        (data.photos || []).forEach((file: File) => {
-          formData.append("photos", file);
-        });
-        (data.receipts || []).forEach((file: File) => {
-          formData.append("receipts", file);
-        });
-
-        const token = await getAccessToken();
-        const clubId = await getClubId();
-
-        const response = await fetch(
-          `/api/server/v1/executive/club/${clubId}/reports`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            body: formData,
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("활동 보고서 작성에 실패했습니다.");
-        }
         await autoSave.clearSavedData();
         toast.success("활동 보고서 작성에 성공했습니다.");
 
         methods.reset();
-        router.back();
+        router.push("/club/dashboard/result-report/list");
       } catch (error) {
+        console.error("Submit error:", error);
         toast.error("활동 보고서 작성에 실패했습니다.");
       } finally {
         setIsSubmitting(false);
@@ -150,6 +155,7 @@ const ResultReportFormProvider = () => {
   );
 
   const onSubmit = async (data: ResultReportSchemaType) => {
+    // 기본 폼 제출을 방지하고 클라이언트 사이드에서 처리
     await debouncedSubmit(data);
   };
 
@@ -157,9 +163,18 @@ const ResultReportFormProvider = () => {
     console.log(errors);
   };
 
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault(); // 기본 폼 제출 방지
+    const isValid = await methods.trigger();
+    if (isValid) {
+      const formData = methods.getValues();
+      await debouncedSubmit(formData);
+    }
+  };
+
   return (
     <FormProvider {...methods}>
-      <form onSubmit={methods.handleSubmit(onSubmit, onError)}>
+      <form onSubmit={handleFormSubmit}>
         <article className="flex-1 flex flex-col gap-3">
           <ResultReportForm />
           <ResultReportAccountsForm />
@@ -172,12 +187,22 @@ const ResultReportFormProvider = () => {
           if (savedData) {
             Object.keys(savedData).forEach((key) => {
               if (savedData[key] !== undefined) {
-                methods.setValue(key as any, savedData[key]);
+                // images와 receipts는 File 객체이므로 복원하지 않고 빈 배열로 설정
+                if (key === "images" || key === "receipts") {
+                  methods.setValue(key as any, []);
+                } else {
+                  methods.setValue(key as any, savedData[key]);
+                }
               }
             });
+            // 폼 검증 트리거 (지연을 두어 DOM 업데이트 후 실행)
+            setTimeout(() => {
+              methods.trigger();
+            }, 100);
           }
         }}
         clearSavedData={autoSave.clearSavedData}
+        hasSavedData={hasSavedData}
       />
     </FormProvider>
   );

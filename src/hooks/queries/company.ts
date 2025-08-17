@@ -4,6 +4,8 @@ import {
   type CompanyExpense,
   type CompanyReport,
   type CompanyExpenseEntry,
+  type Employee,
+  type UpdateEmployeeData,
 } from "@/api/services/company";
 import type { DateRange } from "@/components/dashboard/common/DateFilter";
 import { formatDate } from "@/lib/format";
@@ -24,8 +26,19 @@ export const companyKeys = {
     [...companyKeys.reports(), "list", page, dateRange] as const,
   reportDetail: (id: number) =>
     [...companyKeys.reports(), "detail", id] as const,
+  reportRejectionReason: (id: number) =>
+    [...companyKeys.reports(), "rejection-reason", id] as const,
   reportsSummary: (dateRange: DateRange) =>
     [...companyKeys.reports(), "summary", dateRange] as const,
+
+  employees: () => [...companyKeys.all, "employees"] as const,
+  employeesList: (page: number) =>
+    [...companyKeys.employees(), "list", page] as const,
+  employeeDetail: (memberId: string) =>
+    [...companyKeys.employees(), "detail", memberId] as const,
+  notices: () => [...companyKeys.all, "notices"] as const,
+  noticesList: (page: number, searchTerm: string) =>
+    [...companyKeys.notices(), "list", page, searchTerm] as const,
 };
 
 // Expenses Hooks
@@ -71,9 +84,25 @@ export const useCompanyExpensesSummary = (currentDateRange: DateRange) => {
 
   return useQuery({
     queryKey: companyKeys.expensesSummary(currentDateRange),
-    queryFn: () => companyService.expenses.getSummary(startDate, endDate),
+    queryFn: () => companyService.expenses.getSummary(),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
+  });
+};
+
+// 공지사항 Hooks
+export const useCompanyNotices = (
+  currentPage: number,
+  searchTerm: string = "",
+  initialData?: { list: any[]; totalPages: number }
+) => {
+  return useQuery({
+    queryKey: companyKeys.noticesList(currentPage, searchTerm),
+    queryFn: () => companyService.notices.getList(currentPage, searchTerm),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    placeholderData: (previousData) => previousData,
+    ...(initialData && { initialData }),
   });
 };
 
@@ -116,7 +145,7 @@ export const useRejectExpense = () => {
 export const useCompanyReports = (
   currentPage: number,
   currentDateRange: DateRange,
-  initialData?: { list: CompanyReport[]; maxPage: number }
+  initialData?: { list: CompanyReport[]; totalPages: number }
 ) => {
   const startDate = currentDateRange.startDate
     ? formatDate(currentDateRange.startDate)
@@ -125,10 +154,20 @@ export const useCompanyReports = (
     ? formatDate(currentDateRange.endDate)
     : "";
 
+  console.log("useCompanyReports 호출:", {
+    currentPage,
+    currentDateRange,
+    startDate,
+    endDate,
+    initialData,
+  });
+
   return useQuery({
     queryKey: companyKeys.reportsList(currentPage, currentDateRange),
-    queryFn: () =>
-      companyService.reports.getList(currentPage, startDate, endDate),
+    queryFn: () => {
+      console.log("useCompanyReports queryFn 호출");
+      return companyService.reports.getList(currentPage, startDate, endDate);
+    },
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     placeholderData: (previousData) => previousData,
@@ -142,6 +181,21 @@ export const useCompanyReportDetail = (reportId: number) => {
     queryFn: () => companyService.reports.getDetail(reportId),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
+  });
+};
+
+export const useCompanyReportRejectionReason = (reportId: number) => {
+  return useQuery({
+    queryKey: companyKeys.reportRejectionReason(reportId),
+    queryFn: () => {
+      console.log("useCompanyReportRejectionReason 호출:", { reportId });
+      return companyService.reports.getRejectionReason(reportId);
+    },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    enabled: !!reportId,
+    retry: 2,
+    retryDelay: 1000,
   });
 };
 
@@ -180,12 +234,84 @@ export const useRejectReport = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ reportId, reason }: { reportId: number; reason: string }) =>
-      companyService.reports.reject(reportId, reason),
-    onSuccess: (_, { reportId }) => {
+    mutationFn: ({
+      reportId,
+      reason,
+    }: {
+      reportId: number;
+      reason: string;
+    }) => {
+      console.log("useRejectReport mutationFn 호출:", { reportId, reason });
+      return companyService.reports.reject(reportId, reason);
+    },
+    onSuccess: (data, { reportId }) => {
+      console.log("useRejectReport onSuccess:", { data, reportId });
       queryClient.invalidateQueries({ queryKey: companyKeys.reports() });
       queryClient.invalidateQueries({
         queryKey: companyKeys.reportDetail(reportId),
+      });
+    },
+    onError: (error) => {
+      console.error("useRejectReport onError:", error);
+    },
+  });
+};
+
+// Employees Hooks
+export const useCompanyEmployees = (
+  currentPage: number,
+  initialData?: { list: Employee[]; totalPages: number }
+) => {
+  return useQuery({
+    queryKey: companyKeys.employeesList(currentPage),
+    queryFn: () => companyService.employees.getList(currentPage),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    placeholderData: (previousData) => previousData,
+    ...(initialData && { initialData }),
+  });
+};
+
+export const useCompanyEmployeeDetail = (
+  memberId: string,
+  options?: { enabled?: boolean }
+) => {
+  return useQuery({
+    queryKey: companyKeys.employeeDetail(memberId),
+    queryFn: () => companyService.employees.getDetail(memberId),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    enabled: options?.enabled ?? !!memberId,
+  });
+};
+
+// Employee Mutations
+export const useDeleteEmployee = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: companyService.employees.delete,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: companyKeys.employees() });
+    },
+  });
+};
+
+export const useUpdateEmployee = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      memberId,
+      data,
+    }: {
+      memberId: string;
+      data: UpdateEmployeeData;
+    }) => companyService.employees.update(memberId, data),
+    onSuccess: (_, { memberId }) => {
+      queryClient.invalidateQueries({ queryKey: companyKeys.employees() });
+      queryClient.invalidateQueries({
+        queryKey: companyKeys.employeeDetail(memberId),
       });
     },
   });

@@ -57,26 +57,26 @@ export default function EmployeeTable({ employees }: EmployeeTableProps) {
         </li>
         {employees.map((employee, idx) => (
           <li
-            key={employee.memberId}
+            key={employee.id}
             className={cn(
               "flex border-b border-gray-400 bg-gray-0 transition duration-200 h-14 items-center",
-              employee.memberStatus === "Y"
+              employee.status === "ACTIVE"
                 ? "cursor-pointer group hover:bg-gray-200"
                 : ""
             )}
             onClick={() => {
-              if (employee.memberStatus === "Y") {
-                handleRowClick(employee.memberId);
+              if (employee.status === "ACTIVE") {
+                handleRowClick(employee.id);
               }
             }}
           >
             {[
               idx + 1,
-              employee.memberName,
+              employee.name,
               employee.department,
               employee.position,
-              employee.joinDate,
-              employee.memberStatus,
+              employee.createAt,
+              employee.status,
             ].map((data, i) => (
               <div
                 key={i}
@@ -95,7 +95,7 @@ export default function EmployeeTable({ employees }: EmployeeTableProps) {
                 {i === 4 ? (
                   formatDate(new Date(data as string))
                 ) : i === 5 ? (
-                  data === "Y" ? (
+                  data === "ACTIVE" ? (
                     <div
                       className="flex gap-2"
                       onClick={(e) => e.stopPropagation()}
@@ -104,7 +104,7 @@ export default function EmployeeTable({ employees }: EmployeeTableProps) {
                         className="py-1 px-4 rounded body-1 font-medium text-gray-50 bg-gray-800"
                         onClick={() =>
                           openModal("employee-edit", {
-                            memberId: employee.memberId,
+                            memberId: employee.id,
                           })
                         }
                       >
@@ -114,7 +114,7 @@ export default function EmployeeTable({ employees }: EmployeeTableProps) {
                         className="py-1 px-4 rounded border border-gray-800 body-1 font-medium text-gray-800"
                         onClick={() =>
                           openModal("delete-reason", {
-                            memberId: employee.memberId,
+                            memberId: employee.id,
                           })
                         }
                       >

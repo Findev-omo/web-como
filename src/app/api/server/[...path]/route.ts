@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
-export async function handler(req: NextRequest) {
+async function handler(req: NextRequest) {
   const { pathname, search } = new URL(req.url);
   const rawApiPath = pathname.replace("/api/server", "");
 

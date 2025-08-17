@@ -53,25 +53,11 @@ export default function ClubProfileInfo({
   memberCount,
   activityPlan,
 }: ClubProfileInfoType) {
-  const date = new Date(
-    createdAt[0],
-    createdAt[1],
-    createdAt[2],
-    createdAt[3],
-    createdAt[4],
-    createdAt[5]
-  );
-  const formattedDate = new Intl.DateTimeFormat("ko-KR", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  }).format(date);
-
-  const convertDate = formattedDate.replace(/\.$/, "");
+  const convertDate = formatCreatedDate(createdAt);
 
   return (
     <div className="flex items-center gap-2 body-1 font-medium text-gray-500">
-      <span>{`개설일자 ${convertDate}`}</span>
+      <span>{`개설일자 ${convertDate || "날짜 정보 없음"}`}</span>
 
       <div className="flex items-center gap-0.5">
         <People className="w-5 h-5 text-gray-500" />

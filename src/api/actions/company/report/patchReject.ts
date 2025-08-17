@@ -1,23 +1,15 @@
-import { getAccessToken } from "@/lib/cookies";
+// @deprecated - useRejectReport hook을 사용하세요
+import { companyService } from "@/api/services/company";
 
 export const patchReject = async (reportId: number, reason: string) => {
-  const token = await getAccessToken();
-  if (!token) throw new Error("토큰 정보가 없습니다.");
-  const url = `/api/server/v1/manager/club/report/${reportId}/reject`;
-  const response = await fetch(url, {
-    method: "PATCH",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      accept: "application/json",
-    },
-    body: JSON.stringify({
-      reason: reason,
-    }),
-  });
-  const result = await response.json();
-  if (result.resultCode === "OK") {
-    return result.data;
-  } else {
-    throw new Error(result.resultMessage);
+  console.log("patchReject 호출:", { reportId, reason });
+
+  try {
+    const result = await companyService.reports.reject(reportId, reason);
+    console.log("patchReject 결과:", result);
+    return result;
+  } catch (error) {
+    console.error("patchReject 에러:", error);
+    throw error;
   }
 };

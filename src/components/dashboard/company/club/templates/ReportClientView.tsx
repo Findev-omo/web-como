@@ -23,6 +23,12 @@ export default function ReportClientView({
   maxPage: initialMaxPage,
   initialDateRange,
 }: ReportClientViewProps) {
+  console.log("ReportClientView props:", {
+    initialReports,
+    initialCurrentPage,
+    initialMaxPage,
+    initialDateRange,
+  });
   const router = useRouter();
   const [currentDateRange, setCurrentDateRange] =
     useState<DateRange>(initialDateRange);
@@ -38,7 +44,14 @@ export default function ReportClientView({
     error,
   } = useCompanyReports(initialCurrentPage, currentDateRange, {
     list: initialReports,
-    maxPage: initialMaxPage,
+    totalPages: initialMaxPage,
+  });
+
+  console.log("useCompanyReports 결과:", {
+    reportsData,
+    isLoading,
+    isError,
+    error,
   });
 
   const updateUrl = (page: number, dateRange: DateRange) => {
@@ -63,7 +76,13 @@ export default function ReportClientView({
   };
 
   const reports = reportsData?.list || [];
-  const maxPage = reportsData?.maxPage || 1;
+  const maxPage = reportsData?.totalPages || 1;
+
+  console.log("최종 데이터:", {
+    reports,
+    maxPage,
+    reportsLength: reports.length,
+  });
 
   return (
     <div className="space-y-4 p-8 rounded-2xl bg-gray-0">

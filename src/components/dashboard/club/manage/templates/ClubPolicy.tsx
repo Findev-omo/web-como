@@ -28,9 +28,9 @@ export default function ClubPolicyTab({ clubId }: { clubId: string | null }) {
         <PrintButton />
       </div>
       {(() => {
-        const imageSrc = typeof data === "string" ? data : undefined;
+        const imageSrc: string | undefined = data?.content;
         const isValidSrc =
-          !!imageSrc &&
+          typeof imageSrc === "string" &&
           (imageSrc.startsWith("/") ||
             imageSrc.startsWith("http://") ||
             imageSrc.startsWith("https://"));

@@ -42,9 +42,9 @@ export const toClubNotice = (
       }
 
       return {
-        id: notice.noticeId,
+        id: notice.id,
         title: notice.title,
-        author: notice.name,
+        author: notice.writerName,
         createdAt,
         viewCount: notice.viewCount,
         isPinned: notice.isPinned === "Y",

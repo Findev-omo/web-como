@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { startOfToday, subYears } from "date-fns";
 import type { SearchValue } from "@/lib/types/search";
 import DateFilter, {
@@ -8,7 +8,6 @@ import DateFilter, {
 } from "@/components/dashboard/common/DateFilter";
 import Pagination from "@/components/dashboard/common/Pagination";
 import ApplicationTable from "@/components/dashboard/company/club/molecules/ApplicationTable";
-import ApplicationSearch from "@/components/dashboard/company/club/molecules/ApplicationSearch";
 import Skeleton from "@/components/common/Skeleton";
 import { useApplications } from "@/hooks/queries/useApplications";
 
@@ -26,7 +25,17 @@ export default function ApplicationList(props: Props) {
   const [searchValue, setSearchValue] = useState<SearchValue>({
     term: props.currentSearchTerm,
     field: props.currentSearchFilter,
+    filter: props.currentSearchFilter, // props에서 받은 필터 사용
   });
+
+  // props가 변경될 때 searchValue 업데이트
+  useEffect(() => {
+    setSearchValue({
+      term: props.currentSearchTerm,
+      field: props.currentSearchFilter,
+      filter: props.currentSearchFilter,
+    });
+  }, [props.currentSearchTerm, props.currentSearchFilter]);
 
   const {
     data: applicationData,
@@ -49,18 +58,8 @@ export default function ApplicationList(props: Props) {
     }
   };
 
-  const handleSearch = (newSearchValue: SearchValue) => {
-    setCurrentPage(1);
-    setSearchValue(newSearchValue);
-  };
-
   return (
     <div className="space-y-4 p-8 rounded-2xl bg-gray-0">
-      <ApplicationSearch
-        onSearch={handleSearch}
-        currentDateRange={currentDateRange}
-        currentPage={currentPage}
-      />
       <DateFilter
         currentDateRange={currentDateRange}
         handleDateRangeChange={handleDateRangeChange}

@@ -7,19 +7,9 @@ import { getData } from "@/api/action";
 import { getAccessToken } from "@/lib/cookies";
 import ApprovalButton from "@/components/dashboard/shared/molecules/ApprovalButton";
 import toast from "react-hot-toast";
+import type { ClubApplication } from "@/api/types/company/club";
 
 type ApplicationStatus = "new" | "active" | "reject" | "revert" | "leave";
-
-interface ClubApplication {
-  clubId: number;
-  applicantId: number;
-  applicantName: string;
-  department: string;
-  clubName: string;
-  clubSummary: string;
-  appliedDate: string;
-  status: "PENDING" | "APPROVED" | "REJECTED";
-}
 
 const tableHeadings = [
   "순번",
@@ -57,35 +47,14 @@ export default function ApplicationTable({
     }
   };
 
-  const formatAppliedDate = (dateArray: number[]) => {
-    if (!Array.isArray(dateArray) || dateArray.length < 6) {
-      console.error("Invalid dateArray:", dateArray); // 오류 로그 추가
+  const formatAppliedDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return formatDate(date);
+    } catch (error) {
+      console.error("Invalid date string:", dateString);
       return "";
     }
-
-    const [year, month, day, hour, minute] = dateArray; // second는 기본값으로 처리
-    const second = dateArray.length === 6 ? dateArray[5] : 0; // second가 없으면 0으로 설정
-
-    // 각 값이 유효한지 확인
-    if (
-      isNaN(year) ||
-      isNaN(month) ||
-      isNaN(day) ||
-      isNaN(hour) ||
-      isNaN(minute) ||
-      isNaN(second)
-    ) {
-      console.error("Invalid date values:", {
-        year,
-        month,
-        day,
-        hour,
-        minute,
-        second,
-      });
-      return "";
-    }
-    return formatDate(new Date(year, month - 1, day, hour, minute, second));
   };
 
   const handleApprove = async (clubId: number, applicantId: number) => {
@@ -161,7 +130,7 @@ export default function ApplicationTable({
               application.department,
               application.clubName,
               application.clubSummary,
-              formatAppliedDate(application.appliedDate as unknown as number[]),
+              formatAppliedDate(application.appliedDate),
               getStatus(application.status),
             ].map((data, i) => (
               <div

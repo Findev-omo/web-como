@@ -52,7 +52,24 @@ const expenseType = [
 ] as const;
 
 export default function ReportDetail({ data }: Props) {
-  if (!data) return;
+  if (!data) {
+    console.log("ReportDetail: data가 없습니다");
+    return <div>데이터를 불러오는 중...</div>;
+  }
+
+  console.log("ReportDetail 전체 데이터:", data);
+  console.log(
+    "activityDate:",
+    data.activityDate,
+    "타입:",
+    typeof data.activityDate
+  );
+  console.log(
+    "activityTime:",
+    data.activityTime,
+    "타입:",
+    typeof data.activityTime
+  );
 
   const findCategory = (item: string) => {
     const category = expenseType.find((type) => type.value === item);
@@ -99,7 +116,9 @@ export default function ReportDetail({ data }: Props) {
               <div className="flex flex-col basis-1/4">
                 <span className=" text-xl font-[600] mb-[8px]">활동 일정</span>
                 <div className=" text-lg bg-gray-100 rounded-[6px] py-[18px] px-[20px]   ">
-                  {data.activityDate.join("-")}
+                  {Array.isArray(data.activityDate)
+                    ? data.activityDate.join("-")
+                    : data.activityDate || "-"}
                 </div>
               </div>
               <div className="flex flex-col basis-1/4">
@@ -107,7 +126,9 @@ export default function ReportDetail({ data }: Props) {
                   .
                 </span>
                 <div className=" text-lg bg-gray-100 rounded-[6px] py-[18px] px-[20px] ">
-                  {data.activityTime.join(":")}
+                  {Array.isArray(data.activityTime)
+                    ? data.activityTime.join(":")
+                    : data.activityTime || "-"}
                 </div>
               </div>{" "}
               <div className="flex flex-col basis-1/4">
@@ -142,121 +163,134 @@ export default function ReportDetail({ data }: Props) {
         <div className="flex flex-col w-full gap-[8px] pt-[36px]">
           <span className="text-xl font-[600]">지출 증빙용 활동 사진 첨부</span>
           <div className="flex gap-[12px]">
-            {data.photos.map((photo) => {
-              return (
-                <div key={photo.id} className="w-[374px] aspect-[1/1] relative">
-                  <Image
-                    src={photo.url}
-                    alt="photo"
-                    fill
-                    className="rounded-[8px]"
-                  />
-                </div>
-              );
-            })}
+            {data.photos && data.photos.length > 0 ? (
+              data.photos.map((photo) => {
+                return (
+                  <div
+                    key={photo.id}
+                    className="w-[374px] aspect-[1/1] relative"
+                  >
+                    <Image
+                      src={photo.url}
+                      alt="photo"
+                      fill
+                      className="rounded-[8px]"
+                    />
+                  </div>
+                );
+              })
+            ) : (
+              <div className="text-gray-500">첨부된 사진이 없습니다.</div>
+            )}
           </div>
         </div>
       </div>
 
       {/*활동지원비 정산서 */}
-      {data.expenses.map((item, idx) => {
-        return (
-          <div
-            key={idx}
-            className="space-y-2 p-8 rounded-xl bg-gray-0 w-full mt-[12px]"
-          >
-            <div className=" text-2xl font-[700] mb-[36px]">
-              활동 지원비 정산서
-            </div>
-            <div className="flex w-full gap-[12px]">
-              <div className="flex flex-col basis-1/4">
-                <span className=" text-xl font-[600] mb-[8px]">과목</span>
-                <div className=" text-lg bg-gray-100 rounded-[6px] py-[18px] px-[20px]   ">
-                  {findCategory(item.category)}
+      {data.expenses && data.expenses.length > 0 ? (
+        data.expenses.map((item, idx) => {
+          return (
+            <div
+              key={idx}
+              className="space-y-2 p-8 rounded-xl bg-gray-0 w-full mt-[12px]"
+            >
+              <div className=" text-2xl font-[700] mb-[36px]">
+                활동 지원비 정산서
+              </div>
+              <div className="flex w-full gap-[12px]">
+                <div className="flex flex-col basis-1/4">
+                  <span className=" text-xl font-[600] mb-[8px]">과목</span>
+                  <div className=" text-lg bg-gray-100 rounded-[6px] py-[18px] px-[20px]   ">
+                    {findCategory(item.category)}
+                  </div>
+                </div>
+                <div className="flex flex-col basis-1/4">
+                  <span className=" text-xl font-[600] mb-[8px]">지원액</span>
+                  <div className=" text-lg bg-gray-100 rounded-[6px] py-[18px] px-[20px] ">
+                    {item.supportAmount}
+                  </div>
+                </div>{" "}
+                <div className="flex flex-col basis-1/4">
+                  <span className=" text-xl font-[600] mb-[8px]">집행액</span>
+                  <div className=" text-lg bg-gray-100 rounded-[6px] py-[18px] px-[20px]  ">
+                    {item.usedAmount}
+                  </div>
+                </div>{" "}
+                <div className="flex flex-col basis-1/4">
+                  <span className=" text-xl font-[600] mb-[8px] ">잔액</span>
+                  <div className=" text-lg bg-gray-100 rounded-[6px] py-[18px] px-[20px]  ">
+                    {item.remainingAmount}
+                  </div>
                 </div>
               </div>
-              <div className="flex flex-col basis-1/4">
-                <span className=" text-xl font-[600] mb-[8px]">지원액</span>
-                <div className=" text-lg bg-gray-100 rounded-[6px] py-[18px] px-[20px] ">
-                  {item.supportAmount}
-                </div>
-              </div>{" "}
-              <div className="flex flex-col basis-1/4">
-                <span className=" text-xl font-[600] mb-[8px]">집행액</span>
-                <div className=" text-lg bg-gray-100 rounded-[6px] py-[18px] px-[20px]  ">
-                  {item.usedAmount}
-                </div>
-              </div>{" "}
-              <div className="flex flex-col basis-1/4">
-                <span className=" text-xl font-[600] mb-[8px] ">잔액</span>
-                <div className=" text-lg bg-gray-100 rounded-[6px] py-[18px] px-[20px]  ">
-                  {item.remainingAmount}
+              <div className="flex flex-col w-full gap-[8px] pt-[36px]">
+                <span className="text-xl font-[600]">집행내역</span>
+                <div className="bg-gray-100 rounded-[6px] py-[18px] px-[20px] whitespace-pre-line">
+                  {item.usageDetail}
                 </div>
               </div>
-            </div>
-            <div className="flex flex-col w-full gap-[8px] pt-[36px]">
-              <span className="text-xl font-[600]">집행내역</span>
-              <div className="bg-gray-100 rounded-[6px] py-[18px] px-[20px] whitespace-pre-line">
-                {item.usageDetail}
-              </div>
-            </div>
 
-            {/*활동 지원비 영수증 */}
+              {/*활동 지원비 영수증 */}
 
-            <div className=" text-2xl font-[700] pt-[36px] pb-[24px]">
-              활동 지원비 영수증
-            </div>
-            <div className="flex w-full gap-[12px] pb-[24px]">
-              <div className="flex flex-col basis-1/4">
-                <span className=" text-xl font-[600] mb-[8px]">담당자</span>
-                <div className=" text-lg bg-gray-100 rounded-[6px] py-[18px] px-[20px]   ">
-                  {item.submittedBy}
+              <div className=" text-2xl font-[700] pt-[36px] pb-[24px]">
+                활동 지원비 영수증
+              </div>
+              <div className="flex w-full gap-[12px] pb-[24px]">
+                <div className="flex flex-col basis-1/4">
+                  <span className=" text-xl font-[600] mb-[8px]">담당자</span>
+                  <div className=" text-lg bg-gray-100 rounded-[6px] py-[18px] px-[20px]   ">
+                    {item.submittedBy}
+                  </div>
+                </div>
+                <div className="flex flex-col basis-1/4">
+                  <span className=" text-xl font-[600] mb-[8px] ">일자</span>
+                  <div className=" text-lg bg-gray-100 rounded-[6px] py-[18px] px-[20px] ">
+                    {Array.isArray(item.issuedDate)
+                      ? item.issuedDate.join("-")
+                      : item.issuedDate || "-"}
+                  </div>
+                </div>{" "}
+              </div>
+              <div className="flex w-full gap-[12px]">
+                <div className="flex flex-col basis-1/4">
+                  <span className=" text-xl font-[600] mb-[8px]">사용처</span>
+                  <div className=" text-lg bg-gray-100 rounded-[6px] py-[18px] px-[20px]   ">
+                    {item.vendor}
+                  </div>
+                </div>
+                <div className="flex flex-col basis-1/4">
+                  <span className=" text-xl font-[600] mb-[8px] ">금액</span>
+                  <div className=" text-lg bg-gray-100 rounded-[6px] py-[18px] px-[20px] ">
+                    {item.usedAmount}
+                  </div>
+                </div>{" "}
+                <div className="flex flex-col basis-1/4">
+                  <span className=" text-xl font-[600] mb-[8px]">내용</span>
+                  <div className=" text-lg bg-gray-100 rounded-[6px] py-[18px] px-[20px]  ">
+                    {item.description}
+                  </div>
+                </div>{" "}
+                <div className="flex flex-col basis-1/4">
+                  <span className=" text-xl font-[600] mb-[8px] ">
+                    영수증 첨부
+                  </span>
+                  <a
+                    href={item.file}
+                    download={item.file}
+                    target="_blank"
+                    className="cursor-pointer flex items-center justify-between text-lg border border-gray-400 rounded-[6px] py-[18px] px-[20px]"
+                  >
+                    영수증.pdf
+                    <File />
+                  </a>
                 </div>
               </div>
-              <div className="flex flex-col basis-1/4">
-                <span className=" text-xl font-[600] mb-[8px] ">일자</span>
-                <div className=" text-lg bg-gray-100 rounded-[6px] py-[18px] px-[20px] ">
-                  {item.issuedDate.join("-")}
-                </div>
-              </div>{" "}
             </div>
-            <div className="flex w-full gap-[12px]">
-              <div className="flex flex-col basis-1/4">
-                <span className=" text-xl font-[600] mb-[8px]">사용처</span>
-                <div className=" text-lg bg-gray-100 rounded-[6px] py-[18px] px-[20px]   ">
-                  {item.vendor}
-                </div>
-              </div>
-              <div className="flex flex-col basis-1/4">
-                <span className=" text-xl font-[600] mb-[8px] ">금액</span>
-                <div className=" text-lg bg-gray-100 rounded-[6px] py-[18px] px-[20px] ">
-                  {item.usedAmount}
-                </div>
-              </div>{" "}
-              <div className="flex flex-col basis-1/4">
-                <span className=" text-xl font-[600] mb-[8px]">내용</span>
-                <div className=" text-lg bg-gray-100 rounded-[6px] py-[18px] px-[20px]  ">
-                  {item.description}
-                </div>
-              </div>{" "}
-              <div className="flex flex-col basis-1/4">
-                <span className=" text-xl font-[600] mb-[8px] ">
-                  영수증 첨부
-                </span>
-                <a
-                  href={item.file}
-                  download={item.file}
-                  target="_blank"
-                  className="cursor-pointer flex items-center justify-between text-lg border border-gray-400 rounded-[6px] py-[18px] px-[20px]"
-                >
-                  영수증.pdf
-                  <File />
-                </a>
-              </div>
-            </div>
-          </div>
-        );
-      })}
+          );
+        })
+      ) : (
+        <div className="text-gray-500 p-8">지원비 정산서가 없습니다.</div>
+      )}
     </div>
   );
 }

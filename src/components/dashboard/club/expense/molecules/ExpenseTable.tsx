@@ -8,7 +8,7 @@ interface Props {
     data: {
       List: {
         id: number;
-        applicantName: string;
+        writerName: string;
         status: string;
         clubName: string;
         createdDate: number[];
@@ -63,7 +63,7 @@ export default function ExpenseTable({ data, currentPage }: Props) {
             {[
               item.id,
               item.createdDate,
-              item.applicantName,
+              item.writerName,
               item.clubName,
               item.status,
               item.rejectReason,

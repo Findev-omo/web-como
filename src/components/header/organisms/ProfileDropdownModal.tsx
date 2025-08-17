@@ -111,7 +111,10 @@ export default function ProfileDropdownModal({ profileImage }: Props) {
                 size="w-10 h-10"
                 src={profile?.profileImage || profileImage}
               />
-              <span className="h3 font-semibold text-gray-900">
+              <span
+                className="h3 font-semibold text-gray-900"
+                suppressHydrationWarning
+              >
                 {profile?.name || "사용자"}님
               </span>
             </div>
@@ -134,7 +137,10 @@ export default function ProfileDropdownModal({ profileImage }: Props) {
                     className="flex items-center justify-between cursor-pointer"
                     onClick={() => setIsClubDropdownOpen((prev) => !prev)}
                   >
-                    <span className="h4 font-bold text-gray-900">
+                    <span
+                      className="h4 font-bold text-gray-900"
+                      suppressHydrationWarning
+                    >
                       {currentClubName || "동호회 개설 테스트"}
                     </span>
                     <ChevronDown
@@ -167,7 +173,10 @@ export default function ProfileDropdownModal({ profileImage }: Props) {
                   주무부서
                 </span>
                 <div className="flex items-center justify-between">
-                  <span className="h4 font-bold text-gray-900">
+                  <span
+                    className="h4 font-bold text-gray-900"
+                    suppressHydrationWarning
+                  >
                     {profile?.companyName}
                   </span>
                 </div>

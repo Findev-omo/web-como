@@ -1,22 +1,27 @@
-import { getAccessToken } from "@/lib/cookies";
+import { companyService } from "@/api/services/company";
 
 export const getReports = async (
   page: number,
   startDate: string,
   endDate: string
 ) => {
-  const token = await getAccessToken();
-  if (!token) throw new Error("토큰 정보가 없습니다.");
-  const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL;
-  const url = `${baseUrl}/v1/manager/club/report?page=${page}&startDate=${startDate}&endDate=${endDate}`;
+  console.log("getReports 호출:", { page, startDate, endDate });
 
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      accept: "application/json",
-    },
-  });
-  const result = await response.json();
-  return result.data;
+  try {
+    const result = await companyService.reports.getList(
+      page,
+      startDate,
+      endDate
+    );
+    console.log("getReports 결과:", result);
+
+    return {
+      list: result.list || [],
+      maxPage: result.totalPages || 1,
+      currentPage: result.currentPage || 1,
+    };
+  } catch (error) {
+    console.error("getReports 에러:", error);
+    throw error;
+  }
 };

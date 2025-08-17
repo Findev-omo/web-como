@@ -13,7 +13,7 @@ const ResultReportPhotCard = () => {
     watch,
     formState: { errors },
   } = useFormContext<ResultReportSchemaType>();
-  const photos = watch("photos");
+  const images = watch("images");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -24,7 +24,7 @@ const ResultReportPhotCard = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
     const files = Array.from(e.target.files);
-    setValue("photos", [...(photos || []), ...files].slice(0, 4), {
+    setValue("images", [...(images || []), ...files].slice(0, 4), {
       shouldValidate: true,
     });
     e.target.value = "";
@@ -32,15 +32,15 @@ const ResultReportPhotCard = () => {
 
   const handleRemove = (idx: number) => {
     setValue(
-      "photos",
-      (photos || []).filter((_: any, i: number) => i !== idx),
+      "images",
+      (images || []).filter((_: any, i: number) => i !== idx),
       { shouldValidate: true }
     );
   };
 
   // 에러 메시지 가져오기
   const getErrorMessage = () => {
-    const nameParts = "photos".split(".");
+    const nameParts = "images".split(".");
     let currentErrors: any = errors;
 
     for (const part of nameParts) {
@@ -73,29 +73,30 @@ const ResultReportPhotCard = () => {
           onChange={handleFileChange}
         />
         <div className="grid grid-cols-2 gap-3 mt-2 flex-wrap">
-          {(photos || []).map((file: File, idx: number) => (
-            <div
-              key={idx}
-              className="relative w-full aspect-square max-w-full max-h-[558px]"
-            >
-              <Image
-                src={URL.createObjectURL(file)}
-                alt={`업로드 미리보기 ${idx + 1}`}
-                layout="fill"
-                objectFit="cover"
-                className="w-full h-full object-cover rounded"
-                unoptimized
-              />
-              <button
-                type="button"
-                onClick={() => handleRemove(idx)}
-                className="absolute top-1 right-1 bg-black bg-opacity-60 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
-                aria-label="이미지 삭제"
+          {(images || [])
+            .filter((file) => file instanceof File || typeof file === "string")
+            .map((file: any, idx: number) => (
+              <div
+                key={idx}
+                className="relative w-full aspect-square max-w-full max-h-[558px]"
               >
-                <Remove className="w-5 h-5" />
-              </button>
-            </div>
-          ))}
+                <Image
+                  src={file instanceof File ? URL.createObjectURL(file) : file}
+                  alt={`업로드 미리보기 ${idx + 1}`}
+                  fill
+                  className="w-full h-full object-cover rounded"
+                  unoptimized
+                />
+                <button
+                  type="button"
+                  onClick={() => handleRemove(idx)}
+                  className="absolute top-1 right-1 bg-black bg-opacity-60 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
+                  aria-label="이미지 삭제"
+                >
+                  <Remove className="w-5 h-5" />
+                </button>
+              </div>
+            ))}
         </div>
         <button
           type="button"

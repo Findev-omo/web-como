@@ -1,21 +1,26 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { closeModal, openModal } from "@/lib/utils";
+import { closeModal } from "@/lib/utils";
 import Backdrop from "@/components/common/Backdrop";
 import Button from "@/components/common/Button";
 import { Close } from "@/assets/icons/action";
-import { getAccessToken } from "@/lib/cookies";
+import { useDeleteEmployee } from "@/hooks/queries/company";
+import toast from "react-hot-toast";
 
 export default function DeleteEmployeeModal() {
   const [modalParams, setModalParams] = useState<any>(null);
+  const deleteEmployeeMutation = useDeleteEmployee();
 
   useEffect(() => {
-    const modal = document.getElementById('employee-delete');
+    const modal = document.getElementById("employee-delete");
     if (modal) {
       const observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
-          if (mutation.type === 'attributes' && mutation.attributeName === 'data-modal-params') {
+          if (
+            mutation.type === "attributes" &&
+            mutation.attributeName === "data-modal-params"
+          ) {
             const newParams = modal.dataset.modalParams;
             if (newParams) {
               setModalParams(JSON.parse(newParams));
@@ -26,7 +31,7 @@ export default function DeleteEmployeeModal() {
 
       observer.observe(modal, {
         attributes: true,
-        attributeFilter: ['data-modal-params']
+        attributeFilter: ["data-modal-params"],
       });
 
       return () => observer.disconnect();
@@ -34,26 +39,18 @@ export default function DeleteEmployeeModal() {
   }, []);
 
   const handleDelete = async () => {
+    if (!modalParams?.memberId) return;
+
     try {
-      const token = await getAccessToken();
-      const response = await fetch(`/api/server/v1/manager/member/${modalParams.memberId}`, {
-        method: 'DELETE',
-        headers: {
-          "Authorization": `Bearer ${token}`,
-        }
-      });
-
-      const result = await response.json();
-      console.log("삭제 결과:", result);
-
-      if (result.resultCode === 'OK') {
-        closeModal("employee-delete");
-        openModal("delete-success");
-      } else {
-        console.error("삭제 실패:", result.resultMessage);
-      }
+      await deleteEmployeeMutation.mutateAsync(modalParams.memberId);
+      toast.success("직원이 성공적으로 삭제되었습니다.");
+      closeModal("employee-delete");
     } catch (error) {
-      console.error("삭제 요청 오류:", error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "알 수 없는 오류가 발생했습니다.";
+      toast.error(`직원 삭제 중 오류가 발생했습니다: ${errorMessage}`);
     }
   };
 
@@ -77,11 +74,13 @@ export default function DeleteEmployeeModal() {
             <Button
               content="취소"
               onClick={() => closeModal("employee-delete")}
+              disabled={deleteEmployeeMutation.isPending}
             />
             <Button
               primary
-              content="삭제"
+              content={deleteEmployeeMutation.isPending ? "삭제 중..." : "삭제"}
               onClick={handleDelete}
+              disabled={deleteEmployeeMutation.isPending}
             />
           </div>
         </div>

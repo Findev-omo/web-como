@@ -8,10 +8,12 @@ import { ActivityReportDetail } from "@/api/types/company/report";
 import Image from "next/image";
 import ReportConfirmModal from "@/components/dashboard/company/club/modals/ReportConfirmModal";
 import { patchApprove } from "@/api/actions/company/report/patchApprove";
-import { patchReject } from "@/api/actions/company/report/patchReject";
 import RejectReasonInputModal from "@/components/dashboard/company/club/modals/RejectReasonInputModal";
-import { getReportRejectionReason } from "@/api/actions/company/report/getReportRejectionReason";
 import AlertModal from "@/components/dashboard/company/club/modals/AlertModal";
+import {
+  useRejectReport,
+  useCompanyReportRejectionReason,
+} from "@/hooks/queries/company";
 
 export default function Page({ params }: { params: { id: string } }) {
   const initialStatus = useSearchParams().get("status");
@@ -23,15 +25,31 @@ export default function Page({ params }: { params: { id: string } }) {
   const [status, setStatus] = useState(initialStatus);
   const [rejectReason, setRejectReason] = useState<string>("");
   const [alertOpen, setAlertOpen] = useState(false);
+
+  const rejectReportMutation = useRejectReport();
+  const {
+    data: rejectionReasonData,
+    isLoading: isLoadingRejectionReason,
+    error: rejectionReasonError,
+  } = useCompanyReportRejectionReason(Number(params.id));
+
   useEffect(() => {
     const fetchData = async () => {
       const data = await getReportDetail(Number(params.id));
-      const rejectData = await getReportRejectionReason(Number(params.id));
-      setRejectReason(rejectData.rejectionReason);
       setReportDetail(data);
     };
     fetchData();
   }, [params.id]);
+
+  useEffect(() => {
+    if (rejectionReasonData) {
+      console.log("반려 사유 데이터:", rejectionReasonData);
+      setRejectReason(rejectionReasonData.reason || "");
+    }
+  }, [rejectionReasonData]);
+
+  // 반려 사유가 로딩 중일 때 표시할 내용
+  const shouldShowLoading = isLoadingRejectionReason && status === "REJECTED";
   if (!reportDetail) return <div>loading...</div>;
   return (
     <>
@@ -98,7 +116,17 @@ export default function Page({ params }: { params: { id: string } }) {
                 재작성 부탁드립니다.
               </div>
               <div className="text-gray-900 font-medium text-base text-left">
-                {rejectReason}
+                {shouldShowLoading ? (
+                  <div className="text-gray-400">
+                    반려 사유를 불러오는 중...
+                  </div>
+                ) : rejectionReasonError ? (
+                  <div className="text-red-500">
+                    반려 사유를 불러오는데 실패했습니다.
+                  </div>
+                ) : (
+                  rejectReason || "반려 사유가 없습니다."
+                )}
               </div>
             </div>
           </div>
@@ -132,10 +160,22 @@ export default function Page({ params }: { params: { id: string } }) {
         open={rejectOpen}
         onClose={() => setRejectOpen(false)}
         onReject={async () => {
-          await patchReject(Number(params.id), rejectReason);
-          setRejectOpen(false);
-          setStatus("REJECTED");
-          setAlertOpen(true);
+          console.log("반려 처리 시작:", {
+            reportId: Number(params.id),
+            reason: rejectReason,
+          });
+          try {
+            await rejectReportMutation.mutateAsync({
+              reportId: Number(params.id),
+              reason: rejectReason,
+            });
+            console.log("반려 처리 성공");
+            setRejectOpen(false);
+            setStatus("REJECTED");
+            setAlertOpen(true);
+          } catch (error) {
+            console.error("반려 처리 실패:", error);
+          }
         }}
       />
     </>

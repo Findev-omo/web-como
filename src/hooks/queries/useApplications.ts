@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { getData } from "@/api/action";
+import { api } from "@/api/client";
 import type { DateRange } from "@/components/dashboard/common/DateFilter";
 import type { SearchValue } from "@/lib/types/search";
+import type { ClubApplicationListResponse } from "@/api/types/company/club";
 
 const formatDateToString = (date: Date | undefined) => {
   if (!date) return "";
@@ -13,14 +14,25 @@ const fetchApplications = async ({ queryKey }: { queryKey: any }) => {
   const [_key, page, dateRange, search] = queryKey;
   const startDate = formatDateToString(dateRange.startDate);
   const endDate = formatDateToString(dateRange.endDate);
-  const url = `v1/manager/club?page=${page}&search=${search.term}&filter=${search.field}&startDate=${startDate}&endDate=${endDate}`;
-  const response = await getData(url);
-  if (response.resultCode !== "OK") {
-    throw new Error(
-      `동호회 신청 목록을 불러오는데 실패했습니다: ${response.resultMessage}`
-    );
-  }
-  return response.data;
+
+  // OpenAPI 스펙에 맞게 페이지를 0부터 시작하도록 수정
+  const pageParam = Math.max(0, page - 1);
+
+  const url = `v1/manager/club?page=${pageParam}&search=${search.term}&filter=${search.filter || "all"}&startDate=${startDate}&endDate=${endDate}`;
+
+  // api.get을 사용하여 API 클라이언트의 에러 처리 활용
+  const response = await api.get<{
+    totalPages: number;
+    currentPage: number;
+    list: any[];
+  }>(url);
+
+  // 응답 구조를 기존 코드와 호환되도록 변환
+  return {
+    memberList: response.list,
+    maxPage: response.totalPages,
+    currentPage: response.currentPage,
+  };
 };
 
 export const useApplications = (
