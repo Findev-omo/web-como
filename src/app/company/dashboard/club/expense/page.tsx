@@ -33,6 +33,7 @@ export default async function Page({
     ]);
 
     console.log("활동지원비 페이지 - summary:", summary);
+    console.log("활동지원비 페이지 - expenseData:", expenseData);
 
     const stats = {
       pending: summary.pendingCount || 0,
@@ -46,9 +47,9 @@ export default async function Page({
       <>
         <ExpenseOverview stats={stats} />
         <ClubExpenseClientView
-          expenseList={expenseData.list}
+          expenseList={expenseData.list || []}
           currentPage={currentPage}
-          maxPage={expenseData.maxPage}
+          maxPage={expenseData.maxPage || 1}
           initialDateRange={{ startDate, endDate }}
         />
         {/* <ExpenseRejectDetailModal /> */}
@@ -56,6 +57,17 @@ export default async function Page({
     );
   } catch (error) {
     console.error("지출 관리 페이지 에러:", error);
-    throw error;
+    // 에러 발생 시 기본 UI 반환
+    return (
+      <>
+        <ExpenseOverview stats={{ pending: 0, approved: 0, rejected: 0 }} />
+        <ClubExpenseClientView
+          expenseList={[]}
+          currentPage={1}
+          maxPage={1}
+          initialDateRange={{ startDate, endDate }}
+        />
+      </>
+    );
   }
 }

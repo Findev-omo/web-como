@@ -13,7 +13,7 @@ async function handler(req: NextRequest) {
     .replace(/%7BclubId%7D/gi, clubId)
     .replace(/{clubId}/g, clubId);
 
-  const destination = `${process.env.NEXT_PUBLIC_SERVER_URL}${apiPath}${search}`;
+  const destination = `${process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:8090/api"}${apiPath}${search}`;
 
   const headers = new Headers(req.headers);
   headers.delete("host");

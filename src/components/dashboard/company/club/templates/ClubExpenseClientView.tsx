@@ -82,11 +82,13 @@ export default function ClubExpenseClientView({
                 )}
                 endDate={formatDate(currentDateRange.endDate || today)}
               />
-              <Pagination
-                currentPage={currentPage}
-                maxPage={expenseData?.maxPage || 1}
-                handlePageChange={handlePageChange}
-              />
+              {(expenseData?.list || []).length > 0 && (
+                <Pagination
+                  currentPage={currentPage}
+                  maxPage={expenseData?.maxPage || 1}
+                  handlePageChange={handlePageChange}
+                />
+              )}
             </>
           )}
         </div>

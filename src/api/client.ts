@@ -11,7 +11,7 @@ export interface ApiResponse<T = any> {
 // API 클라이언트 생성
 const createApiClient = (): AxiosInstance => {
   const client = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_SERVER_URL,
+    baseURL: process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:8090/api",
     headers: {
       "Content-Type": "application/json",
     },
@@ -31,6 +31,7 @@ const createApiClient = (): AxiosInstance => {
         method: config.method,
         url: config.url,
         baseURL: config.baseURL,
+        fullURL: `${config.baseURL}${config.url}`,
         headers: config.headers,
         data: config.data,
       });

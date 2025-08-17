@@ -106,48 +106,57 @@ export const companyService = {
       page: number,
       search: string = "",
       filter: string = ""
-    ) =>
-      api.get<ClubMemberListResponse>(
-        `/v1/manager/club/${clubId}/member?page=${page}&search=${search}&filter=${filter}`
-      ),
+    ) => {
+      // 백엔드 API와 일치하도록 페이지를 0부터 시작하도록 수정
+      const pageParam = Math.max(0, page - 1);
+      return api.get<ClubMemberListResponse>(
+        `/v1/manager/club/${clubId}/member?page=${pageParam}&search=${search}&filter=${filter}`
+      );
+    },
 
     getMembersExcel: (clubId: number) =>
       api.get(`/v1/manager/club/${clubId}/members/excel`),
 
-    getBoards: (clubId: number, page: number = 1) =>
-      api.get<ClubBoardsResponse>(
-        `/v1/manager/club/${clubId}/boards?page=${page}`
-      ),
+    getBoards: (clubId: number, page: number = 1) => {
+      // 백엔드 API와 일치하도록 페이지를 0부터 시작하도록 수정
+      const pageParam = Math.max(0, page - 1);
+      return api.get<ClubBoardsResponse>(
+        `/v1/manager/club/${clubId}/boards?page=${pageParam}`
+      );
+    },
   },
 
   // 지출 관리
   expenses: {
-    getList: (page: number, startDate: string, endDate: string) =>
-      api
+    getList: (page: number, startDate: string, endDate: string) => {
+      // 백엔드 API와 일치하도록 페이지를 0부터 시작하도록 수정
+      const pageParam = Math.max(0, page - 1);
+      return api
         .get<
           PaginatedResponse<CompanyExpenseEntry>
-        >(`/v1/manager/activity-expenses?page=${page}&startDate=${startDate}&endDate=${endDate}`)
+        >(`/v1/manager/activity-expenses?page=${pageParam}&startDate=${startDate}&endDate=${endDate}`)
         .then((response) => ({
           ...response,
           maxPage: response.totalPages, // 하위 호환성을 위해 maxPage 추가
-        })),
+        }));
+    },
 
     getDetail: (expenseId: number) =>
       api.get<CompanyExpenseDetail>(
-        `/v1/manager/activity-expenses/${expenseId}`
+        `/v1/manager/activity-expense/${expenseId}`
       ),
 
     approve: (expenseId: number) =>
-      api.patch<void>(`/v1/manager/activity-expenses/${expenseId}/approve`),
+      api.patch<void>(`/v1/manager/activity-expense/${expenseId}/approve`),
 
     reject: (expenseId: number, reason: string) =>
-      api.patch<void>(`/v1/manager/activity-expenses/${expenseId}/reject`, {
+      api.patch<void>(`/v1/manager/activity-expense/${expenseId}/reject`, {
         reason,
       }),
 
     getRejectionReason: (expenseId: number) =>
       api.get<{ reason: string }>(
-        `/v1/manager/activity-expenses/${expenseId}/rejection-reason`
+        `/v1/manager/activity-expense/${expenseId}/rejection-reason`
       ),
 
     getSummary: () =>
@@ -161,8 +170,10 @@ export const companyService = {
 
   // 공지사항 관리
   notices: {
-    getList: (page: number, search: string = "") =>
-      api.get<
+    getList: (page: number, search: string = "") => {
+      // 백엔드 API와 일치하도록 페이지를 0부터 시작하도록 수정
+      const pageParam = Math.max(0, page - 1);
+      return api.get<
         PaginatedResponse<{
           id: number;
           createdDate: string;
@@ -171,13 +182,14 @@ export const companyService = {
           viewCount: number;
           isPinned: string;
         }>
-      >(`/v1/manager/club/notices?page=${page}&search=${search}`),
+      >(`/v1/manager/club/notices?page=${pageParam}&search=${search}`);
+    },
   },
 
   // 보고서 관리
   reports: {
     getList: (page: number, startDate: string, endDate: string) => {
-      // OpenAPI 스펙에 따라 페이지를 0부터 시작하도록 수정
+      // 백엔드 API와 일치하도록 페이지를 0부터 시작하도록 수정
       const pageParam = Math.max(0, page - 1);
       return api.get<PaginatedResponse<CompanyReport>>(
         `/v1/manager/club/report?page=${pageParam}&startDate=${startDate}&endDate=${endDate}`
@@ -217,10 +229,13 @@ export const companyService = {
       filter: string = "all",
       startDate: string = "",
       endDate: string = ""
-    ) =>
-      api.get<PaginatedResponse<Employee>>(
-        `/v1/manager/member/list?page=${page}&search=${search}&filter=${filter}&startDate=${startDate}&endDate=${endDate}`
-      ),
+    ) => {
+      // 백엔드 API와 일치하도록 페이지를 0부터 시작하도록 수정
+      const pageParam = Math.max(0, page - 1);
+      return api.get<PaginatedResponse<Employee>>(
+        `/v1/manager/member/list?page=${pageParam}&search=${search}&filter=${filter}&startDate=${startDate}&endDate=${endDate}`
+      );
+    },
 
     getDetail: (memberId: string) =>
       api.get<Employee>(`/v1/manager/member/${memberId}`),

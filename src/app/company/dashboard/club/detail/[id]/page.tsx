@@ -85,7 +85,7 @@ export default function Page() {
       setLoading(true);
       try {
         const response = await getData(`v1/manager/club/${clubId}`, false);
-        if (response.resultCode === 200 && response.data) {
+        if (response.resultCode === "200" && response.data) {
           setClubDetail(response.data);
         }
       } catch (error) {

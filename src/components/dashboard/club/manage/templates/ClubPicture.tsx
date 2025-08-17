@@ -16,7 +16,10 @@ export default function ClubPictureTab({ clubId }: { clubId: string | null }) {
       if (!clubId) return; // clubId가 없으면 호출하지 않음
 
       try {
-        const response = await getData(`v1/executive/club/${clubId}/activity-feed`, true);
+        const response = await getData(
+          `v1/executive/club/${clubId}/activity-feed`,
+          true
+        );
         setPictures(response.data); // pictures 상태 설정
       } catch (error) {
         console.error("클럽 사진을 가져오는 데 실패했습니다.", error);
@@ -26,7 +29,7 @@ export default function ClubPictureTab({ clubId }: { clubId: string | null }) {
     fetchClubPictures(); // API 호출
   }, [clubId]); // clubId가 변경될 때마다 호출
 
-  console.log("ClubpictureTab 실행됨")
+  console.log("ClubpictureTab 실행됨");
   console.log("ClubpictureTab 에서 clubId", clubId);
   console.log("ClubpictureTab 에서 pictures", pictures);
 
@@ -34,7 +37,7 @@ export default function ClubPictureTab({ clubId }: { clubId: string | null }) {
     <>
       {/* <ClubTitle /> */}
       {pictures.map((picture) => (
-          <ClubPictureItem key={picture.id} item={picture} />
+        <ClubPictureItem key={picture.id} item={picture} />
       ))}
     </>
   );

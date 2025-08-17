@@ -138,87 +138,98 @@ export default function ExpenseTable({
 
   return (
     <>
-      <ul className="flex flex-col gap-1 w-full">
-        <li className="flex w-full border-y border-gray-400 bg-gray-200">
-          <div className="flex-[76] my-3 body-1 font-bold text-gray-900 text-center">
-            {tableHeadings.id}
+      {expenseList.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20">
+          <div className="text-gray-500 text-lg font-medium mb-2">
+            활동지원비 신청이 없습니다.
           </div>
-          <div className="flex-[220] my-3 body-1 font-bold text-center text-gray-900">
-            {tableHeadings.clubName}
+          <div className="text-gray-400 text-sm">
+            선택한 기간에 활동지원비 신청 내역이 없습니다.
           </div>
-          <div className="flex-[516] my-3 body-1 font-bold text-center text-gray-900">
-            {tableHeadings.eventName}
-          </div>
-          <div className="flex-[100] my-3 body-1 font-bold text-center text-gray-900">
-            {tableHeadings.applicant}
-          </div>
-          <div className="flex-[220] my-3 body-1 font-bold text-center text-gray-900">
-            {tableHeadings.department}
-          </div>
-          <div className="flex-[160] my-3 body-1 font-bold text-center text-gray-900">
-            {tableHeadings.createdDate}
-          </div>
-          <div className="flex-[120] my-3 body-1 font-bold text-center text-gray-900">
-            {tableHeadings.status}
-          </div>
-          <div className="flex-[120] my-3 body-1 font-bold text-center text-gray-900">
-            {tableHeadings.rejectReason}
-          </div>
-        </li>
-        {expenseList.map((entry, idx) => (
-          <li
-            key={entry.id}
-            onClick={() => handleExpenseDetailClick(entry.id, entry.clubName)}
-            className="flex w-full border-b border-gray-400 bg-gray-0 cursor-pointer hover:bg-gray-100"
-          >
-            <div className="flex-[76] my-3 body-1 font-medium text-gray-800 text-center">
-              {idx + 1}
+        </div>
+      ) : (
+        <ul className="flex flex-col gap-1 w-full">
+          <li className="flex w-full border-y border-gray-400 bg-gray-200">
+            <div className="flex-[76] my-3 body-1 font-bold text-gray-900 text-center">
+              {tableHeadings.id}
             </div>
-            <div className="flex-[220] my-3 body-1 font-medium text-center text-gray-800">
-              {entry.clubName}
+            <div className="flex-[220] my-3 body-1 font-bold text-center text-gray-900">
+              {tableHeadings.clubName}
             </div>
-            <div className="flex-[516] my-3 body-1 font-medium text-center text-gray-800">
-              {entry.eventName}
+            <div className="flex-[516] my-3 body-1 font-bold text-center text-gray-900">
+              {tableHeadings.eventName}
             </div>
-            <div className="flex-[100] my-3 body-1 font-medium text-center text-gray-800">
-              {entry.writerName}
+            <div className="flex-[100] my-3 body-1 font-bold text-center text-gray-900">
+              {tableHeadings.applicant}
             </div>
-            <div className="flex-[220] my-3 body-1 font-medium text-center text-gray-800">
-              {entry.department}
+            <div className="flex-[220] my-3 body-1 font-bold text-center text-gray-900">
+              {tableHeadings.department}
             </div>
-            <div className="flex-[160] my-3 body-1 font-medium text-center text-gray-800">
-              {formatDateFromString(entry.createdDate)}
+            <div className="flex-[160] my-3 body-1 font-bold text-center text-gray-900">
+              {tableHeadings.createdDate}
             </div>
-            <div
-              className={cn(
-                "flex-[120] my-3 body-1 font-medium text-center",
-                getStatusColor(status.get(entry.id) || entry.status)
-              )}
-            >
-              {getStatusComponent(
-                entry.id,
-                status.get(entry.id) || entry.status
-              )}
+            <div className="flex-[120] my-3 body-1 font-bold text-center text-gray-900">
+              {tableHeadings.status}
             </div>
-            <div className="flex-[120] my-3 body-1 font-medium text-center text-gray-800">
-              {entry.status === "REJECTED" ? (
-                <button
-                  type="button"
-                  className="text-gray-800 underline decoration-gray-800 underline-offset-2 hover:opacity-80 transition px-2 py-0.5"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRejectDetailClick(entry.id);
-                  }}
-                >
-                  상세보기
-                </button>
-              ) : (
-                "-"
-              )}
+            <div className="flex-[120] my-3 body-1 font-bold text-center text-gray-900">
+              {tableHeadings.rejectReason}
             </div>
           </li>
-        ))}
-      </ul>
+          {expenseList.map((entry, idx) => (
+            <li
+              key={entry.id}
+              onClick={() => handleExpenseDetailClick(entry.id, entry.clubName)}
+              className="flex w-full border-b border-gray-400 bg-gray-0 cursor-pointer hover:bg-gray-100"
+            >
+              <div className="flex-[76] my-3 body-1 font-medium text-gray-800 text-center">
+                {idx + 1}
+              </div>
+              <div className="flex-[220] my-3 body-1 font-medium text-center text-gray-800">
+                {entry.clubName}
+              </div>
+              <div className="flex-[516] my-3 body-1 font-medium text-center text-gray-800">
+                {entry.eventName}
+              </div>
+              <div className="flex-[100] my-3 body-1 font-medium text-center text-gray-800">
+                {entry.writerName}
+              </div>
+              <div className="flex-[220] my-3 body-1 font-medium text-center text-gray-800">
+                {entry.department}
+              </div>
+              <div className="flex-[160] my-3 body-1 font-medium text-center text-gray-800">
+                {formatDateFromString(entry.createdDate)}
+              </div>
+              <div
+                className={cn(
+                  "flex-[120] my-3 body-1 font-medium text-center",
+                  getStatusColor(status.get(entry.id) || entry.status)
+                )}
+              >
+                {getStatusComponent(
+                  entry.id,
+                  status.get(entry.id) || entry.status
+                )}
+              </div>
+              <div className="flex-[120] my-3 body-1 font-medium text-center text-gray-800">
+                {entry.status === "REJECTED" ? (
+                  <button
+                    type="button"
+                    className="text-gray-800 underline decoration-gray-800 underline-offset-2 hover:opacity-80 transition px-2 py-0.5"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRejectDetailClick(entry.id);
+                    }}
+                  >
+                    상세보기
+                  </button>
+                ) : (
+                  "-"
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
       <RejectReasonModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
