@@ -30,7 +30,7 @@ export interface CompanyExpense {
 export interface CompanyExpenseDetail extends CompanyExpense {
   description: string;
   receipts: string[];
-  note: string;
+  content: string;
   location: string;
   participantCount: number;
   details: string;
