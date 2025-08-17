@@ -45,6 +45,7 @@ export default function ReportClientView({
   } = useCompanyReports(initialCurrentPage, currentDateRange, {
     list: initialReports,
     totalPages: initialMaxPage,
+    currentPage: initialCurrentPage,
   });
 
   console.log("useCompanyReports 결과:", {

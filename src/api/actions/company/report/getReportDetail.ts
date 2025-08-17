@@ -10,8 +10,30 @@ export const getReportDetail = async (reportId: number) => {
 
     // CompanyReportDetail을 ActivityReportDetail로 변환
     const transformedResult: ActivityReportDetail = {
-      ...result,
-      expenses: result.expenses || [], // expenses가 undefined인 경우 빈 배열로 설정
+      clubImage: "", // 기본값 설정
+      clubName: "", // 기본값 설정
+      writerName: "", // 기본값 설정
+      writerRole: "", // 기본값 설정
+      writerDepartment: "", // 기본값 설정
+      eventName: result.eventName || "",
+      activityDate: [], // 기본값 설정
+      activityTime: [], // 기본값 설정
+      location: result.location || "",
+      locationDetail: result.locationDetail || "",
+      participantCount: 0, // 기본값 설정
+      activityContent: result.activityContent || "",
+      note: result.note || "",
+      photos: result.photos || [],
+      expenses: (result.expenses || []).map((expense) => ({
+        ...expense,
+        usageDetail: "", // 기본값 설정
+        submittedBy: "", // 기본값 설정
+        issuedDate: [], // 기본값 설정
+        vendor: "", // 기본값 설정
+        amount: expense.usedAmount, // usedAmount를 amount로 매핑
+        description: "", // 기본값 설정
+        file: "", // 기본값 설정
+      })),
     };
 
     return transformedResult;

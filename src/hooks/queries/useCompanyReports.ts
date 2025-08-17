@@ -25,6 +25,7 @@ export const useCompanyReports = (
     initialData: {
       list: initialData.list,
       maxPage: initialData.maxPage,
+      currentPage: currentPage,
     },
   });
 };

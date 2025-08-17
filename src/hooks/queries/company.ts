@@ -145,7 +145,11 @@ export const useRejectExpense = () => {
 export const useCompanyReports = (
   currentPage: number,
   currentDateRange: DateRange,
-  initialData?: { list: CompanyReport[]; totalPages: number }
+  initialData?: {
+    list: CompanyReport[];
+    totalPages: number;
+    currentPage: number;
+  }
 ) => {
   const startDate = currentDateRange.startDate
     ? formatDate(currentDateRange.startDate)
