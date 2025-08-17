@@ -83,39 +83,58 @@ export const ScheduleRegisterSchema = z.object({
 
 export type ScheduleRegisterSchemaType = z.infer<typeof ScheduleRegisterSchema>;
 
-// export const ExpenseSchema = z.object({
-//   category: z.string().min(1, { message: "카테고리를 입력해주세요." }),
-//   supportAmount: z.union([
-//     z.number().min(1, { message: "지원금액을 입력해주세요." }),
-//     z.string().refine((val) => val === "" || Number(val) >= 0, {
-//       message: "지원금액을 입력해주세요.",
-//     }),
-//   ]),
-//   usedAmount: z.union([
-//     z.number().min(1, { message: "사용금액을 입력해주세요." }),
-//     z.string().refine((val) => val === "" || Number(val) >= 0, {
-//       message: "사용금액을 입력해주세요.",
-//     }),
-//   ]),
-//   remainingAmount: z.union([
-//     z.number().min(1, { message: "잔액을 입력해주세요." }),
-//     z.string().refine((val) => val === "" || Number(val) >= 0, {
-//       message: "잔액을 입력해주세요.",
-//     }),
-//   ]),
-//   usageDetail: z.string().min(1, { message: "사용내역을 입력해주세요." }),
-//   submittedBy: z.string().min(1, { message: "제출자를 입력해주세요." }),
-//   issuedDate: z.date(), // ISO date string
-//   vendor: z.string().min(1, { message: "거래처를 입력해주세요." }),
-//   amount: z.union([
-//     z.number().min(1, { message: "금액을 입력해주세요." }),
-//     z.string().refine((val) => val === "" || Number(val) >= 0, {
-//       message: "금액을 입력해주세요.",
-//     }),
-//   ]),
-//   description: z.string().min(1, { message: "설명을 입력해주세요." }),
-//   // file: z.string().optional(),
-// });
+// API DTO 타입 정의
+export interface ClubReportCreateRequest {
+  eventName: string;
+  activityDate: string; // YYYY-MM-DD
+  activityTime: string; // HH:mm
+  location: string;
+  locationDetail: string;
+  participantCount: number;
+  activityContent: string;
+  note?: string;
+  receipts: Receipt[];
+}
+
+export interface Receipt {
+  category: string;
+  supportAmount: number;
+  usedAmount: number;
+  remainingAmount: number;
+  usageDetail: string;
+  submittedBy: string;
+  issuedDate: string;
+  vendor: string;
+  amount: number;
+  description: string;
+}
+
+export interface ClubReportResponse {
+  id: number;
+  eventName: string;
+  activityDate: string;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+}
+
+export interface ClubReportDetail {
+  clubImage: string;
+  clubName: string;
+  writerName: string;
+  writerRole: string;
+  writerDepartment: string;
+  eventName: string;
+  activityDate: string;
+  activityTime: string;
+  location: string;
+  locationDetail: string;
+  participantCount: number;
+  activityContent: string;
+  note: string;
+  images: Array<{ id: number; url: string }>;
+  receipts: Receipt[];
+}
+
+// 폼 스키마 (클라이언트용)
 export const ExpenseSchema = z.object({
   category: z.string().min(1, { message: "카테고리를 입력해주세요." }),
   supportAmount: z
@@ -149,7 +168,7 @@ export const ExpenseSchema = z.object({
   description: z.string().min(1, { message: "설명을 입력해주세요." }),
 });
 
-// API 스펙에 맞는 Receipt 스키마
+// API 스펙에 맞는 Receipt 스키마 (폼용)
 export const ReceiptSchema = z.object({
   category: z.string().min(1, { message: "카테고리를 입력해주세요." }),
   supportAmount: z.string().min(1, { message: "지원금액을 입력해주세요." }),

@@ -83,8 +83,7 @@ const ResultReportPhotCard = () => {
                 <Image
                   src={file instanceof File ? URL.createObjectURL(file) : file}
                   alt={`업로드 미리보기 ${idx + 1}`}
-                  layout="fill"
-                  objectFit="cover"
+                  fill
                   className="w-full h-full object-cover rounded"
                   unoptimized
                 />
