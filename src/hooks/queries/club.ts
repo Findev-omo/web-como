@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { clubService, type ClubNotice } from "@/api/services/club";
+import apiClient from "@/lib/axios";
 
 // Query Keys
 export const clubKeys = {
@@ -103,5 +104,56 @@ export const useUnpinNotice = () => {
         queryKey: clubKeys.noticeDetail(noticeId),
       });
     },
+  });
+};
+
+// 동호회 타입 정의
+export interface Club {
+  id: number;
+  name: string;
+  intro: string;
+  createdAt: string;
+  longitude: string;
+  latitude: string;
+  location: string;
+  activityPlan: string;
+  goal: string;
+  headId: number;
+  headName: string;
+  headDepartment: string;
+  subHeadId: number;
+  subHeadName: string;
+  subHeadDepartment: string;
+  affairsId: number;
+  affairsName: string;
+  affairsDepartment: string;
+  clubCategory: string;
+  maxMemberCount: number;
+  minMemberCount: number;
+  duesPerYear: number;
+  detail: string;
+  clubImage: string;
+  bankbookImage: string;
+  isJoined: boolean;
+}
+
+// API 응답 타입
+interface ClubResponse {
+  data: Club[];
+  resultCode: string;
+  resultMessage: string;
+}
+
+// 가입된 동호회 조회 훅
+export const useMyClubs = () => {
+  return useQuery<ClubResponse>({
+    queryKey: ["myClubs"],
+    queryFn: async () => {
+      // 현재 로그인한 사용자가 가입한 동호회 조회
+      const response = await apiClient.get("/v1/club/my");
+      return response.data;
+    },
+    staleTime: 5 * 60 * 1000, // 5분
+    gcTime: 10 * 60 * 1000, // 10분
   });
 };

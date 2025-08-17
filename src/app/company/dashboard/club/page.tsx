@@ -5,14 +5,12 @@ import ApplicantProfileModal from "@/components/dashboard/company/club/modals/Ap
 import DisbandInfoModal from "@/components/dashboard/company/club/modals/DisbandInfoModal";
 
 export default async function Page() {
-  const [active] = await Promise.all([
-    getData("v1/manager/club/approved-count", true),
-  ]);
+  const statusCounts = await getData("v1/manager/club/status-counts", true);
 
   const stats = {
     dissolutionPending: 0,
-    active: active.data || 0,
-    dissolved: 0,
+    active: statusCounts.data?.approvedCount || 0,
+    dissolved: statusCounts.data?.rejectedCount || 0,
   };
 
   return (
