@@ -103,8 +103,6 @@ interface ClubMemberTableProps {
 }
 
 export default function ClubMemberTable({ clubMembers }: ClubMemberTableProps) {
-  console.log("클럽 멤버 정보:", clubMembers);
-
   const getStatus = (status: string): MemberStatus => {
     switch (status) {
       case "APPROVED":
@@ -118,7 +116,6 @@ export default function ClubMemberTable({ clubMembers }: ClubMemberTableProps) {
 
   const formatAppliedDate = (dateInput: string | number[]) => {
     if (!dateInput) {
-      console.error("Invalid dateInput:", dateInput);
       return "";
     }
 
@@ -151,12 +148,10 @@ export default function ClubMemberTable({ clubMembers }: ClubMemberTableProps) {
       }
 
       if (isNaN(date.getTime())) {
-        console.error("Invalid date:", dateInput);
         return "";
       }
       return formatDate(date);
     } catch (error) {
-      console.error("Date parsing error:", error);
       return "";
     }
   };

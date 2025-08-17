@@ -23,7 +23,6 @@ export type ClubDetailMenu =
   | "activity"
   | "picture"
   | "attendance"
-  | "schedule"
   | "notice";
 
 export interface ClubDetailMenuTab {
@@ -33,10 +32,9 @@ export interface ClubDetailMenuTab {
 
 const tabList: ClubDetailMenuTab[] = [
   { name: "동호회 상세", value: "about" },
-  // { name: "활동 내역", value: "activity" },
+  { name: "일정", value: "activity" },
   { name: "활동 사진", value: "picture" },
   // { name: "출석부", value: "attendance" },
-  { name: "일정", value: "schedule" },
   { name: "공지", value: "notice" },
 ];
 
@@ -45,9 +43,6 @@ const renderCurrentTabPage = (
   // attendanceId: string | null,
   clubId: string | null
 ) => {
-  console.log("현재 탭:", currentTab);
-  console.log("클럽 ID:", clubId);
-
   switch (currentTab) {
     case "about":
       return <ClubDetailAboutTabView />;
@@ -59,10 +54,12 @@ const renderCurrentTabPage = (
       return <ClubNoticeView />;
     // case "attendance":
     //   if (attendanceId) {
-    //     return <ClubDetailAttendanceDetailTabView />;
-    //   } else {
-    //     return <ClubDetailAttendanceTabView />;
-    //   }
+    //   return <ClubDetailAttendanceDetailTabView />;
+    // } else {
+    //   return <ClubDetailAttendanceTabView />;
+    // }
+    default:
+      return <ClubDetailAboutTabView />;
   }
 };
 
@@ -74,7 +71,6 @@ export default function Page() {
   const attendanceId = useSearchParams().get("id");
   const params = useParams();
   const clubId = params.id as string;
-  console.log("clubId", clubId);
 
   const handleTabChange = (value: ClubDetailMenu) => {
     push(`${pathname}?tab=${value}`);
