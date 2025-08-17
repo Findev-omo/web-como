@@ -59,6 +59,8 @@ export default function Page() {
     )}&endDate=${formatDateToString(initialDateRange.endDate)}`
   );
 
+  console.log("Employee data:", employeeData);
+
   const { data: statusCountData } = useQueryHook<ClubStatusCountResponse>(
     ["clubStatusCount"],
     "v1/manager/club/status-count"
@@ -73,7 +75,7 @@ export default function Page() {
           approvedCount={statusCountData?.data?.approvedCount ?? 0}
         />
       </div>
-      <EmployeeView initialEmployees={employeeData?.data?.list ?? []} />
+      <EmployeeView initialEmployees={employeeData?.data?.list || []} />
       <div className="m-0">
         <AddNewEmployeeModal />
         <ApprovalSuccessModal />

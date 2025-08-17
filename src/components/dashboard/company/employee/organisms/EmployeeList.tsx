@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { startOfToday, subYears } from "date-fns";
 import { getData } from "@/api/action";
 import DateFilter, {
@@ -29,11 +29,13 @@ export default function EmployeeList({
   const [employees, setEmployees] = useState<Employee[]>(
     initialEmployees ?? []
   );
+
+  console.log("Initial employees:", initialEmployees);
+  console.log("Current employees state:", employees);
   const [currentSearchValue, setCurrentSearchValue] = useState<SearchValue>({
     term: "",
     field: "all",
   });
-  const isInitialMount = useRef(true);
 
   const formatDateToString = (date: Date | undefined) => {
     if (!date) return "";
@@ -53,6 +55,7 @@ export default function EmployeeList({
       );
 
       if (res.resultCode === "200" && res.data) {
+        console.log("Employee list loaded:", res.data);
         setEmployees(res.data.list);
         setMaxPage(res.data.totalPages);
       }
@@ -61,12 +64,15 @@ export default function EmployeeList({
     }
   };
 
+  // 초기 데이터 설정
   useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-    } else {
-      loadEmployees();
+    if (initialEmployees && initialEmployees.length > 0) {
+      setEmployees(initialEmployees);
     }
+  }, [initialEmployees]);
+
+  useEffect(() => {
+    loadEmployees();
   }, [currentPage, currentDateRange, currentSearchValue]);
 
   const handleDateRangeChange = (dateRange: DateRange) => {
