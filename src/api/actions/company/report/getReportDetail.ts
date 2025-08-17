@@ -38,7 +38,12 @@ export const getReportDetail = async (reportId: number) => {
 
     return transformedResult;
   } catch (error) {
-    console.error("getReportDetail 에러:", error);
+    console.error("getReportDetail 에러:", {
+      reportId,
+      error: error,
+      errorMessage: error instanceof Error ? error.message : "Unknown error",
+      errorStack: error instanceof Error ? error.stack : undefined,
+    });
     throw error;
   }
 };

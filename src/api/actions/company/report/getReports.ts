@@ -14,6 +14,7 @@ export const getReports = async (
       endDate
     );
     console.log("getReports 결과:", result);
+    console.log("getReports 원본 응답:", JSON.stringify(result, null, 2));
 
     return {
       list: result.list || [],

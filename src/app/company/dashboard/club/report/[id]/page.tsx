@@ -35,8 +35,32 @@ export default function Page({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     const fetchData = async () => {
-      const data = await getReportDetail(Number(params.id));
-      setReportDetail(data);
+      try {
+        const data = await getReportDetail(Number(params.id));
+        setReportDetail(data);
+      } catch (error) {
+        console.error("보고서 상세 정보 가져오기 실패:", error);
+        // API 실패 시 기본 데이터로 표시
+        const fallbackData: ActivityReportDetail = {
+          clubImage: "",
+          clubName: "동호회명",
+          writerName: "작성자",
+          writerRole: "",
+          writerDepartment: "",
+          eventName: "활동명",
+          activityDate: [],
+          activityTime: [],
+          location: "",
+          locationDetail: "",
+          participantCount: 0,
+          activityContent:
+            "API 호출에 실패했습니다. 잠시 후 다시 시도해주세요.",
+          note: "",
+          photos: [],
+          expenses: [],
+        };
+        setReportDetail(fallbackData);
+      }
     };
     fetchData();
   }, [params.id]);
