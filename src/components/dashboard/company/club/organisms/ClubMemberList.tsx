@@ -10,7 +10,6 @@ import DocUtilButtons, {
 import ClubMemberTable from "@/components/dashboard/company/club/molecules/ClubMemberTable";
 import Pagination from "@/components/dashboard/common/Pagination";
 import { companyService } from "@/api/services/company";
-import { useQuery } from "@tanstack/react-query";
 import { Copy, Document, Edit, Print } from "@/assets/icons/util";
 
 interface Props {
@@ -120,62 +119,84 @@ export default function ClubMemberList({ clubId }: Props) {
     }
   };
 
-  const { refetch: getExcelData } = useQuery({
-    queryKey: [clubId],
-    queryFn: () => companyService.clubs.getMembersExcel(parseInt(clubId)),
-    enabled: false,
-  });
-
   const handleExcelDownload = async () => {
     const XLSX = await import("xlsx");
     try {
-      const { data } = await getExcelData(); // react-query에서 엑셀 데이터 가져오기
-      if (data) {
-        const newData = data?.data.map(
-          (
-            item: {
-              id: number;
-              name: string;
-              department: string;
-              profileMessage: string;
-              createdDate: string;
-              status: string;
-            },
-            idx: number
-          ) => {
-            const newItem: Record<string, any> = { ...item };
+      // companyService 대신 직접 fetch 사용
+      const response = await fetch(
+        `/api/server/v1/manager/club/${clubId}/members/excel`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-            const date = newItem.createdDate.slice(0, 3).join("-");
+      if (!response.ok) {
+        throw new Error("Excel 데이터를 가져오는데 실패했습니다.");
+      }
 
-            newItem.id = idx + 1;
-            newItem["이름"] = newItem.name;
-            newItem["부서"] = newItem.department;
-            newItem["직급"] = newItem.profileMessage;
-            newItem["상태"] =
-              newItem.status === "APPROVED" ? "활동중" : "비활동중";
-            newItem["가입일"] = date;
+      // 응답 타입 확인
+      const contentType = response.headers.get("content-type");
 
-            delete newItem["name"];
-            delete newItem["department"];
-            delete newItem["profileMessage"];
-            delete newItem["status"];
-            delete newItem["createdDate"];
+      if (contentType && contentType.includes("application/json")) {
+        // JSON 응답인 경우 (기존 로직)
+        const result = await response.json();
+        const data = result?.data;
 
-            return newItem;
-          }
-        );
+        if (data) {
+          const newData = data?.data.map(
+            (
+              item: {
+                id: number;
+                name: string;
+                department: string;
+                profileMessage: string;
+                createdDate: string;
+                status: string;
+              },
+              idx: number
+            ) => {
+              const newItem: Record<string, any> = { ...item };
 
-        const wb = XLSX.utils.book_new(); // 새로운 워크북 생성
+              const date = newItem.createdDate.slice(0, 3).join("-");
 
-        // 엑셀 스타일 지정
-        const ws = XLSX.utils.json_to_sheet(newData);
+              newItem.id = idx + 1;
+              newItem["이름"] = newItem.name;
+              newItem["부서"] = newItem.department;
+              newItem["직급"] = newItem.profileMessage;
+              newItem["상태"] =
+                newItem.status === "APPROVED" ? "활동중" : "비활동중";
+              newItem["가입일"] = date;
 
-        XLSX.utils.book_append_sheet(wb, ws, "Club Members"); // 시트를 워크북에 추가
+              delete newItem["name"];
+              delete newItem["department"];
+              delete newItem["profileMessage"];
+              delete newItem["status"];
+              delete newItem["createdDate"];
 
-        // 엑셀 파일 생성
-        XLSX.writeFile(wb, "club_members.xlsx"); // 엑셀 파일 다운로드
+              return newItem;
+            }
+          );
+
+          const wb = XLSX.utils.book_new();
+          const ws = XLSX.utils.json_to_sheet(newData);
+          XLSX.utils.book_append_sheet(wb, ws, "Club Members");
+          XLSX.writeFile(wb, "club_members.xlsx");
+        } else {
+          console.error("엑셀 데이터가 없습니다.");
+        }
       } else {
-        console.error("엑셀 데이터가 없습니다.");
+        // 파일 스트림인 경우 직접 다운로드
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "club_members.xlsx";
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
       }
     } catch (error) {
       console.error("엑셀 다운로드 중 오류 발생:", error);

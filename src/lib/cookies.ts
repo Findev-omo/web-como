@@ -4,8 +4,8 @@ import { cookies } from "next/headers";
 
 export const deleteAllCookies = async () => {
   await deleteAccessToken();
-  await deleteRefreshToken();
   await deleteDashboardType();
+  await deleteRole();
   await deleteClubId();
   await deleteClubName();
 };
@@ -22,24 +22,28 @@ export const deleteAccessToken = async () => {
   cookies().delete("accessToken");
 };
 
-export const saveRefreshToken = async (refreshToken: string) => {
-  cookies().set("refreshToken", refreshToken);
-};
-
-export const getRefreshToken = async () => {
-  return cookies().get("refreshToken")?.value;
-};
-
-export const deleteRefreshToken = async () => {
-  cookies().delete("refreshToken");
-};
-
 export const saveDashboardType = async (type: string) => {
   cookies().set("type", type);
 };
 
+export const getDashboardType = async () => {
+  return cookies().get("type")?.value;
+};
+
 export const deleteDashboardType = async () => {
   cookies().delete("type");
+};
+
+export const saveRole = async (role: string) => {
+  cookies().set("role", role);
+};
+
+export const getRole = async () => {
+  return cookies().get("role")?.value;
+};
+
+export const deleteRole = async () => {
+  cookies().delete("role");
 };
 
 export const saveClubId = async (clubId: string) => {
@@ -64,20 +68,4 @@ export const getClubName = async () => {
 
 export const deleteClubName = async () => {
   cookies().delete("clubName");
-};
-
-export const saveRole = async (role: string) => {
-  cookies().set("role", role);
-};
-
-export const getRole = async () => {
-  return cookies().get("role")?.value;
-};
-
-export const saveCompanyName = async (companyName: string) => {
-  cookies().set("companyName", companyName);
-};
-
-export const getCompanyName = async () => {
-  return cookies().get("companyName")?.value;
 };
