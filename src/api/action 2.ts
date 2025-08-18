@@ -1,7 +1,6 @@
 "use server";
 
 import { getAccessToken, getClubId } from "@/lib/cookies";
-import { buildApiUrl } from "@/lib/client-utils";
 import type { IResponse } from "@/api/types/index";
 
 export const getData = async (
@@ -16,8 +15,7 @@ export const getData = async (
   const finalEndpoint = useClubId
     ? endpoint.replace("{clubId}", clubId || "")
     : endpoint;
-
-  const url = buildApiUrl(finalEndpoint);
+  const url = `${process.env.NEXT_PUBLIC_SERVER_URL}/${finalEndpoint}`;
   console.log("url", url);
 
   const response = await fetch(url, {
