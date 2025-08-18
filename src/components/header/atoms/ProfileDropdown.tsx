@@ -65,7 +65,13 @@ export default function ProfileDropdown({ profileImage }: Props) {
     };
 
     loadProfileData();
-  }, []); // 빈 의존성 배열로 컴포넌트 마운트 시에만 실행
+  }, [
+    isProfileLoaded,
+    isProfileLoading,
+    profile,
+    setProfile,
+    setProfileLoading,
+  ]); // 의존성 배열 추가
 
   // 개발 환경에서만 로그 출력
   if (process.env.NODE_ENV === "development") {

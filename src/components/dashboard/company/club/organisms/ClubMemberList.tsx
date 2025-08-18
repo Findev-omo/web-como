@@ -63,7 +63,7 @@ export default function ClubMemberList({ clubId }: Props) {
 
   useEffect(() => {
     loadClubMemberList();
-  }, [currentPage]);
+  }, [currentPage, loadClubMemberList]);
 
   const handleSearchValueChange = ({ field, term }: ChangeSearchValue) => {
     console.log("검색 필드:", field); // 클릭한 필드 출력
