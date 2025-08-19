@@ -1,4 +1,5 @@
 "use client";
+import { patchReject } from "@/api/actions/company/expense/patchReject";
 import Button from "@/components/common/Button";
 import { useState } from "react";
 
@@ -9,7 +10,7 @@ interface Props {
   isRejecting?: boolean;
 }
 
-export default function RejectReasonInputModal({
+export default function ExpenseRejectReasonInputModal({
   open,
   onClose,
   onReject,
