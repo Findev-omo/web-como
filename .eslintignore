@@ -1,0 +1,16 @@
+node_modules
+.next/
+out/
+build
+dist
+.DS_Store
+.env*.local
+.vercel
+*.tsbuildinfo
+next-env.d.ts
+.storybook
+*.stories.tsx
+*.stories.ts
+*.stories.jsx
+*.stories.js
+storybook-static
