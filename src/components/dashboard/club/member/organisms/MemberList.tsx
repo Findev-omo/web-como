@@ -2,12 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-// import { getData } from "@/api/action";
 import { getData } from "@/lib/client-utils";
-import type { MemberListData } from "@/api/types/club/member";
-import DocUtilButtons, {
-  SaveButton,
-} from "@/components/dashboard/common/DocUtil";
+import { SaveButton } from "@/components/dashboard/common/DocUtil";
 import Pagination from "@/components/dashboard/common/Pagination";
 import MemberTable from "@/components/dashboard/club/member/molecules/MemberTable";
 import MemberSearch from "./MemberSearch";
@@ -22,11 +18,6 @@ interface Props {
 }
 
 export default function MemberList({ clubId }: Props) {
-  // const { data } = useQuery({
-  //   queryKey: ["club-manage-member", "list"],
-  //   queryFn: () => getData("v2/club/web/member/", true).then((res) => res.data as MemberListData),
-  // });
-
   const [currentDateRange, setCurrentDateRange] = useState<DateRange>({
     createdDate: subYears(startOfToday(), 1), // 1년 전 날짜
     endDate: startOfToday(),
@@ -36,20 +27,16 @@ export default function MemberList({ clubId }: Props) {
   const [members, setMembers] = useState([]);
 
   const loadMembers = async (searchValue: SearchValue = { term: "" }) => {
-    console.log("현재 페이지", currentPage);
-    console.log("현재 검색어", searchValue.term);
-
     try {
       const response = await getData(
-        `v1/executive/club/{clubId}/member/list?page=${currentPage}&search=${searchValue.term}`,
+        `v1/executive/club/${clubId}/member/list?page=${currentPage - 1}&search=${searchValue.term}`,
         true
       );
 
       const data = response.data;
-      console.log("data", data);
-      console.log("data.memberList", data.memberList);
-      setMembers(data.memberList);
-      setMaxPage(data.maxPage);
+      // console.log("data", data);
+      setMembers(data.list);
+      setMaxPage(data.totalPages);
     } catch (error) {
       console.error("직원 목록 로딩 오류:", error);
     }
@@ -132,23 +119,33 @@ export default function MemberList({ clubId }: Props) {
     <div className="space-y-10 p-8 rounded-xl bg-gray-0">
       <div className="space-y-6">
         <div className="flex justify-between">
-          <h3 className="h2 font-semibold text-gray-900">{"동호회원 조회"}</h3>
+          <h3 className="h2 font-semibold text-gray-900">동호회원 조회</h3>
           {/* <DocUtilButtons /> */}
           <SaveButton onClick={() => handleExcelDownload()} />
         </div>
         <MemberSearch onSearch={handleSearch} currentPage={currentPage} />
-        <MemberTable data={members} />
-        {members && members.length > 0 && (
-          <div className="flex justify-center mt-8">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={maxPage}
-              handlePageChange={handlePageChange}
-            />
+        {members && members.length > 0 ? (
+          <>
+            <MemberTable data={members} />
+            <div className="flex justify-center mt-8">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={maxPage}
+                handlePageChange={handlePageChange}
+              />
+            </div>
+          </>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-20 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+            <p className="text-gray-500 text-lg text-center whitespace-pre-wrap">
+              아직 해당 동호회에 가입한 유저가 없습니다.{"\n"}
+              <span className="font-medium text-blue-600">
+                커뮤니티에서 동호회를 홍보해보세요!
+              </span>
+            </p>
           </div>
         )}
       </div>
     </div>
   );
 }
-// 동호회 임원 - 동호회 회원 목록 컴포넌트
