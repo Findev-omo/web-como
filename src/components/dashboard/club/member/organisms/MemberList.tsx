@@ -50,56 +50,50 @@ export default function MemberList({ clubId }: Props) {
 
   const handleExcelDownload = async () => {
     try {
-      const { data } = await getExcelData();
-      if (data) {
-        const newData = data?.data.map(
-          (
-            item: {
-              id: number;
-              name: string;
-              department: string;
-              profileMessage: string;
-              createdDate: string;
-              status: string;
-            },
-            idx: number
-          ) => {
-            const newItem: Record<string, any> = { ...item };
+      const { data: response } = await getExcelData();
+      const memberData = response?.data;
 
-            const date = newItem.requestDate.slice(0, 3).join("-");
-
-            newItem.id = idx + 1;
-            newItem["이름"] = newItem.name;
-            newItem["부서"] = newItem.department;
-            newItem["직급"] = newItem.position;
-            newItem["상태"] =
-              newItem.status === "APPROVED" ? "활동중" : "비활동중";
-            newItem["가입일"] = date;
-
-            delete newItem["name"];
-            delete newItem["department"];
-            delete newItem["position"];
-            delete newItem["status"];
-            delete newItem["requestDate"];
-
-            return newItem;
+      if (memberData && Array.isArray(memberData)) {
+        const newData = memberData.map((item, idx) => {
+          let formattedDate = "-";
+          if (item.createdDate) {
+            formattedDate = item.createdDate.split("T")[0];
           }
-        );
 
-        const wb = XLSX.utils.book_new(); // 새로운 워크북 생성
+          // 2. 새로운 객체 생성 (순서가 엑셀의 컬럼 순서가 됩니다)
+          return {
+            순번: idx + 1,
+            이름: item.name || "-",
+            부서: item.department || "-",
+            직급: item.position || "-",
+            상태: item.status === "APPROVED" ? "활동중" : "탈퇴/비활동",
+            가입일: formattedDate,
+          };
+        });
 
-        // 엑셀 스타일 지정
         const ws = XLSX.utils.json_to_sheet(newData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "동호회 회원 목록");
 
-        XLSX.utils.book_append_sheet(wb, ws, "Club Members"); // 시트를 워크북에 추가
+        ws["!cols"] = [
+          { wch: 5 }, // 순번
+          { wch: 15 }, // 이름
+          { wch: 20 }, // 부서
+          { wch: 15 }, // 직급
+          { wch: 10 }, // 상태
+          { wch: 15 }, // 가입일
+        ];
 
-        // 엑셀 파일 생성
-        XLSX.writeFile(wb, "club_members.xlsx"); // 엑셀 파일 다운로드
+        XLSX.writeFile(
+          wb,
+          `club_members_${new Date().toISOString().slice(0, 10)}.xlsx`
+        );
       } else {
-        console.error("엑셀 데이터가 없습니다.");
+        alert("다운로드할 데이터가 없습니다.");
       }
     } catch (error) {
       console.error("엑셀 다운로드 중 오류 발생:", error);
+      alert("엑셀 다운로드 중 오류가 발생했습니다.");
     }
   };
 
